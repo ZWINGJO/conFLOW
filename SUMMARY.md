@@ -5,7 +5,7 @@
 ## Workflow Stories
 
 * [💡 Beispiele realisierter "user stories"](workflow-stories/beispiele-realisierter-user-stories/README.md)
-  * [✅ HR Krankmeldung .](workflow-stories/beispiele-realisierter-user-stories/hr-krankmeldung.md)
+  * [✅ HR Krankmeldung](workflow-stories/beispiele-realisierter-user-stories/hr-krankmeldung.md)
   * [✅ HR Onboarding](workflow-stories/beispiele-realisierter-user-stories/hr-onboarding.md)
   * [✅ SD Faktura Anforderung](workflow-stories/beispiele-realisierter-user-stories/sd-faktura-anforderung.md)
   * [✅ SD Business Partner Synchronisierung](workflow-stories/beispiele-realisierter-user-stories/sd-business-partner-synchronisierung.md)
