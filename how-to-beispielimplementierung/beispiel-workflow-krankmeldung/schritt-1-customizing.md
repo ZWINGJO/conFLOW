@@ -7,7 +7,7 @@
 <figure><img src="../../.gitbook/assets/Folie6.png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-Legen Sie anschließend die Schritte 01-03 im Unterordner "Genehmigungsschritte" an. für den Schritt 03 bitte die Auswahl "BACK\_BATCH" verwenden (alte Version: "BACK")\
+Legen. Sie anschließend die Schritte 01-03 im Unterordner "Genehmigungsschritte" an. für den Schritt 03 bitte die Auswahl "BACK\_BATCH" verwenden (alte Version: "BACK")\
 \
 Die Schritte X0-X2 sind als "best practice" gedacht - der erste Schritt muss jedoch X0 sein und ein Schritt, der den Workflow beendet mit X beginnen.
 {% endhint %}
