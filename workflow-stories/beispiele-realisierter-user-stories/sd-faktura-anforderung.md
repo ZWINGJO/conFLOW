@@ -6,9 +6,9 @@ Bevor eine Rechnung an den Kunden geht, muss sie freigegeben werden -- insbesond
 
 ## Was conFLOW hier leistet
 
-Der Workflow stellt sicher, dass jede relevante Faktura-Anforderung den richtigen Freigeber erreicht. Der Bearbeiter sieht am Workitem die wesentlichen Belegdaten und entscheidet: freigeben oder zurueckweisen. Bei Ablehnung geht der Vorgang zurueck an den Ersteller, bei Freigabe wird die Faktura erzeugt oder zur Erzeugung vorgemerkt.
+Der Workflow stellt sicher, dass jede relevante Faktura-Anforderung den richtigen Freigeber erreicht. Der Bearbeiter sieht am Workitem die wesentlichen Belegdaten und entscheidet: freigeben oder zurückweisen. Bei Ablehnung geht der Vorgang zurück an den Ersteller, bei Freigabe wird die Faktura erzeugt oder zur Erzeugung vorgemerkt.
 
-Die Zuordnung des Freigebers kann ueber Customizing fest hinterlegt oder dynamisch ueber die BAdI-Methode `GET_ACTORS` ermittelt werden -- etwa abhaengig von Vertriebsbereich, Belegart oder Betrag.
+Die Zuordnung des Freigebers kann über Customizing fest hinterlegt oder dynamisch über die BAdI-Methode `GET_ACTORS` ermittelt werden -- etwa abhängig von Vertriebsbereich, Belegart oder Betrag.
 
 ### User Story
 

@@ -3,27 +3,27 @@
 {% hint style="success" %}
 **conFLOW** bildet Genehmigungs- und Freigabe-Workflows im SAP-System ab -- ohne SAP-Workflow-Know-how, ohne Workflow Builder, ohne WF-Customizing im SPRO.
 
-Statt eines klassischen SAP-Workflows mit Aufgaben, Regeln und Schrittgruppen definiert der Anwender den Prozess in **Customizing-Tabellen** und implementiert die fachliche Logik in **einer einzigen BAdI-Klasse**. Das Framework uebernimmt den Rest: Workitem-Erzeugung, Bearbeiterfindung, Fristen, Eskalation, Mailversand und Statusverfolgung.
+Statt eines klassischen SAP-Workflows mit Aufgaben, Regeln und Schrittgruppen definiert der Anwender den Prozess in **Customizing-Tabellen** und implementiert die fachliche Logik in **einer einzigen BAdI-Klasse**. Das Framework übernimmt den Rest: Workitem-Erzeugung, Bearbeiterfindung, Fristen, Eskalation, Mailversand und Statusverfolgung.
 {% endhint %}
 
-<figure><img src=".gitbook/assets/conflow.png" alt="conFLOW Uebersicht"><figcaption><p>conFLOW - Workflows auf einfache Weise abbilden</p></figcaption></figure>
+<figure><img src=".gitbook/assets/conflow.png" alt="conFLOW Übersicht"><figcaption><p>conFLOW - Workflows auf einfache Weise abbilden</p></figcaption></figure>
 
 ## Was conFLOW kann
 
 | Merkmal | Beschreibung |
 | --- | --- |
-| **Customizing statt Entwicklung** | Schritte, Uebergaenge, Bearbeiter, Fristen und Mailversand werden in Tabellen gepflegt -- kein Workflow Builder, keine Aufgabendefinitionen |
+| **Customizing statt Entwicklung** | Schritte, Übergänge, Bearbeiter, Fristen und Mailversand werden in Tabellen gepflegt -- kein Workflow Builder, keine Aufgabendefinitionen |
 | **Eine BAdI-Klasse je Workflow** | Die gesamte fachliche Logik liegt in einer Klasse mit definierten Hooks -- Bearbeiterfindung, Beschreibung, Absprung, Nachlauf |
-| **Beliebig viele Workflows** | Jede Workflow-Definition hat eine eigene Nummer und eine eigene BAdI-Implementierung. Neue Prozesse benoetigen keinen neuen Transport des Frameworks |
-| **Hintergrundschritte** | Automatische Verarbeitung zwischen den Entscheidungen -- Anreicherung, Bewertung, Statusaenderung, Belegbuchung |
-| **Fristen und Eskalation** | Zeitgesteuerte Weiterleitung ueber Customizing, keine Deadline-Agents |
-| **Parallele Genehmigung** | Mehrere Bearbeiter auf demselben Schritt -- das Ergebnis wird zusammengefuehrt |
+| **Beliebig viele Workflows** | Jede Workflow-Definition hat eine eigene Nummer und eine eigene BAdI-Implementierung. Neue Prozesse benötigen keinen neuen Transport des Frameworks |
+| **Hintergrundschritte** | Automatische Verarbeitung zwischen den Entscheidungen -- Anreicherung, Bewertung, Statusänderung, Belegbuchung |
+| **Fristen und Eskalation** | Zeitgesteuerte Weiterleitung über Customizing, keine Deadline-Agents |
+| **Parallele Genehmigung** | Mehrere Bearbeiter auf demselben Schritt -- das Ergebnis wird zusammengeführt |
 | **SAP-GUI und Fiori** | Workitems erscheinen im Business Workplace (SBWP) und in der Fiori My Inbox |
-| **conMOBILE-Integration** | Mobile Darstellung jedes Workflow-Schritts ueber die conMOBILE-Plattform |
+| **conMOBILE-Integration** | Mobile Darstellung jedes Workflow-Schritts über die conMOBILE-Plattform |
 
 ## Ein Workflow in einem Tag
 
-Einen Standard-SAP-Workflow produktiv zu setzen dauert typischerweise zehn Tage: Aufgabendefinitionen, Regelaufloesung, Schrittgruppen, Container-Operationen, Binding-Definitionen, Agenten-Ermittlung. Mit conFLOW reduziert sich das auf Customizing und eine ABAP-Klasse -- der erste lauffaehige Workflow steht am selben Tag.
+Einen Standard-SAP-Workflow produktiv zu setzen dauert typischerweise zehn Tage: Aufgabendefinitionen, Regelauflösung, Schrittgruppen, Container-Operationen, Binding-Definitionen, Agenten-Ermittlung. Mit conFLOW reduziert sich das auf Customizing und eine ABAP-Klasse -- der erste lauffähige Workflow steht am selben Tag.
 
 <figure><img src=".gitbook/assets/conFLOW_DE.png" alt="conFLOW Architektur"><figcaption><p>Architektur und Einordnung im SAP-System</p></figcaption></figure>
 

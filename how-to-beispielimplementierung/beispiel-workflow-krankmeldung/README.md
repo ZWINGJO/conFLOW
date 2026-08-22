@@ -1,6 +1,6 @@
 # How-To: Workflow Krankmeldung
 
-Dieses How-To zeigt Schritt fuer Schritt, wie ein conFLOW-Workflow aufgebaut wird -- am Beispiel einer Krankmeldung. Am Ende steht ein lauffaehiger Workflow, der ein Workitem in der Inbox erzeugt und den Prozess dokumentiert.
+Dieses How-To zeigt Schritt für Schritt, wie ein conFLOW-Workflow aufgebaut wird -- am Beispiel einer Krankmeldung. Am Ende steht ein lauffähiger Workflow, der ein Workitem in der Inbox erzeugt und den Prozess dokumentiert.
 
 ## Der Prozess
 
@@ -24,20 +24,20 @@ Dieses How-To zeigt Schritt fuer Schritt, wie ein conFLOW-Workflow aufgebaut wir
 ## Voraussetzungen
 
 - Zugriff auf die Transaktion `/C09/CONFLOW_C` (conFLOW-Customizing)
-- Entwicklungszugriff fuer die BAdI-Implementierung (SE80 oder ADT)
+- Entwicklungszugriff für die BAdI-Implementierung (SE80 oder ADT)
 - Ein Transportauftrag
 
 ## Die vier Schritte
 
-<figure><img src="../../.gitbook/assets/Folie5.png" alt="Uebersicht Krankmeldung"><figcaption><p>Workflow Krankmeldung: Prozessueberblick</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Folie5.png" alt="Übersicht Krankmeldung"><figcaption><p>Workflow Krankmeldung: Prozessüberblick</p></figcaption></figure>
 
 | Schritt | Inhalt | Ergebnis |
 | --- | --- | --- |
-| [Schritt 1: Customizing anlegen](schritt-1-customizing.md) | Workflow-Definition, Schritte, Bearbeiter, Laufweg | Lauffaehiger Workflow |
-| [Schritt 2: Customizing erweitern](schritt-2-customizing-erweitern.md) | Hintergrundschritte, Texte, Buttons, Mailversand | Vollstaendig konfigurierter Prozess |
+| [Schritt 1: Customizing anlegen](schritt-1-customizing.md) | Workflow-Definition, Schritte, Bearbeiter, Laufweg | Lauffähiger Workflow |
+| [Schritt 2: Customizing erweitern](schritt-2-customizing-erweitern.md) | Hintergrundschritte, Texte, Buttons, Mailversand | Vollständig konfigurierter Prozess |
 | [Schritt 3: BAdI-Implementierung](schritt-3-badi-implementierung.md) | Dynamische Bearbeiterfindung, parallele Schritte, Absprung | Fachliche Logik |
 | [Schritt 4: Workflow starten und testen](schritt-4-workflow-starten.md) | Trigger, Container, Test | Produktionsreifer Workflow |
 
 {% hint style="warning" %}
-**Reihenfolge beachten:** Zuerst das Customizing (Schritt 1 und 2), dann die BAdI-Implementierung (Schritt 3), zuletzt den Trigger (Schritt 4). Die BAdI-Klasse braucht die Customizing-Eintraege als Grundlage, und der Trigger setzt einen funktionierenden Workflow voraus.
+**Reihenfolge beachten:** Zuerst das Customizing (Schritt 1 und 2), dann die BAdI-Implementierung (Schritt 3), zuletzt den Trigger (Schritt 4). Die BAdI-Klasse braucht die Customizing-Einträge als Grundlage, und der Trigger setzt einen funktionierenden Workflow voraus.
 {% endhint %}
