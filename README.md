@@ -1,33 +1,42 @@
-# 🍃 conFLOW - sap workflows easy built
+# conFLOW - SAP Workflows easy built
 
 {% hint style="success" %}
-**conFLOW:** Workflows auf einfache Weise abbilden\
-\
-_**Funktionen**_:
+**conFLOW** bildet Genehmigungs- und Freigabe-Workflows im SAP-System ab -- ohne SAP-Workflow-Know-how, ohne Workflow Builder, ohne WF-Customizing im SPRO.
 
-* Definition von Workflows mittels Customizing und ABAP-Programmierung
-* Festlegen aller relevanten Genehmigungsschritte
-* Steuerung der Workflow-Abfolge (z.B. Mailversand)
-* Userstatus festlegen
-* Kundenspezifische Erweiterung mittels BAdI
+Statt eines klassischen SAP-Workflows mit Aufgaben, Regeln und Schrittgruppen definiert der Anwender den Prozess in **Customizing-Tabellen** und implementiert die fachliche Logik in **einer einzigen BAdI-Klasse**. Das Framework uebernimmt den Rest: Workitem-Erzeugung, Bearbeiterfindung, Fristen, Eskalation, Mailversand und Statusverfolgung.
 {% endhint %}
 
-<figure><img src=".gitbook/assets/conflow.png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/conflow.png" alt="conFLOW Uebersicht"><figcaption><p>conFLOW - Workflows auf einfache Weise abbilden</p></figcaption></figure>
 
-Einen Standard SAP-Workflow in einem Tag produktiv setzen statt in zehn Tagen: mit con­FLOW kön­nen kom­ple­xe Work­flows ohne SAP- Work­flow Know-How mit ein­fa­chem ABAP basiertem Cust­o­mi­zing ab­ge­bil­det wer­den. Es kön­nen be­lie­big vie­le Work­flows de­fi­niert wer­den. Die­se Work­flow-De­fi­ni­tio­nen be­stim­men den Ab­lauf ei­nes Work­flows. Die In­te­gra­ti­on von con­MO­BI­LE V1.3 und SAP Fio­ri er­mög­li­cht die mo­bi­le Dar­stel­lung je­des ein­zel­nen Work­flow-Schrit­tes.
+## Was conFLOW kann
 
-<figure><img src=".gitbook/assets/conFLOW_DE.png" alt=""><figcaption></figcaption></figure>
+| Merkmal | Beschreibung |
+| --- | --- |
+| **Customizing statt Entwicklung** | Schritte, Uebergaenge, Bearbeiter, Fristen und Mailversand werden in Tabellen gepflegt -- kein Workflow Builder, keine Aufgabendefinitionen |
+| **Eine BAdI-Klasse je Workflow** | Die gesamte fachliche Logik liegt in einer Klasse mit definierten Hooks -- Bearbeiterfindung, Beschreibung, Absprung, Nachlauf |
+| **Beliebig viele Workflows** | Jede Workflow-Definition hat eine eigene Nummer und eine eigene BAdI-Implementierung. Neue Prozesse benoetigen keinen neuen Transport des Frameworks |
+| **Hintergrundschritte** | Automatische Verarbeitung zwischen den Entscheidungen -- Anreicherung, Bewertung, Statusaenderung, Belegbuchung |
+| **Fristen und Eskalation** | Zeitgesteuerte Weiterleitung ueber Customizing, keine Deadline-Agents |
+| **Parallele Genehmigung** | Mehrere Bearbeiter auf demselben Schritt -- das Ergebnis wird zusammengefuehrt |
+| **SAP-GUI und Fiori** | Workitems erscheinen im Business Workplace (SBWP) und in der Fiori My Inbox |
+| **conMOBILE-Integration** | Mobile Darstellung jedes Workflow-Schritts ueber die conMOBILE-Plattform |
 
-## Quick links
+## Ein Workflow in einem Tag
+
+Einen Standard-SAP-Workflow produktiv zu setzen dauert typischerweise zehn Tage: Aufgabendefinitionen, Regelaufloesung, Schrittgruppen, Container-Operationen, Binding-Definitionen, Agenten-Ermittlung. Mit conFLOW reduziert sich das auf Customizing und eine ABAP-Klasse -- der erste lauffaehige Workflow steht am selben Tag.
+
+<figure><img src=".gitbook/assets/conFLOW_DE.png" alt="conFLOW Architektur"><figcaption><p>Architektur und Einordnung im SAP-System</p></figcaption></figure>
+
+## Einstieg
 
 {% content-ref url="workflow-stories/beispiele-realisierter-user-stories/" %}
-[beispiele-realisierter-user-stories](workflow-stories/beispiele-realisierter-user-stories/)
+[Beispiele realisierter Workflows](workflow-stories/beispiele-realisierter-user-stories/)
 {% endcontent-ref %}
 
 {% content-ref url="technische-dokumentation/technische-dokumentation.md" %}
-[technische-dokumentation.md](technische-dokumentation/technische-dokumentation.md)
+[Technische Dokumentation](technische-dokumentation/technische-dokumentation.md)
 {% endcontent-ref %}
 
 {% content-ref url="how-to-beispielimplementierung/beispiel-workflow-krankmeldung/" %}
-[beispiel-workflow-krankmeldung](how-to-beispielimplementierung/beispiel-workflow-krankmeldung/)
+[How-To: Beispiel Workflow Krankmeldung](how-to-beispielimplementierung/beispiel-workflow-krankmeldung/)
 {% endcontent-ref %}

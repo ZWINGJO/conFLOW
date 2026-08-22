@@ -1,14 +1,19 @@
-# ✅ BC Stammdaten Verteilung
+# BC Stammdaten Verteilung
 
-{% hint style="info" %}
-Userstory zu BC Stammdaten Verteilung
-{% endhint %}
+## Die Anforderung
 
-<figure><img src="../../.gitbook/assets/Folie13 (2).png" alt=""><figcaption></figcaption></figure>
+Stammdaten -- Materialstaemme, Konditionen, Organisationseinheiten -- muessen in einer verteilten Systemlandschaft konsistent gehalten werden. Aenderungen im fuehrenden System muessen geprueft, freigegeben und an die Empfaengersysteme verteilt werden. Fehler bei der Verteilung muessen erkannt und behandelt werden.
 
-{% hint style="info" %}
-Workflow zu BC Stammdaten Verteilung
-{% endhint %}
+## Was conFLOW hier leistet
 
-<figure><img src="../../.gitbook/assets/Folie14.png" alt=""><figcaption></figcaption></figure>
+Der Workflow bildet den Freigabe- und Verteilungsprozess ab: eine Stammdatenaenderung wird erfasst, der zustaendige Fachbereich gibt sie frei, und ein Hintergrundschritt uebernimmt die technische Verteilung. Scheitert die Verteilung, erzeugt conFLOW ein Workitem fuer den Basis-Betreuer mit den relevanten Fehlerinformationen.
 
+Die Meldungen aus Hintergrundschritten werden automatisch im Anwendungslog (SLG1) protokolliert und koennen dort ausgewertet werden -- ohne eigene Z-Tabelle.
+
+### User Story
+
+<figure><img src="../../.gitbook/assets/Folie13 (2).png" alt="User Story BC Stammdaten Verteilung"><figcaption><p>Fachliche User Story: Stammdatenverteilung mit Freigabe</p></figcaption></figure>
+
+### Workflow
+
+<figure><img src="../../.gitbook/assets/Folie14.png" alt="Workflow BC Stammdaten Verteilung"><figcaption><p>Technischer Laufweg: Freigabe und Verteilung</p></figcaption></figure>
