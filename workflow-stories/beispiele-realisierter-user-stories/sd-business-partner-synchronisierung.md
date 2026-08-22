@@ -2,13 +2,13 @@
 
 ## Die Anforderung
 
-Geschaeftspartner-Stammdaten muessen zwischen Systemen oder Organisationseinheiten synchron gehalten werden. Aenderungen an einem Business Partner -- neue Adresse, geaenderte Bankverbindung, neuer Ansprechpartner -- muessen geprueft und in die Zielsysteme uebernommen werden.
+Geschäftspartner-Stammdaten müssen zwischen Systemen oder Organisationseinheiten synchron gehalten werden. Änderungen an einem Business Partner -- neue Adresse, geänderte Bankverbindung, neuer Ansprechpartner -- müssen geprüft und in die Zielsysteme übernommen werden.
 
 ## Was conFLOW hier leistet
 
-Der Workflow erkennt relevante Aenderungen am Business Partner und startet automatisch einen Synchronisierungsprozess. Dabei koennen **Hintergrundschritte** die eigentliche technische Synchronisierung uebernehmen, waehrend ein Dialogschritt nur dann eingreift, wenn manuelle Pruefung oder Entscheidung noetig ist -- etwa bei Konflikten oder unvollstaendigen Daten.
+Der Workflow erkennt relevante Änderungen am Business Partner und startet automatisch einen Synchronisierungsprozess. Dabei können **Hintergrundschritte** die eigentliche technische Synchronisierung übernehmen, während ein Dialogschritt nur dann eingreift, wenn manuelle Prüfung oder Entscheidung nötig ist -- etwa bei Konflikten oder unvollständigen Daten.
 
-Dieses Beispiel zeigt ein Muster, das typisch fuer conFLOW ist: der **Standardfall laeuft automatisch durch** (Hintergrundschritte, kein Workitem in einer Inbox), und **nur die Ausnahme erzeugt Arbeit** fuer einen Menschen.
+Dieses Beispiel zeigt ein Muster, das typisch für conFLOW ist: der **Standardfall läuft automatisch durch** (Hintergrundschritte, kein Workitem in einer Inbox), und **nur die Ausnahme erzeugt Arbeit** für einen Menschen.
 
 ### User Story
 

@@ -2,13 +2,13 @@
 
 ## Die Anforderung
 
-Stammdaten -- Materialstaemme, Konditionen, Organisationseinheiten -- muessen in einer verteilten Systemlandschaft konsistent gehalten werden. Aenderungen im fuehrenden System muessen geprueft, freigegeben und an die Empfaengersysteme verteilt werden. Fehler bei der Verteilung muessen erkannt und behandelt werden.
+Stammdaten -- Materialstämme, Konditionen, Organisationseinheiten -- müssen in einer verteilten Systemlandschaft konsistent gehalten werden. Änderungen im führenden System müssen geprüft, freigegeben und an die Empfängersysteme verteilt werden. Fehler bei der Verteilung müssen erkannt und behandelt werden.
 
 ## Was conFLOW hier leistet
 
-Der Workflow bildet den Freigabe- und Verteilungsprozess ab: eine Stammdatenaenderung wird erfasst, der zustaendige Fachbereich gibt sie frei, und ein Hintergrundschritt uebernimmt die technische Verteilung. Scheitert die Verteilung, erzeugt conFLOW ein Workitem fuer den Basis-Betreuer mit den relevanten Fehlerinformationen.
+Der Workflow bildet den Freigabe- und Verteilungsprozess ab: eine Stammdatenänderung wird erfasst, der zuständige Fachbereich gibt sie frei, und ein Hintergrundschritt übernimmt die technische Verteilung. Scheitert die Verteilung, erzeugt conFLOW ein Workitem für den Basis-Betreuer mit den relevanten Fehlerinformationen.
 
-Die Meldungen aus Hintergrundschritten werden automatisch im Anwendungslog (SLG1) protokolliert und koennen dort ausgewertet werden -- ohne eigene Z-Tabelle.
+Die Meldungen aus Hintergrundschritten werden automatisch im Anwendungslog (SLG1) protokolliert und können dort ausgewertet werden -- ohne eigene Z-Tabelle.
 
 ### User Story
 
