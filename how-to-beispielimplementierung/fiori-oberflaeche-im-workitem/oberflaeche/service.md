@@ -192,11 +192,11 @@ Das Binding wird als **OData V4 · UI** angelegt und publiziert. Ein neu exponie
 } } } }
 ```
 {% hint style="info" %}
-**Der `anchor` ist der Name eines Facets aus der [Metadata Extension](../backend/12-mdx.md)**, nicht der einer Feldgruppe und nicht der Abschnittstitel. Er entscheidet, *wo* die eigene Section landet — hier hinter der Einteilungstabelle. Trifft der Name kein Facet, rutscht der Abschnitt kommentarlos ans Ende der Seite; das sieht nach einer Geschmacksfrage aus und ist ein Tippfehler.
+**Der `anchor` ist der Name eines Facets aus der [Metadata Extension](../backend/mdx.md)**, nicht der einer Feldgruppe und nicht der Abschnittstitel. Er entscheidet, *wo* die eigene Section landet — hier hinter der Einteilungstabelle. Trifft der Name kein Facet, rutscht der Abschnitt kommentarlos ans Ende der Seite; das sieht nach einer Geschmacksfrage aus und ist ein Tippfehler.
 {% endhint %}
 {% hint style="info" %}
 **Die App-ID aus `sap.app.id`** ist das, was im Target Mapping als *ID* einzutragen ist — **nicht** der BSP-Name. Verwechslung führt zu einem Intent, der auflöst und nichts lädt.
 {% endhint %}
 {% hint style="info" %}
-**`supportedLocales: [""]` und `fallbackLocale: ""`** stehen dreimal, weil es genau *ein* Textbündel ohne Sprachsuffix gibt. Ohne die Angabe sucht UI5 zur Laufzeit nach Sprachvarianten, die es nie geben wird, und der [Build](20-quellprojekt.md) mahnt einen englischen Fallback an. Die Datei liegt im Quellprojekt, nicht in SE80 — sie ist die Stelle, an der App und Auslieferung zusammenkommen.
+**`supportedLocales: [""]` und `fallbackLocale: ""`** stehen dreimal, weil es genau *ein* Textbündel ohne Sprachsuffix gibt. Ohne die Angabe sucht UI5 zur Laufzeit nach Sprachvarianten, die es nie geben wird, und der [Build](quellprojekt.md) mahnt einen englischen Fallback an. Die Datei liegt im Quellprojekt, nicht in SE80 — sie ist die Stelle, an der App und Auslieferung zusammenkommen.
 {% endhint %}

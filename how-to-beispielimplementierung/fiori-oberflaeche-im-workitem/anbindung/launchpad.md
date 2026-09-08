@@ -51,7 +51,7 @@ Es ist ein Showcase auf Demo-Daten, die Entscheidung ist dort bewusst getroffen 
 ## Der Cache
 UI5 liefert die App-Dateien unter einem Hash-Pfad aus, der aus dem App-Index stammt. Eine Änderung in SE80 ändert ihn **nicht**.
 {% hint style="success" %}
-**Die Hälfte davon erledigt sich mit dem [Quellprojekt](../oberflaeche/20-quellprojekt.md).** Wer baut und deployt, liefert Controller und Fragment als *ein* Bündel mit *einem* Hash aus — der Zustand „neues JS, altes XML" kann dann nicht mehr entstehen. Die Server-Zeilen der Tabelle bleiben trotzdem: nach jedem Deploy einmal `/UI5/APP_INDEX_CALCULATE`.
+**Die Hälfte davon erledigt sich mit dem [Quellprojekt](../oberflaeche/quellprojekt.md).** Wer baut und deployt, liefert Controller und Fragment als *ein* Bündel mit *einem* Hash aus — der Zustand „neues JS, altes XML" kann dann nicht mehr entstehen. Die Server-Zeilen der Tabelle bleiben trotzdem: nach jedem Deploy einmal `/UI5/APP_INDEX_CALCULATE`.
 {% endhint %}
 | Schicht | „Cache leeren" | Inkognito | Was hilft |
 | --- | --- | --- | --- |
