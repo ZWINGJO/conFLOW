@@ -49,7 +49,7 @@
   * [Die drei Schranken](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/anbindung/22-schranken.md)
   * [Die 17 Fallen](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/nachschlagen/23-fallen.md)
   * [Testmatrix](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/nachschlagen/24-test.md)
-  * [Fünfzehn Regeln](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/nachschlagen/25-regeln.md)
+  * [Sechzehn Regeln](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/nachschlagen/25-regeln.md)
   * [Der nächste Workflow](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/nachschlagen/26-naechster.md)
   * [conFLOW auf GitHub](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/nachschlagen/27-repo.md)
 <!-- END howto-fiori-workitem -->

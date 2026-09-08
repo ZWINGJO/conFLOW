@@ -1,4 +1,4 @@
-# Fünfzehn Sätze, die sich bewährt haben
+# Sechzehn Sätze, die sich bewährt haben
 *Jeder steht für einen Fehler, der einmal Zeit gekostet hat.*
 | 1 | **Erst den Service beweisen, dann die App bauen.** Zehn Sekunden im Browser schließen die halbe Fehlerklasse aus. |
 | --- | --- |
@@ -16,3 +16,4 @@
 | 13 | **Eine Prüfung, die *speichern* verhindert, ist etwas anderes als eine, die *abschließen* verhindert.** |
 | 14 | **Eine Begründung, die niemand am Bildschirm geprüft hat, ist keine Begründung.** Sie steht als Kommentar im Code, wird beim Dokumentieren abgeschrieben und trägt irgendwann Objekte, die niemand braucht. |
 | 15 | **Bei Framework-Verhalten im Bundle nachlesen, nicht schließen.** Ein Screenshot beweist nur, was gerade konfiguriert ist — im Referenzprojekt führte er einmal in jede Richtung. |
+| 16 | **„Die Rolle ist gepflegt" beantwortet nur die halbe Berechtigungsfrage.** Sie regelt, ob jemand die App *erreicht* — nicht, ob er *diesen* Vorgang sehen darf. Eine Custom Entity hat kein DCL, also entsteht der Instanzschutz nur, wenn man ihn schreibt. |
