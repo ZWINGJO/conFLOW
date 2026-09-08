@@ -14,6 +14,9 @@ Die eigene App ersetzt **nur den Info-Bereich** des Workitems. Die My Inbox beh�
 ```
 
 Das Layout dahinter ist ein `sap.ui.layout.DynamicSideContent`: die eigene App im Hauptbereich, die Reiter als Side Content. Belegt im Quelltext der Inbox selbst — BSP-Anwendung `CA_FIORI_INBOX`, Datei `Component-preload.js`:
+{% hint style="danger" %}
+**Ab hier wird aus einer SAP-Anwendung zitiert, die keine Erweiterungsschnittstelle ist.** Der Ausschnitt dokumentiert das **im Referenzsystem beobachtete Verhalten** der dort eingesetzten My-Inbox-Version — eine minifizierte, generierte Datei. SAP sagt damit nichts zu; nach einem SAPUI5- oder S/4-Upgrade ist es **erneut zu prüfen**. Welche Aussagen davon betroffen sind, steht am Ende dieses Kapitels.
+{% endhint %}
 
 ```
 // Der Knopf entsteht NUR bei diesem openMode
@@ -38,6 +41,7 @@ else if ((t.TaskSupports.Attachments || t.TaskSupports.TaskObject || t.TaskSuppo
 | Der Info-Reiter fehlt rechts | Den *ist* die eigene App. Keine Doppelung, sondern eine Teilung. |
 | `TaskSupports.Comments \|\| Attachments \|\| TaskObject` | Kommt aus dem Task-Gateway. Fehlt der Knopf, liegt es hier — nicht an der App. |
 | `bShowDetails = false` im Konstruktor | Startzustand ist zu, der Knopf ist ein Umschalter. |
+| **Alles in dieser Tabelle** | **beobachtet, nicht zugesichert** — siehe den Kasten oben |
 | Breakpoint `S` | `setShowMainContent(false)` — auf schmalen Geräten verdeckt der Side Content die App, solange er offen ist. |
 
 {% hint style="danger" %}

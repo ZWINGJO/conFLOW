@@ -42,7 +42,20 @@ Das ist Absicht und keine Einschränkung: **ein durchgehendes Beispiel trägt we
 | Die siebzehn Fallen | **gelten unverändert** — sie hängen am Framework, nicht am Prozess |
 
 {% hint style="info" %}
-**Stand und Gültigkeit.** Erzeugt aus dem Referenzprojekt zu `ZCFL_00500`; dort liegt die Quelle und dort läuft der Generator (`tools/build_howto_doc.py`). Eine Kopie dieses Dokuments an anderer Stelle ist eine **Momentaufnahme** — bei Änderungen am Referenz-Workflow neu erzeugen, sonst driftet sie vom Code weg. Getestet auf S/4HANA mit `minUI5Version 1.136`; die Annotations-Scopes und das Verhalten der My Inbox sind releaseabhängig und im Zielsystem zu prüfen.
+**Stand und Gültigkeit.** Erzeugt aus dem Referenzprojekt zu `ZCFL_00500`; dort liegt die Quelle und dort läuft der Generator (`tools/build_howto_doc.py`). Eine Kopie dieses Dokuments an anderer Stelle ist eine **Momentaufnahme** — bei Änderungen am Referenz-Workflow neu erzeugen, sonst driftet sie vom Code weg. Getestet auf S/4HANA mit `minUI5Version 1.136`.
+{% endhint %}
+
+## Was *zugesichert* ist — und was nur beobachtet
+Ein Teil dieses Dokuments beschreibt **dokumentierte Schnittstellen**: RAP, CDS, OData V4, die conFLOW-BAdI-Hooks, die Customizing-Tabellen. Ein anderer Teil beschreibt, **wie sich SAPs My Inbox im Referenzsystem verhält** — gelesen im minifizierten Bundle der Anwendung `CA_FIORI_INBOX`, weil es anders nicht herauszufinden war.
+| Beobachtet, nicht zugesichert | Konsequenz |
+| --- | --- |
+| `openMode = embedIntoDetailsNestedRouter` und das Verhalten der übrigen fünf Modi | Nach einem **SAPUI5- oder S/4-Upgrade erneut prüfen.** Fällt eines davon weg, äußert es sich als „Detailbereich bleibt weiß" oder „Inhalt wechselt nicht" — **ohne Fehlermeldung**. Der [Notaus](oberflaeche/quellprojekt.md) und der Rückfall auf den Textblock sind genau dafür da |
+| Der Knopf „Show Details" und der `DynamicSideContent` |
+| `refreshForStartupParameter` / `navigateBasedOnStartupParameter` — undokumentiert |
+| Die Reihenfolge **SWFVMD1 vor SWFVISU** |
+| Dass je Intent genau *eine* Component wiederverwendet wird |
+{% hint style="info" %}
+**Das ist keine Warnung vor dem Muster**, sondern eine Einordnung. Wer eine Oberfläche in ein fremdes Programm einbettet, hängt immer an dessen Verhalten; man sollte nur wissen, an welchen Stellen — und dort zuerst nachsehen, wenn nach einem Upgrade etwas anders aussieht.
 {% endhint %}
 
 ## Braucht es überhaupt eine App?
@@ -55,5 +68,5 @@ Der Umbau lohnt, wenn **mindestens zwei** zutreffen:
   - die Optik ist Teil des Auftrags
 
 {% hint style="info" %}
-Trifft nur **eines** zu, ist der Textblock die bessere Investition. Er kostet einen Nachmittag, die App ein Projektkapitel — und sie bringt einen Auslieferungsprozess mit, den es vorher nicht gab: Repository, Build, Deploy. Siehe [Kapitel „Das Quellprojekt"](oberflaeche/20-quellprojekt.md).
+Trifft nur **eines** zu, ist der Textblock die bessere Investition. Er kostet einen Nachmittag, die App ein Projektkapitel — und sie bringt einen Auslieferungsprozess mit, den es vorher nicht gab: Repository, Build, Deploy. Siehe [Kapitel „Das Quellprojekt"](oberflaeche/quellprojekt.md).
 {% endhint %}

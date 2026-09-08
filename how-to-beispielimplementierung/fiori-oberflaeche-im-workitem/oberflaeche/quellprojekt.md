@@ -48,6 +48,21 @@ archive.zip
 **Die letzten beiden Zeilen sind die interessanten.** `archive.zip` legt `fiori deploy` beim Packen an — dasselbe Bündel wie `dist/`, nur als Archiv, und es liegt danach im Projektordner herum, bis es jemand versehentlich mit einem `git add .` einsammelt. `.env` ist die Datei, in der die Anmeldung stünde, wenn man sie speichert: **Zugangsdaten gehören nie ins Repository**, auch nicht in ein privates.
 {% endhint %}
 
+## Wo was maßgeblich liegt
+*Die Anwendung ist nur ein Teil der Lieferung. Für jeden Bestandteil gibt es genau **eine** führende Ablage — und die ist nie das Laufzeitsystem.*
+| Bestandteil | maßgebliche Ablage |
+| --- | --- |
+| RAP-, CDS- und ABAP-Objekte | ABAP Repository, versioniert über Transporte *(besser zusätzlich abapGit)* |
+| conFLOW-Customizing `C01`–`C10` | Customizing-Mandant, **Customizing**-Auftrag |
+| Vollständiges UI5-Quellprojekt | **Git** |
+| Lokale Arbeitskopie | Entwicklungsrechner — wegwerfbar |
+| Build-Ergebnis | `dist/` — abgeleitet, gehört in kein Repository |
+| Laufende Anwendung | BSP-/UI5-Repository im SAP-System |
+| Weitergabe DEV → QAS → PRD | SAP-Transport |
+{% hint style="success" %}
+**Für eine Kundenübergabe ist damit eindeutig, was geschuldet ist:** nicht nur eine laufende BSP-Anwendung, sondern das **buildfähige Quellprojekt** — und zwar in einem Repository, das dem Kunden gehört.
+{% endhint %}
+
 ## Was der Build ändert
 | Datei für Datei | gebaut und hochgeladen |
 | --- | --- |
@@ -195,7 +210,7 @@ npm run deploy-test    # Trockenlauf gegen das System, schreibt nichts
 npm run deploy         # ersetzt die BSP-Anwendung
 ```
 {% hint style="info" %}
-**Voraussetzung ist Node** — im Referenzprojekt Version 20. Sonst nichts: kein SAP GUI, keine ADT-Installation, keine Zugangsdaten auf der Platte. **Der erste Deploy legt die BSP-Anwendung nicht an, sondern ersetzt die bestehende** — sie stammt aus Schritt 11 der [Objekt-Reihenfolge](../grundlagen/06-reihenfolge.md). Anlegen kann `fiori deploy` sie auch, dann fragt es nach Paket und Transport.
+**Voraussetzung ist Node** — im Referenzprojekt Version 20. Sonst nichts: kein SAP GUI, keine ADT-Installation, keine Zugangsdaten auf der Platte. **Der erste Deploy legt die BSP-Anwendung nicht an, sondern ersetzt die bestehende** — sie stammt aus Schritt 11 der [Objekt-Reihenfolge](../grundlagen/reihenfolge.md). Anlegen kann `fiori deploy` sie auch, dann fragt es nach Paket und Transport.
 {% endhint %}
 Das Ziel steht in `ui5-deploy.yaml` — System, Mandant, BSP-Name, Paket und **Transport**:
 ```
@@ -220,7 +235,7 @@ builder:
 **Zugangsdaten gehören nie ins Repository**, auch nicht in ein privates. `fiori deploy` liest sie aus `.env`, falls vorhanden, und fragt sonst danach — also `.env` in die `.gitignore`, zusammen mit `node_modules/` und `dist/`.
 {% endhint %}
 {% hint style="success" %}
-**Nach dem ersten Deploy einmal `/UI5/APP_INDEX_CALCULATE`** und im Browser **Clear site data**. Sonst läuft der alte Stand weiter — siehe [Kapitel „Launchpad"](../anbindung/22-launchpad.md), Abschnitt „Der Cache".
+**Nach dem ersten Deploy einmal `/UI5/APP_INDEX_CALCULATE`** und im Browser **Clear site data**. Sonst läuft der alte Stand weiter — siehe [Kapitel „Launchpad"](../anbindung/launchpad.md), Abschnitt „Der Cache".
 {% endhint %}
 {% hint style="info" %}
 **Was hier belegt ist**
@@ -230,6 +245,27 @@ builder:
 **Der Upload und die Laufzeit:** gefahren am 08.09.2026 — und zwar über `/UI5/UI5_REPOSITORY_LOAD`, **nicht** über `fiori deploy`. Gebaut wurde lokal, das Ergebnis als Verzeichnis übergeben, hochgeladen hat es jemand im System. **Der CLI-Weg ist in diesem Projekt weiterhin ungefahren** — er ist SAP-Standard und gut dokumentiert, aber hier nicht belegt. Gemessen wurde danach im **Netzwerk-Tab**. Gefiltert auf den Namen der BSP-Anwendung stehen beim Öffnen eines Workitems genau **zwei** Anfragen dort — der App-Deskriptor und `Component-preload.js`, zusammen rund 6 kB. **Keine einzelne Datei mehr:** weder der Controller noch das Fragment werden angefordert. Damit ist „neues JS, altes XML" nicht mehr unwahrscheinlich, sondern **unmöglich** — und das ist gemessen, nicht aus der Existenz der Bündeldatei geschlossen.
 
 **Die Probe dazu dauert zehn Sekunden** und gehört nach jedem ersten Deploy: Netzwerk-Tab, Filter auf den Namen der BSP-Anwendung, Workitem öffnen. Kommen dort Einzeldateien, fehlt `/UI5/APP_INDEX_CALCULATE` oder der Browser-Storage ist alt. **Nicht im Debug-Modus messen** — dort umgeht UI5 die Bündel absichtlich, und der Netzwerk-Tab zeigt dann etwas, das im Normalbetrieb niemand sieht.
+{% endhint %}
+
+## Innerhalb der Kundenlandschaft
+*Hochgeladen wird **einmal**. Danach reist die Anwendung wie jedes andere ABAP-Objekt.*
+```
+UI5-Quellprojekt  (Git)
+      │
+      ▼   npm install · npm run build
+   dist/
+      │
+      ▼   Deploy oder Übergabe + /UI5/UI5_REPOSITORY_LOAD
+BSP-Anwendung im Kunden-DEV
+      │
+      ▼   SAP-Transport
+    QAS  ▶  PRD
+```
+{% hint style="danger" %}
+**Nicht in jedes System einzeln hochladen.** Ein zweiter Upload ins QAS erzeugt einen Stand, den kein Transport belegt — und damit genau die Frage, die niemand mehr beantworten kann: *läuft dort dasselbe wie im DEV?* Der Upload ist der **Erst**-Weg ins Entwicklungssystem, danach gilt das normale Transportwesen.
+{% endhint %}
+{% hint style="info" %}
+**Was mitreist und was nicht:** im Workbench-Auftrag liegen die BSP-Anwendung und die ABAP-Objekte. **Nicht** darin: das conFLOW-Customizing `C01`–`C10` und der `SWFVMD1`-Eintrag — beides reist im **Customizing**-Auftrag. Semantic Object, Katalog und Rolle hängen am Frontend-Server und werden dort eigenständig transportiert. **Drei Transportwege für eine Lieferung** — das ist die häufigste Lücke in Übergabelisten.
 {% endhint %}
 
 ## Der Wegweiser im System
