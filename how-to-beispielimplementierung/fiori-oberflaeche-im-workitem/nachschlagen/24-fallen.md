@@ -1,5 +1,5 @@
-# Neunzehn Punkte, an denen es schiefgeht
-*Jeder mindestens einmal live erlebt. Die rechte Spalte ist das, was man tatsächlich sieht — **zehn von neunzehn melden sich gar nicht**, und drei melden sich an einer Stelle, die mit der Ursache nichts zu tun hat.*
+# Zwanzig Punkte, an denen es schiefgeht
+*Jeder mindestens einmal live erlebt. Die rechte Spalte ist das, was man tatsächlich sieht — **zehn von zwanzig melden sich gar nicht**, drei melden sich an einer Stelle, die mit der Ursache nichts zu tun hat, und eine ist gar kein Fehler, sieht aber wie einer aus.*
 | # | Falle | Erkennungsmerkmal |
 | --- | --- | --- |
 | 1 | `get_paging( )` nicht gerufen | `RAP_RUNTIME/014` — Liste leer, **Klasse aktiviert sauber** |
@@ -21,6 +21,7 @@
 | 17 | Leseroutine formatiert für die Anzeige und wird als Schlüsselquelle benutzt | Belegnummer ohne führende Nullen → `SELECT` findet nichts → **leere Tabelle, keine Meldung**. Gegenmittel: `ALPHA = IN` |
 | 18 | Einzeldatei in SE80 geändert, während ein gebautes `Component-preload.js` in der BSP-Anwendung liegt | **meldet sich nie.** UI5 lädt das Bündel, die Datei wird gar nicht erst angefordert. Notausgang: das Bündel löschen |
 | 19 | Deploy aus einem unvollständigen Projektordner | **meldet sich nie.** Der Deploy *ersetzt* die Anwendung — was nicht im Projekt liegt, ist danach im System weg. Gegenmittel: `deploy-test` |
+| 20 | **Kein Fehler, sieht aber wie einer aus:** SE80 zeigt nach dem Upload generierte Dateinamen | Im BSP-Baum fehlen `Component.js` und `Component-preload.js`; stattdessen stehen dort Einträge `UI5<Hash>` und eine `UI5RepositoryPathMapping.xml`. Das ist die **physische** Ablage des SAPUI5-Repositories, die Mapping-Datei ist die Übersetzung. Die **logische** Sicht — ADT und die Laufzeit — ist vollständig. **Nicht im Baum prüfen, im Netzwerk-Tab** |
 
 {% hint style="danger" %}
 **Die Fallen 14 bis 16 hängen zusammen** und ergeben zusammen den teuersten Umweg dieses Projekts: eine Dokumentenverwaltung wurde nachgebaut (15), scheiterte am Virenscanner (14), und beim Rückbau ging die Reihenfolge schief (16). Nichts davon wäre passiert, wenn zu Beginn jemand auf „Show Details" geklickt hätte.
