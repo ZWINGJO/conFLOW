@@ -24,6 +24,30 @@ Die Beispiel-App entstand mit dem Generator in ADT und wurde danach **Datei für
 **`dist/` gehört nicht ins Repository.** Es ist abgeleitet. Ein Repo mit Build-Ergebnissen hat zwei Wahrheiten, und irgendwann weichen sie ab — genau der Fehler, gegen den das Quellprojekt gebaut wird.
 {% endhint %}
 
+## Was versioniert wird — dateigenau
+*Im Referenzprojekt sind es **vierzehn** Dateien. Mehr ist die Anwendung nicht.*
+| Datei | Rolle |
+| --- | --- |
+| `app/**` | der Quelltext — Component, Controller, Fragment, Texte, `manifest.json`, `index.html` |
+| `package.json` | **was** gebaut wird und mit welchen Befehlen |
+| `package-lock.json` | **womit** — die exakten Werkzeugversionen. **Ohne diese Datei ist der Build nicht reproduzierbar**, und das ist der halbe Zweck der Übung |
+| `ui5.yaml` | Build-Konfiguration |
+| `ui5-deploy.yaml` | Ziel: System, Mandant, BSP-Name, Paket, Transport |
+| `README.md` | zweimal: eines im Projekt, eines in `app/` — letzteres wird **mitdeployt** |
+| `.gitignore` | siehe unten |
+**`.gitignore`**
+
+```
+node_modules/
+dist/
+.DS_Store
+archive.zip
+.env
+```
+{% hint style="info" %}
+**Die letzten beiden Zeilen sind die interessanten.** `archive.zip` legt `fiori deploy` beim Packen an — dasselbe Bündel wie `dist/`, nur als Archiv, und es liegt danach im Projektordner herum, bis es jemand versehentlich mit einem `git add .` einsammelt. `.env` ist die Datei, in der die Anmeldung stünde, wenn man sie speichert: **Zugangsdaten gehören nie ins Repository**, auch nicht in ein privates.
+{% endhint %}
+
 ## Was der Build ändert
 | Datei für Datei | gebaut und hochgeladen |
 | --- | --- |
@@ -140,6 +164,17 @@ framework:
 {% endhint %}
 {% hint style="info" %}
 **Verpackung.** Der Report will ein **Verzeichnis**, kein Archiv — eine ZIP ist nur die Versandform und muss vorher entpackt werden. Und darin müssen `manifest.json` und `Component-preload.js` **unmittelbar** liegen, nicht in einem Unterordner `dist/`. Der zweithäufigste Fehler nach dem falschen Ordner überhaupt.
+{% endhint %}
+Das Übergabepaket entsteht deshalb **aus** dem Build-Ordner heraus, nicht daneben:
+```
+npm run build
+
+cd dist
+zip -r ../uebergabe.zip .        # der Punkt ist der ganze Trick:
+                                 # er packt den INHALT, nicht den Ordner
+```
+{% hint style="success" %}
+**Zwei Befehle, kein System.** Bis hierher braucht der Entwicklungsrechner weder Verbindung noch Anmeldung. Wer selbst Zugang hat, kann den Umweg über das Archiv lassen und im Report direkt `dist/` als Verzeichnis wählen — der Inhalt ist derselbe.
 {% endhint %}
 {% hint style="success" %}
 **SAP sagt an dieser Stelle selbst, was hochgehört.** Wählt man beim Upload einen Ordner mit `webapp/` und ohne `manifest.json` in der Wurzel, warnt der Report: *„If you want to deploy an app, please run a build, and then upload the `dist` folder with the build results"* (SAP-Hinweis 3225159). **Hochgeladen wird das Build-Ergebnis, nicht der Quellordner** — genau die Unterscheidung, um die es in diesem Kapitel geht.
