@@ -235,6 +235,29 @@ CLASS zcl_cfl_workflow_00900 DEFINITION
     CLASS-METHODS update_witext
       IMPORTING iv_text TYPE string.
 
+*--------------------------------------------------------------------*
+* Haengt an dieser Sitzung eine SAP-GUI?
+*
+* Gebraucht in GET_BEFORE_DECISION_WORKITEM: der HTML-Weg zum
+* Einfaerben darf nur beschritten werden, wenn der Text auch wirklich
+* auf einem GUI-Screen landet. Die Fiori-Inbox nimmt ihre
+* Buttonbeschriftungen aus demselben Hook - dort stuende das <span>
+* sonst als Text auf dem Knopf.
+*--------------------------------------------------------------------*
+    CLASS-METHODS is_sapgui
+      RETURNING VALUE(rv_gui) TYPE abap_bool.
+
+*--------------------------------------------------------------------*
+* Einen Buttontext fuer das SAP-GUI einfaerben.
+*
+* Der Entscheidungs-Screen im Business Workplace rendert ALTTEXT als
+* HTML - die Farbe entsteht dort also IM TEXT, nicht ueber ein Feld.
+*--------------------------------------------------------------------*
+    CLASS-METHODS gui_colour
+      IMPORTING iv_text        TYPE clike
+                iv_color       TYPE clike
+      RETURNING VALUE(rv_text) TYPE string.
+
 ENDCLASS.
 
 
@@ -1041,7 +1064,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *            man Kopf und Alternativen, in ihn schreibt man die
 *            geaenderten zurueck.
 *
-* ZWEI DINGE GEHEN HIER, UND NUR HIER
+* DREI DINGE GEHEN HIER, UND NUR HIER
 *
 * 1. EINEN BUTTON WEGNEHMEN (der "Guard")
 *    Wenn eine Aktion fachlich nicht erlaubt ist, verschwindet sie -
@@ -1051,9 +1074,30 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *    Der Hook kann KEINE Fehlermeldung erzwingen. "Darf nicht" heisst
 *    hier Button weg, nicht Fehler danach.
 *
-* 2. EINEN BUTTON EINFAERBEN
-*    SWR_DECIALTS hat das Feld ALTNATURE, und der Task-Gateway kopiert
-*    es unveraendert nach NATURE. Damit faerbt die Fiori-Inbox.
+* 2. EINEN BUTTON EINFAERBEN - SAP GUI, UEBER HTML IM ALTTEXT
+*    Der Entscheidungs-Screen im Business Workplace rendert ALTTEXT
+*    als HTML. Farbe entsteht dort also IM TEXT:
+*
+*        <span style="color:green;font-size:120%">Genehmigen</span>
+*
+*    Farbe und Groesse, kein font-weight - beides trifft dieselben
+*    Knoepfe, ein drittes Merkmal macht daraus kein drittes Signal.
+*    ALTTEXT ist CHAR255, der Wrapper kostet rund 50 Zeichen; die
+*    c09t-Texte passen mit Abstand.
+*
+*    NUR MIT GUI-GUARD. Die Fiori-Inbox nimmt ihre Buttontexte aus
+*    genau diesem Hook - ohne Guard stuende das <span> dort als
+*    Beschriftung auf dem Knopf. Also GUI_IS_AVAILABLE fragen und den
+*    HTML-Weg nur bei einer echten GUI gehen.
+*
+* 3. DENSELBEN BUTTON EINFAERBEN - FIORI, UEBER ALTNATURE
+*    SWR_DECIALTS hat das Feld ALTNATURE. Es wirkt ueber die
+*    Workflow-DEFINITION und reicht ALLEIN NICHT: die Farbe, die die
+*    Fiori-Inbox tatsaechlich zeichnet, kommt aus NATURE in
+*    GET_FIORI_TASK_DEC_OP_ACT. Hier gesetzt schadet es nicht und
+*    bleibt als zweite Schiene stehen - aber wer nur diese Zeile
+*    schreibt, sieht in Fiori keine Farbe und sucht sie im falschen
+*    Hook.
 *
 *    Es gibt GENAU ZWEI Werte - POSITIVE und NEGATIVE. Das ist keine
 *    Palette, sondern eine Aussage, und sie wird sparsam vergeben:
@@ -1066,12 +1110,21 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *    gewinnt die Empfehlung. Zwei Signale auf demselben Button
 *    waeren keins.
 *
-* WARUM DIE FARBE TROTZDEM ZWEIMAL GESETZT WIRD
-*        Hier UND in GET_FIORI_TASK_DEC_OP_ACT. Die beiden Hooks
-*        arbeiten auf verschiedenen Tabellen: dieser auf den
-*        Alternativen des Workitem-Exits (SAP-GUI), jener auf den
-*        Optionen des Task-Gateways (Fiori). Wer nur einen pflegt,
-*        hat die Farbe in einer der beiden Oberflaechen nicht.
+* WARUM DIE ENTSCHEIDUNG TROTZDEM NUR EINMAL FAELLT
+*        Zwei Oberflaechen, zwei MECHANISMEN - das GUI faerbt ueber
+*        HTML im Text, Fiori ueber NATURE aus dem Task-Gateway, und
+*        die beiden Hooks arbeiten auf verschiedenen Tabellen. Wer nur
+*        einen Weg pflegt, hat die Farbe in einer der beiden
+*        Oberflaechen nicht.
+*
+*        Die Frage "welcher Button ist positiv, welcher negativ"
+*        beantwortet man deshalb EINMAL - unten im Loop ueber LV_ROLE -
+*        und bedient daraus beide Wege. Schreibt man die Regel zweimal
+*        hin, laufen sie beim naechsten zusaetzlichen Ausgang
+*        auseinander, und niemand merkt es, weil kaum jemand beide
+*        Oberflaechen nebeneinander aufmacht.
+*
+*        Im Lauf bestaetigt in zwei Systemen.
 *
 * DER EINSTIEG UEBER DIE WI_ID IST PFLICHT
 *        Der Hook bekommt die conFLOW-Instanz NICHT mit. Der einzige
@@ -1109,21 +1162,41 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
     ENDIF.
 
 *--------------------------------------------------------------------*
-* FARBE
+* FARBE - eine Aussage, zwei Oberflaechen, zwei Mechanismen
+*
+* Der HTML-Weg wird nur beschritten, wenn wirklich eine GUI dranhaengt.
 *--------------------------------------------------------------------*
-    IF zcl_cfl_const_00900=>mc_fiori_nature = abap_true.
+    DATA(lv_recommended) = recommended_key( ls_cfl_s03-id ).
 
-      DATA(lv_recommended) = recommended_key( ls_cfl_s03-id ).
+    DATA(lv_gui_color) = xsdbool( zcl_cfl_const_00900=>mc_gui_html_color = abap_true AND
+                                  is_sapgui( )                           = abap_true ).
 
-      LOOP AT lt_decialts ASSIGNING FIELD-SYMBOL(<fs_alt>).
-        IF lv_recommended IS NOT INITIAL AND <fs_alt>-altkey = lv_recommended.
-          <fs_alt>-altnature = lc_positive.
-        ELSEIF <fs_alt>-altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok.
-          <fs_alt>-altnature = lc_negative.
-        ENDIF.
-      ENDLOOP.
+    LOOP AT lt_decialts ASSIGNING FIELD-SYMBOL(<fs_alt>).
 
-    ENDIF.
+*     Die Rolle des Knopfes - EINMAL bestimmt, danach zweimal bedient.
+      DATA(lv_role) = COND char1(
+        WHEN lv_recommended IS NOT INITIAL AND <fs_alt>-altkey = lv_recommended
+          THEN 'P'
+        WHEN <fs_alt>-altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok
+          THEN 'N' ).
+
+      IF lv_role IS INITIAL.
+        CONTINUE.
+      ENDIF.
+
+      IF zcl_cfl_const_00900=>mc_fiori_nature = abap_true.
+        <fs_alt>-altnature = COND swr_nature( WHEN lv_role = 'P' THEN lc_positive
+                                              ELSE lc_negative ).
+      ENDIF.
+
+      IF lv_gui_color = abap_true.
+        <fs_alt>-alttext = gui_colour(
+          iv_text  = <fs_alt>-alttext
+          iv_color = COND string( WHEN lv_role = 'P' THEN zcl_cfl_const_00900=>mc_gui_color-positive
+                                  ELSE zcl_cfl_const_00900=>mc_gui_color-negative ) ).
+      ENDIF.
+
+    ENDLOOP.
 
     cm_workitem_context->set_decision_alts( it_decialts = lt_decialts ).
 
@@ -2461,6 +2534,53 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
       CATCH cx_root.
     ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD is_sapgui.
+*--------------------------------------------------------------------*
+* GUI_IS_AVAILABLE ist der Standardweg: im OData-/RFC-Kontext der
+* Fiori-Inbox gibt es kein Frontend, also kommt ' ' zurueck. Genau
+* diese Unterscheidung braucht der HTML-Weg zum Einfaerben.
+*--------------------------------------------------------------------*
+
+    DATA lv_return TYPE c LENGTH 1.
+
+    CALL FUNCTION 'GUI_IS_AVAILABLE'
+      IMPORTING
+        return = lv_return.
+
+    rv_gui = xsdbool( lv_return = abap_true ).
+
+  ENDMETHOD.
+
+
+  METHOD gui_colour.
+*--------------------------------------------------------------------*
+* Erzeugt genau die Form, die im Betrieb laeuft:
+*
+*     <span style="color:green;font-size:120%">Genehmigen</span>
+*
+* Die Groesse steht in ZCL_CFL_CONST_00900=>MC_GUI_FONT_SIZE und darf
+* leer sein; dann bleibt nur die Farbe.
+*
+* DER SCHUTZ GEGEN DEN ZWEITEN ANLAUF ist billig und ehrlich: der
+* Framework-Exit baut ALTTEXT zwar unmittelbar davor frisch aus c09t,
+* aber ein doppelt gewickelter Text waere ein Fehler, den man am
+* Bildschirm nicht sieht.
+*--------------------------------------------------------------------*
+
+    IF iv_text CS '<span'.
+      rv_text = iv_text.
+      RETURN.
+    ENDIF.
+
+    DATA(lv_size) = COND string(
+      WHEN zcl_cfl_const_00900=>mc_gui_font_size IS INITIAL THEN ``
+      ELSE |;font-size:{ zcl_cfl_const_00900=>mc_gui_font_size }| ).
+
+    rv_text = |<span style="color:{ iv_color }{ lv_size }">{ iv_text }</span>|.
 
   ENDMETHOD.
 

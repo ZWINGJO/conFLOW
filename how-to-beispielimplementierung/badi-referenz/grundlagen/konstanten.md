@@ -173,6 +173,33 @@ CLASS zcl_cfl_const_00900 DEFINITION
 *--------------------------------------------------------------------*
     CONSTANTS mc_fiori_nature TYPE abap_bool VALUE abap_true.
 
+*--------------------------------------------------------------------*
+* Derselbe Schalter fuer den zweiten Faerbeweg - HTML im ALTTEXT, den
+* der Entscheidungs-Screen im Business Workplace rendert.
+*
+* Zwei Schalter und nicht einer, weil die beiden Oberflaechen
+* unabhaengig voneinander stoeren koennen: faellt in Fiori etwas auf,
+* soll das GUI davon nichts merken und umgekehrt.
+*--------------------------------------------------------------------*
+    CONSTANTS mc_gui_html_color TYPE abap_bool VALUE abap_true.
+
+    CONSTANTS:
+      BEGIN OF mc_gui_color,
+        positive TYPE string VALUE 'green' ##NO_TEXT,
+        negative TYPE string VALUE 'red' ##NO_TEXT,
+      END OF mc_gui_color.
+
+*--------------------------------------------------------------------*
+* Schriftgroesse fuer denselben Knopf. Farbe allein traegt im GUI zu
+* wenig - die Leiste ist grau und der Text klein. Groesse verstaerkt
+* dieselbe Aussage und trifft dieselben zwei Knoepfe, macht also kein
+* zweites Signal auf.
+*
+* Leer heisst "keine Groessenangabe", dann bleibt nur die Farbe. Das
+* ist der Wert, an dem man dreht, wenn die Buttonleiste zu breit wird.
+*--------------------------------------------------------------------*
+    CONSTANTS mc_gui_font_size TYPE string VALUE '120%' ##NO_TEXT.
+
 ENDCLASS.
 
 

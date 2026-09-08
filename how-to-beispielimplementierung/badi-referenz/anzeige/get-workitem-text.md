@@ -8,16 +8,16 @@
 
 **DAS FORMAT IST SAPSCRIPT-ITF, NICHT HTML**
 
-Der Parametertyp heißt /C09/CFL_HTML_TABLE_TT, und die ausgelieferte Musterimplementierung hängt <br> hinein. Beides ist irreführend. Was der Workitem-Anzeiger auswertet, sind SAPscript-ZEICHENFORMATE:
+Der Parametertyp heißt /C09/CFL_HTML_TABLE_TT, und die ausgelieferte Musterimplementierung hängt `<br>` hinein. Beides ist irreführend. Was der Workitem-Anzeiger auswertet, sind SAPscript-ZEICHENFORMATE:
 
 ```
 <H>ORDER</>      richtig - fett
 <b>ORDER</b>     wird stillschweigend ENTFERNT
 ```
 
-ITF liest <b> als Zeichenformat namens 'b', kennt es nicht, und löscht die Klammern kommentarlos. Kein Fett, kein sichtbares Tag, keine Fehlermeldung - der irreführendste denkbare Ausgang, weil er wie "HTML wird nicht unterstützt" aussieht.
+ITF liest `<b>` als Zeichenformat namens 'b', kennt es nicht, und löscht die Klammern kommentarlos. Kein Fett, kein sichtbares Tag, keine Fehlermeldung - der irreführendste denkbare Ausgang, weil er wie "HTML wird nicht unterstützt" aussieht.
 
-Geschlossen wird IMMER mit </>, nie mit </H>.
+Geschlossen wird IMMER mit `</>`, nie mit `</H>`.
 
 **AUFBAU, DER SICH BEWÄHRT HAT**
 

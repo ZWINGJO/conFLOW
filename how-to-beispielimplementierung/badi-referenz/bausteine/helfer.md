@@ -324,3 +324,42 @@ TRY.
   CATCH cx_root.
 ENDTRY.
 ```
+
+## `is_sapgui`
+
+GUI_IS_AVAILABLE ist der Standardweg: im OData-/RFC-Kontext der Fiori-Inbox gibt es kein Frontend, also kommt ' ' zurück. Genau diese Unterscheidung braucht der HTML-Weg zum Einfärben.
+
+```abap
+DATA lv_return TYPE c LENGTH 1.
+
+CALL FUNCTION 'GUI_IS_AVAILABLE'
+  IMPORTING
+    return = lv_return.
+
+rv_gui = xsdbool( lv_return = abap_true ).
+```
+
+## `gui_colour`
+
+Erzeugt genau die Form, die im Betrieb läuft:
+
+```
+    <span style="color:green;font-size:120%">Genehmigen</span>
+```
+
+Die Größe steht in ZCL_CFL_CONST_00900=>MC_GUI_FONT_SIZE und darf leer sein; dann bleibt nur die Farbe.
+
+DER SCHUTZ GEGEN DEN ZWEITEN ANLAUF ist billig und ehrlich: der Framework-Exit baut ALTTEXT zwar unmittelbar davor frisch aus c09t, aber ein doppelt gewickelter Text wäre ein Fehler, den man am Bildschirm nicht sieht.
+
+```abap
+IF iv_text CS '<span'.
+  rv_text = iv_text.
+  RETURN.
+ENDIF.
+
+DATA(lv_size) = COND string(
+  WHEN zcl_cfl_const_00900=>mc_gui_font_size IS INITIAL THEN ``
+  ELSE |;font-size:{ zcl_cfl_const_00900=>mc_gui_font_size }| ).
+
+rv_text = |<span style="color:{ iv_color }{ lv_size }">{ iv_text }</span>|.
+```
