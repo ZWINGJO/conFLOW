@@ -19,7 +19,13 @@
 {% hint style="info" %}
 **Die drei teuersten**
 
-**Schritt 0, 1 und 12** überspringt man am ehesten — und sie fehlen am teuersten. **Ohne Schritt 0** baut man nach, was es schon gibt. Im Referenzprojekt waren das fünf Objekte, zwei RAP-Aktionen und rund 430 Zeilen JavaScript, alle wieder entfernt. Er kostet einen Klick. **Ohne Vertragsmatrix** baut man erst und merkt später, dass die Semantik nicht trägt. **Ohne Decision-Exit** gibt es keine verbindliche fachliche Prüfung vor dem Zustandsübergang — nur Hinweise, die man wegklicken kann. **Schritt 8 wird nicht übersprungen, sondern aufgeschoben** — „erst zum Laufen bringen, dann aufräumen". Er ist der billigste von allen, solange die App aus drei Dateien besteht, und der teuerste, sobald jemand die Frage stellt, welcher Stand eigentlich läuft.
+**Schritt 0, 1 und 12** überspringt man am ehesten — und sie fehlen am teuersten.
+
+**Ohne Schritt 0** baut man nach, was es schon gibt. Im Referenzprojekt waren das fünf Objekte, zwei RAP-Aktionen und rund 430 Zeilen JavaScript, alle wieder entfernt. Er kostet einen Klick.
+
+**Ohne Vertragsmatrix** baut man erst und merkt später, dass die Semantik nicht trägt. **Ohne Decision-Exit** gibt es keine verbindliche fachliche Prüfung vor dem Zustandsübergang — nur Hinweise, die man wegklicken kann.
+
+**Schritt 8 wird nicht übersprungen, sondern aufgeschoben** — „erst zum Laufen bringen, dann aufräumen". Er ist der billigste von allen, solange die App aus drei Dateien besteht, und der teuerste, sobald jemand die Frage stellt, welcher Stand eigentlich läuft.
 {% endhint %}
 
 ## Was dieses Muster nicht abdeckt

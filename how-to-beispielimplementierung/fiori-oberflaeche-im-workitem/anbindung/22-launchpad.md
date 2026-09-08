@@ -37,7 +37,9 @@ RAP macht das nicht von selbst. In der hier gezeigten Fassung gibt es **keine** 
 {% hint style="info" %}
 **Warum das im Referenzprojekt vertretbar war**
 
-Es ist ein Showcase auf Demo-Daten, die Entscheidung ist dort bewusst getroffen und dokumentiert. Und der Angriffsweg ist schmal: der ungefilterte Listenmodus wurde gestrichen, es gibt also keinen Weg, *alle* laufenden Vorgänge zu lesen, ohne eine einzige ID zu kennen. Man braucht eine gültige GUID. **Für einen produktiven Nachbau reicht das nicht.** Eine Workflow-ID ist kein Geheimnis — sie steht in URLs, Protokollen und Mails.
+Es ist ein Showcase auf Demo-Daten, die Entscheidung ist dort bewusst getroffen und dokumentiert. Und der Angriffsweg ist schmal: der ungefilterte Listenmodus wurde gestrichen, es gibt also keinen Weg, *alle* laufenden Vorgänge zu lesen, ohne eine einzige ID zu kennen. Man braucht eine gültige GUID.
+
+**Für einen produktiven Nachbau reicht das nicht.** Eine Workflow-ID ist kein Geheimnis — sie steht in URLs, Protokollen und Mails.
 {% endhint %}
 
 **Was zu tun ist**, wenn die App produktiv geht: dieselbe Frage beantworten, die der Workflow ohnehin schon beantwortet — *ist der angemeldete Benutzer Bearbeiter dieses Workitems?* Die Auskunft steht in `/c09/cfl_s03` neben der Instanz. Ein Vergleich gegen `sy-uname` im Query-Provider (lesen) **und** im Action-Handler (schreiben) schließt die Lücke, ohne ein neues Berechtigungsobjekt zu erfinden. Dieselbe Regel zweimal gerufen, nicht zweimal geschrieben — wie bei `is_editable( )`.
