@@ -48,6 +48,9 @@ Es ist ein Showcase auf Demo-Daten, die Entscheidung ist dort bewusst getroffen 
 
 ## Der Cache
 UI5 liefert die App-Dateien unter einem Hash-Pfad aus, der aus dem App-Index stammt. Eine Änderung in SE80 ändert ihn **nicht**.
+{% hint style="success" %}
+**Die Hälfte davon erledigt sich mit dem [Quellprojekt](../oberflaeche/20-quellprojekt.md).** Wer baut und deployt, liefert Controller und Fragment als *ein* Bündel mit *einem* Hash aus — der Zustand „neues JS, altes XML" kann dann nicht mehr entstehen. Die Server-Zeilen der Tabelle bleiben trotzdem: nach jedem Deploy einmal `/UI5/APP_INDEX_CALCULATE`.
+{% endhint %}
 | Schicht | „Cache leeren" | Inkognito | Was hilft |
 | --- | --- | --- | --- |
 | HTTP-Cache | ja | leer | Hard Reload |
@@ -60,5 +63,5 @@ UI5 liefert die App-Dateien unter einem Hash-Pfad aus, der aus dem App-Index sta
 **Inkognito zeigt den Server, das normale Fenster zeigt den Cache.** Sind *beide* alt, fehlt der App-Index. Ist nur *eines* alt, sitzt es im Browser-Storage — und „Cache leeren" fasst IndexedDB nicht an.
 {% endhint %}
 {% hint style="info" %}
-**Fragment und Controller werden getrennt gecacht.** Das XML sitzt im IndexedDB-View-Cache, das JS nicht — sie können **unterschiedlich alt** sein. Neues Verhalten mit alter Oberfläche sieht aus wie ein Logikfehler und ist keiner.
+**Fragment und Controller werden getrennt gecacht** — solange sie als Einzeldateien ausgeliefert werden. Das XML sitzt im IndexedDB-View-Cache, das JS nicht; sie können also **unterschiedlich alt** sein. Neues Verhalten mit alter Oberfläche sieht aus wie ein Logikfehler und ist keiner. **Mit gebautem `Component-preload.js` ist dieser Fall weg**, an seine Stelle tritt ein anderer: eine in SE80 geänderte Einzeldatei wird gar nicht mehr angefordert.
 {% endhint %}

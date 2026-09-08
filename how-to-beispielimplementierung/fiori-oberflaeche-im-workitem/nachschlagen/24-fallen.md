@@ -1,5 +1,5 @@
-# Siebzehn Punkte, an denen es schiefgeht
-*Jeder mindestens einmal live erlebt. Die rechte Spalte ist das, was man tatsächlich sieht — **acht von siebzehn melden sich gar nicht**, und drei melden sich an einer Stelle, die mit der Ursache nichts zu tun hat.*
+# Neunzehn Punkte, an denen es schiefgeht
+*Jeder mindestens einmal live erlebt. Die rechte Spalte ist das, was man tatsächlich sieht — **zehn von neunzehn melden sich gar nicht**, und drei melden sich an einer Stelle, die mit der Ursache nichts zu tun hat.*
 | # | Falle | Erkennungsmerkmal |
 | --- | --- | --- |
 | 1 | `get_paging( )` nicht gerufen | `RAP_RUNTIME/014` — Liste leer, **Klasse aktiviert sauber** |
@@ -9,7 +9,7 @@
 | 5 | Parameter nicht umbenannt | App lädt, filtert aber nicht — zeigt die erste beliebige Instanz |
 | 6 | SWFVISU gepflegt, während SWFVMD1 einen Satz hat | Pflege wirkt nicht, **keine Meldung** |
 | 7 | `/UI5/APP_INDEX_CALCULATE` vergessen | alte Fassung läuft weiter — **auch im Inkognito-Fenster** |
-| 8 | IndexedDB-View-Cache | neues JS, altes XML — sieht aus wie ein Logikfehler |
+| 8 | IndexedDB-View-Cache *(nur ohne [Quellprojekt](../oberflaeche/20-quellprojekt.md))* | neues JS, altes XML — sieht aus wie ein Logikfehler |
 | 9 | `refreshForStartupParameter` fehlt | Buttons wechseln, **Inhalt nicht** |
 | 10 | `update;` im BDEF | Aktionen laufen über den EditFlow und bleiben **stumm stehen** |
 | 11 | `cl_abap_tx=>save( )` in der Aktion | `BEHAVIOR_ILLEGAL_STATEMENT` |
@@ -19,6 +19,8 @@
 | 15 | Standardfunktionen der Inbox nachgebaut | **meldet sich nie.** Es funktioniert ja — nur doppelt. Fällt erst auf, wenn jemand „Show Details" drückt |
 | 16 | Objekte gelöscht, bevor die Verwender bereinigt sind | `Type "…" is unknown` in der Behavior Definition — und danach vier weitere Objekte, eines nach dem anderen |
 | 17 | Leseroutine formatiert für die Anzeige und wird als Schlüsselquelle benutzt | Belegnummer ohne führende Nullen → `SELECT` findet nichts → **leere Tabelle, keine Meldung**. Gegenmittel: `ALPHA = IN` |
+| 18 | Einzeldatei in SE80 geändert, während ein gebautes `Component-preload.js` in der BSP-Anwendung liegt | **meldet sich nie.** UI5 lädt das Bündel, die Datei wird gar nicht erst angefordert. Notausgang: das Bündel löschen |
+| 19 | Deploy aus einem unvollständigen Projektordner | **meldet sich nie.** Der Deploy *ersetzt* die Anwendung — was nicht im Projekt liegt, ist danach im System weg. Gegenmittel: `deploy-test` |
 
 {% hint style="danger" %}
 **Die Fallen 14 bis 16 hängen zusammen** und ergeben zusammen den teuersten Umweg dieses Projekts: eine Dokumentenverwaltung wurde nachgebaut (15), scheiterte am Virenscanner (14), und beim Rückbau ging die Reihenfolge schief (16). Nichts davon wäre passiert, wenn zu Beginn jemand auf „Show Details" geklickt hätte.
