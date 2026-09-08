@@ -188,9 +188,12 @@ Das Binding wird als **OData V4 · UI** angelegt und publiziert. Ein neu exponie
   "DecisionSection": {
     "template": "zcfl00500inbox.ext.DecisionSection",
     "title": "{i18n>decisionSection}",
-    "position": { "placement": "After", "anchor": "Rules" }
+    "position": { "placement": "After", "anchor": "SchedLine" }
 } } } }
 ```
+{% hint style="info" %}
+**Der `anchor` ist der Name eines Facets aus der [Metadata Extension](../backend/12-mdx.md)**, nicht der einer Feldgruppe und nicht der Abschnittstitel. Er entscheidet, *wo* die eigene Section landet — hier hinter der Einteilungstabelle. Trifft der Name kein Facet, rutscht der Abschnitt kommentarlos ans Ende der Seite; das sieht nach einer Geschmacksfrage aus und ist ein Tippfehler.
+{% endhint %}
 {% hint style="info" %}
 **Die App-ID aus `sap.app.id`** ist das, was im Target Mapping als *ID* einzutragen ist — **nicht** der BSP-Name. Verwechslung führt zu einem Intent, der auflöst und nichts lädt.
 {% endhint %}
