@@ -9,7 +9,9 @@ Die Beispiel-App entstand mit dem Generator in ADT und wurde danach **Datei für
 {% hint style="info" %}
 **Die Probe, an der die Entscheidung hängt**
 
-*Was ginge verloren, wenn der Entwicklungsrechner heute kaputtgeht?* **Mit Quellprojekt: nichts.** Ohne: alles, was seit dem letzten Generatorlauf in SE80 entstanden ist — und niemand kann sagen, was das war, weil es keinen Stand gibt, gegen den man vergleicht.
+*Was ginge verloren, wenn der Entwicklungsrechner heute kaputtgeht?*
+
+**Mit Quellprojekt: nichts.** Ohne: alles, was seit dem letzten Generatorlauf in SE80 entstanden ist — und niemand kann sagen, was das war, weil es keinen Stand gibt, gegen den man vergleicht.
 {% endhint %}
 
 ## Drei Orte, drei Rollen
@@ -120,6 +122,26 @@ framework:
 **`paths.webapp` zeigt hier auf `app`**, nicht auf das konventionelle `webapp`. Grund: die Dokumentationsgeneratoren lesen genau diese Pfade. Beim Neuanlegen darf man konventionell bleiben — beim Nachrüsten eines bestehenden Ordners ist das Verschieben teurer als die Zeile.
 {% endhint %}
 
+## Vom Bestand ins Quellprojekt
+*Der häufigere Fall ist nicht der Neubau, sondern das Nachrüsten: im System steht eine Anwendung, die der Generator angelegt und die Hand gepflegt hat. **Dann ist das System die Wahrheit** — nicht der Ordner, in dem man die Dateien zu haben glaubt.*
+| # | Schritt | Womit |
+| --- | --- | --- |
+| 1 | **Dateien aus dem System holen** — vollständig, nicht die, die man für aktuell hält | Report `/UI5/UI5_REPOSITORY_LOAD`: BSP-Name eintragen, **Download**, Zielverzeichnis und Codepage bestätigen |
+| 2 | Gegen den vermuteten Stand vergleichen | ein `diff` über beide Ordner. **Jede Abweichung ist eine SE80-Änderung, die nie im Projekt ankam** |
+| 3 | Projekt darum bauen | der Download wird `app/`; daneben `package.json`, `ui5.yaml`, `ui5-deploy.yaml`, `.gitignore`, README |
+| 4 | Erster Commit — **vor** der ersten eigenen Änderung | damit der Systemstand als Nullpunkt in der Historie steht |
+| 5 | `npm run build`, dann `deploy-test` | der Trockenlauf sagt, was der echte Deploy täte |
+| 6 | Deployen und im Workitem prüfen | ab hier **nie wieder SE80** |
+{% hint style="danger" %}
+**Schritt 1 ist nicht optional.** Wer die lokalen Kopien für den Wahrheitsstand hält und sie deployt, überschreibt jede Änderung, die seit dem letzten Abgleich nur im System steht — **und merkt es nicht**, weil der Deploy ohne Rückfrage ersetzt. Ein Download kostet zwei Minuten.
+{% endhint %}
+{% hint style="info" %}
+**Der Report kann auch hochladen** — dieselbe Zielablage, nur mit Dialog statt Kommandozeile. Das ist der Weg für einen Rechner ohne Node. Er braucht SAP GUI auf demselben Rechner: Verzeichnis und Codepage holt er sich von dort.
+{% endhint %}
+{% hint style="success" %}
+**SAP sagt an dieser Stelle selbst, was hochgehört.** Wählt man beim Upload einen Ordner mit `webapp/` und ohne `manifest.json` in der Wurzel, warnt der Report: *„If you want to deploy an app, please run a build, and then upload the `dist` folder with the build results"* (SAP-Hinweis 3225159). **Hochgeladen wird das Build-Ergebnis, nicht der Quellordner** — genau die Unterscheidung, um die es in diesem Kapitel geht.
+{% endhint %}
+
 ## Kein lokaler Vorschau-Server — eine Entscheidung, kein Versäumnis
 Die übliche Fiori-Tools-Einrichtung bringt einen Proxy und `npm start` mit. Beides wurde hier wieder ausgebaut. Die Anwendung läuft ausschließlich **eingebettet im Detailbereich eines Workitems**; lokal fehlen ihr das Workitem, der Intent-Parameter mit der Instanz-ID, der Container mit den Zahlen und die Knöpfe des Task-Gateways. Man sähe eine leere Objektseite — und zöge daraus falsche Schlüsse.
 {% hint style="success" %}
@@ -134,6 +156,9 @@ npm run build          # -> dist/ inkl. Component-preload.js und resources.json
 npm run deploy-test    # Trockenlauf gegen das System, schreibt nichts
 npm run deploy         # ersetzt die BSP-Anwendung
 ```
+{% hint style="info" %}
+**Voraussetzung ist Node** — im Referenzprojekt Version 20. Sonst nichts: kein SAP GUI, keine ADT-Installation, keine Zugangsdaten auf der Platte. **Der erste Deploy legt die BSP-Anwendung nicht an, sondern ersetzt die bestehende** — sie stammt aus Schritt 11 der [Objekt-Reihenfolge](../grundlagen/06-reihenfolge.md). Anlegen kann `fiori deploy` sie auch, dann fragt es nach Paket und Transport.
+{% endhint %}
 Das Ziel steht in `ui5-deploy.yaml` — System, Mandant, BSP-Name, Paket und **Transport**:
 ```
 builder:
@@ -158,6 +183,15 @@ builder:
 {% endhint %}
 {% hint style="success" %}
 **Nach dem ersten Deploy einmal `/UI5/APP_INDEX_CALCULATE`** und im Browser **Clear site data**. Sonst läuft der alte Stand weiter — siehe [Kapitel „Launchpad"](../anbindung/22-launchpad.md), Abschnitt „Der Cache".
+{% endhint %}
+{% hint style="info" %}
+**Was hier belegt ist — und was nicht**
+
+**Der Build ist nachgemessen:** `Component-preload.js` enthält genau die fünf App-Module und keinen Framework-Code, `resources.json` entsteht mit, der 404 beim Laden ist weg.
+
+**Der Upload ist es nicht.** Im Referenzprojekt kam die Anwendung über den Generator und SE80 ins System; das Quellprojekt entstand danach. Beide Wege oben — `fiori deploy` und `/UI5/UI5_REPOSITORY_LOAD` — sind SAP-Standard, in *diesem* Projekt aber noch nicht gefahren. Wer nachbaut, sollte das wissen und mit `deploy-test` anfangen.
+
+Das steht hier, weil [Regel 14](../nachschlagen/26-regeln.md) es verlangt: eine Begründung, die niemand am Bildschirm geprüft hat, ist keine Begründung. Das gilt auch für die eigene.
 {% endhint %}
 
 ## Der Wegweiser im System
