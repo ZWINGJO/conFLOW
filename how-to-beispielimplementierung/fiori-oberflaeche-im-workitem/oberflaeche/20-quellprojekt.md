@@ -135,8 +135,11 @@ framework:
 {% hint style="danger" %}
 **Schritt 1 ist nicht optional.** Wer die lokalen Kopien für den Wahrheitsstand hält und sie deployt, überschreibt jede Änderung, die seit dem letzten Abgleich nur im System steht — **und merkt es nicht**, weil der Deploy ohne Rückfrage ersetzt. Ein Download kostet zwei Minuten.
 {% endhint %}
+{% hint style="success" %}
+**Der Report kann auch hochladen** — dieselbe Zielablage, nur mit Dialog statt Kommandozeile. **Das ist der Weg, der ohne jede Systemverbindung auf dem Entwicklungsrechner auskommt:** gebaut wird lokal, übergeben wird ein Verzeichnis, hochgeladen wird von jemandem, der ohnehin im System arbeitet. Für Kundenprojekte ist das oft der einzige gangbare — und es ist der Weg, der im Referenzprojekt tatsächlich gefahren wurde.
+{% endhint %}
 {% hint style="info" %}
-**Der Report kann auch hochladen** — dieselbe Zielablage, nur mit Dialog statt Kommandozeile. Das ist der Weg für einen Rechner ohne Node. Er braucht SAP GUI auf demselben Rechner: Verzeichnis und Codepage holt er sich von dort.
+**Verpackung.** Der Report will ein **Verzeichnis**, kein Archiv — eine ZIP ist nur die Versandform und muss vorher entpackt werden. Und darin müssen `manifest.json` und `Component-preload.js` **unmittelbar** liegen, nicht in einem Unterordner `dist/`. Der zweithäufigste Fehler nach dem falschen Ordner überhaupt.
 {% endhint %}
 {% hint style="success" %}
 **SAP sagt an dieser Stelle selbst, was hochgehört.** Wählt man beim Upload einen Ordner mit `webapp/` und ohne `manifest.json` in der Wurzel, warnt der Report: *„If you want to deploy an app, please run a build, and then upload the `dist` folder with the build results"* (SAP-Hinweis 3225159). **Hochgeladen wird das Build-Ergebnis, nicht der Quellordner** — genau die Unterscheidung, um die es in diesem Kapitel geht.
@@ -189,7 +192,7 @@ builder:
 
 **Der Build:** `Component-preload.js` enthält genau die fünf App-Module und keinen Framework-Code, `resources.json` entsteht mit, der 404 beim Laden ist weg.
 
-**Der Upload und die Laufzeit:** gefahren, und danach im **Netzwerk-Tab** gemessen. Gefiltert auf den Namen der BSP-Anwendung stehen beim Öffnen eines Workitems genau **zwei** Anfragen dort — der App-Deskriptor und `Component-preload.js`, zusammen rund 6 kB. **Keine einzelne Datei mehr:** weder der Controller noch das Fragment werden angefordert. Damit ist „neues JS, altes XML" nicht mehr unwahrscheinlich, sondern **unmöglich** — und das ist gemessen, nicht aus der Existenz der Bündeldatei geschlossen.
+**Der Upload und die Laufzeit:** gefahren am 08.09.2026 — und zwar über `/UI5/UI5_REPOSITORY_LOAD`, **nicht** über `fiori deploy`. Gebaut wurde lokal, das Ergebnis als Verzeichnis übergeben, hochgeladen hat es jemand im System. **Der CLI-Weg ist in diesem Projekt weiterhin ungefahren** — er ist SAP-Standard und gut dokumentiert, aber hier nicht belegt. Gemessen wurde danach im **Netzwerk-Tab**. Gefiltert auf den Namen der BSP-Anwendung stehen beim Öffnen eines Workitems genau **zwei** Anfragen dort — der App-Deskriptor und `Component-preload.js`, zusammen rund 6 kB. **Keine einzelne Datei mehr:** weder der Controller noch das Fragment werden angefordert. Damit ist „neues JS, altes XML" nicht mehr unwahrscheinlich, sondern **unmöglich** — und das ist gemessen, nicht aus der Existenz der Bündeldatei geschlossen.
 
 **Die Probe dazu dauert zehn Sekunden** und gehört nach jedem ersten Deploy: Netzwerk-Tab, Filter auf den Namen der BSP-Anwendung, Workitem öffnen. Kommen dort Einzeldateien, fehlt `/UI5/APP_INDEX_CALCULATE` oder der Browser-Storage ist alt. **Nicht im Debug-Modus messen** — dort umgeht UI5 die Bündel absichtlich, und der Netzwerk-Tab zeigt dann etwas, das im Normalbetrieb niemand sieht.
 {% endhint %}
