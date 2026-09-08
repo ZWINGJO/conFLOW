@@ -8,8 +8,9 @@ sap.ui.define([
     "sap/ui/core/mvc/ControllerExtension",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageBox",
-    "sap/m/ObjectStatus"
-], function (ControllerExtension, JSONModel, MessageBox, ObjectStatus) {
+    "sap/m/ObjectStatus",
+    "sap/base/Log"
+], function (ControllerExtension, JSONModel, MessageBox, ObjectStatus, Log) {
     "use strict";
 
     // Der Name der RAP-Aktion aus der Behavior Definition.
@@ -18,7 +19,35 @@ sap.ui.define([
     // Das Entity Set der Werteliste, so wie ZCFL_00500_SD es exponiert.
     var VH_ENTITY_SET = "/ActionValueHelp";
 
+    // Zugleich der Name der Controller Extension und die KOMPONENTE fuer
+    // sap/base/Log. Damit laesst sich in den DevTools nach dieser einen
+    // Erweiterung filtern, statt die Meldungen an einem selbstgebauten
+    // Textpraefix zu erkennen - dafuer ist das dritte Argument da.
+    //
+    // Sichtbar wird das Protokoll erst ab dem passenden Log-Level:
+    //
+    //     ?sap-ui-log-level=INFO      im URL-Parameter
+    //     sap.base.Log.setLevel(3)    zur Laufzeit in der Konsole
+    //
+    // Das ist der Unterschied zu console: die Ausgaben sind noch da,
+    // aber der Anwender sieht sie nicht mehr im Normalbetrieb.
     var LOGGER = "zcfl00500inbox.ext.DecisionSection";
+
+    /**
+     * Ein Fehlerobjekt in den Detailtext von sap/base/Log falten.
+     *
+     * Log erwartet dort einen STRING. Reicht man ein Error-Objekt direkt
+     * durch, steht im Protokoll "[object Error]" - also genau die
+     * Meldung nicht, wegen der man hineinschaut. Bei OData V4 ist das
+     * besonders bitter, weil die fachliche Begruendung ohnehin schon
+     * eine Ebene tiefer in error.details[] liegt.
+     */
+    function detail(vError) {
+        if (!vError) {
+            return "";
+        }
+        return vError.message || String(vError);
+    }
 
     // Wie lange nach dem letzten Tastendruck gewartet wird, bevor die
     // Notiz weggeschrieben wird. Kurz genug, dass sie steht, bevor
@@ -67,7 +96,7 @@ sap.ui.define([
                        + (sAction || ACTION_NAME);
             }
         } catch (e) {
-            console.error("[ZCFL00500] Namensraum nicht ermittelbar", e);
+            Log.error("Namensraum nicht ermittelbar", detail(e), LOGGER);
         }
         return null;
     }
@@ -128,22 +157,22 @@ sap.ui.define([
                             };
                         });
                         if (!aRows.length) {
-                            console.warn("[ZCFL00500] Werteliste ist leer -", VH_ENTITY_SET);
+                            Log.warning("Werteliste ist leer - " + VH_ENTITY_SET, "", LOGGER);
                             // Nicht merken: ein leeres Ergebnis kann ein
                             // Aussetzer sein, beim naechsten Binden noch
                             // einmal versuchen.
                             that._pActions = null;
                         } else {
-                            console.log("[ZCFL00500] Werteliste geladen:", aRows.length);
+                            Log.info("Werteliste geladen: " + aRows.length, "", LOGGER);
                         }
                         resolve(aRows);
                     }).catch(function (oError) {
-                        console.error("[ZCFL00500] Werteliste nicht ladbar", oError);
+                        Log.error("Werteliste nicht ladbar", detail(oError), LOGGER);
                         that._pActions = null;
                         resolve([]);
                     });
                 } catch (e) {
-                    console.error("[ZCFL00500] Werteliste nicht bindbar", e);
+                    Log.error("Werteliste nicht bindbar", detail(e), LOGGER);
                     that._pActions = null;
                     resolve([]);
                 }
@@ -225,7 +254,7 @@ sap.ui.define([
                 this.loadActions(oOData)
             ]).then(function (aResult) {
                 if (iRun !== that._iRun) {
-                    console.log("[ZCFL00500] Lauf", iRun, "ueberholt - verworfen");
+                    Log.info("Lauf " + iRun + " ueberholt - verworfen", "", LOGGER);
                     return;
                 }
 
@@ -273,10 +302,10 @@ sap.ui.define([
                     that.setStatus("Action list unavailable - please contact support", "Warning");
                 }
 
-                console.log("[ZCFL00500] Modell gesetzt", oDecision.getData());
+                Log.info("Modell gesetzt", JSON.stringify(oDecision.getData()), LOGGER);
             }).catch(function (oError) {
                 if (iRun !== that._iRun) { return; }
-                console.error("[ZCFL00500] Vorbelegung fehlgeschlagen", oError);
+                Log.error("Vorbelegung fehlgeschlagen", detail(oError), LOGGER);
 
                 // Die Felder starten geschlossen und werden erst
                 // geoeffnet, wenn der Zustand feststeht. Faellt die
@@ -323,7 +352,7 @@ sap.ui.define([
             if (oBox && !oBox.data("wired")) {
                 oBox.attachSelectionChange(function () { that.onDecide(); });
                 oBox.data("wired", true);
-                console.log("[ZCFL00500] Auswahl verdrahtet");
+                Log.info("Auswahl verdrahtet", "", LOGGER);
             }
 
             var oNote = this.findControl("idDecisionNote", "sap.m.TextArea");
@@ -351,11 +380,11 @@ sap.ui.define([
                     }, NOTE_DELAY_MS);
                 });
                 oNote.data("wired", true);
-                console.log("[ZCFL00500] Notizfeld verdrahtet");
+                Log.info("Notizfeld verdrahtet", "", LOGGER);
             }
 
             if (!oBox) {
-                console.warn("[ZCFL00500] Auswahl NICHT gefunden");
+                Log.warning("Auswahl NICHT gefunden", "", LOGGER);
             }
         },
 
@@ -460,7 +489,7 @@ sap.ui.define([
                        || this._createStatus();
 
             if (!oStatus) {
-                console.warn("[ZCFL00500] Statuszeile nicht gefunden:", sText);
+                Log.warning("Statuszeile nicht gefunden: " + sText, "", LOGGER);
                 return;
             }
 
@@ -508,7 +537,7 @@ sap.ui.define([
             oStatus.addStyleClass("sapUiTinyMarginTop");
             oForm.addContent(oStatus);
 
-            console.log("[ZCFL00500] Statuszeile nachtraeglich angelegt");
+            Log.info("Statuszeile nachtraeglich angelegt", "", LOGGER);
             return oStatus;
         },
 
@@ -570,7 +599,7 @@ sap.ui.define([
                 that     = this;
 
             if (!oContext) {
-                console.error("[ZCFL00500] Kein Bindungskontext");
+                Log.error("Kein Bindungskontext", "", LOGGER);
                 return;
             }
 
@@ -583,7 +612,7 @@ sap.ui.define([
             // saehe der Bearbeiter eine rote Box fuer etwas, das er
             // gar nicht getan hat.
             if (!oData.Editable) {
-                console.log("[ZCFL00500] Schritt ist nur lesend - nicht gespeichert");
+                Log.info("Schritt ist nur lesend - nicht gespeichert", "", LOGGER);
                 return;
             }
 
@@ -591,13 +620,13 @@ sap.ui.define([
             // Backend "Please choose a reason", sobald jemand die Notiz
             // vor der Auswahl tippt und wegklickt.
             if (!oData.Reason) {
-                console.log("[ZCFL00500] Noch kein Grund gewaehlt - nicht gespeichert");
+                Log.info("Noch kein Grund gewaehlt - nicht gespeichert", "", LOGGER);
                 return;
             }
 
             var sAction = fullActionName(oModel);
             if (!sAction) {
-                console.error("[ZCFL00500] Aktionsname nicht ermittelbar");
+                Log.error("Aktionsname nicht ermittelbar", "", LOGGER);
                 return;
             }
 
@@ -607,12 +636,12 @@ sap.ui.define([
             // Laerm auf der Leitung und ein zweiter Hinweis am Schirm.
             var sPayload = JSON.stringify([oData.Reason, oData.Note || ""]);
             if (this._sLastSaved === sPayload) {
-                console.log("[ZCFL00500] unveraendert - nicht gespeichert");
+                Log.info("unveraendert - nicht gespeichert", "", LOGGER);
                 return;
             }
             this._sLastSaved = sPayload;
 
-            console.log("[ZCFL00500] setDecision ->", sAction, oData);
+            Log.info("setDecision -> " + sAction, JSON.stringify(oData), LOGGER);
 
             var oOperation;
             try {
@@ -622,7 +651,7 @@ sap.ui.define([
                 oOperation.setParameter("DecisionReason", oData.Reason);
                 oOperation.setParameter("DecisionNote",   oData.Note || "");
             } catch (e) {
-                console.error("[ZCFL00500] Aktion nicht bindbar", e);
+                Log.error("Aktion nicht bindbar", detail(e), LOGGER);
                 MessageBox.error("The decision action is not available in this service.");
                 return;
             }
@@ -657,7 +686,7 @@ sap.ui.define([
             return this.queueSave(function () {
                 return oOperation.execute();
             }).then(function () {
-                console.log("[ZCFL00500] gespeichert");
+                Log.info("gespeichert", "", LOGGER);
 
                 // NICHT nachladen.
                 //
@@ -680,8 +709,7 @@ sap.ui.define([
                 // angekommen ist, beantwortet execute( ): kommt kein
                 // Fehler, steht es im Container.
                 if (!stillOnSameInstance()) {
-                    console.log("[ZCFL00500] gespeichert, aber Workitem gewechselt -",
-                                "keine Anzeige");
+                    Log.info("gespeichert, aber Workitem gewechselt - keine Anzeige", "", LOGGER);
                     return;
                 }
 
@@ -706,7 +734,7 @@ sap.ui.define([
                 } catch (e) {
                     // Kein Grund, deshalb die Erfolgsmeldung zu
                     // unterschlagen - gespeichert wurde ja.
-                    console.warn("[ZCFL00500] Hinweis nicht lesbar", e);
+                    Log.warning("Hinweis nicht lesbar", detail(e), LOGGER);
                 }
 
                 if (sHint) {
@@ -715,7 +743,7 @@ sap.ui.define([
                     that.setStatus("Saved " + sStamp, "Success");
                 }
             }).catch(function (oError) {
-                console.error("[ZCFL00500] setDecision FEHLGESCHLAGEN", oError);
+                Log.error("setDecision FEHLGESCHLAGEN", detail(oError), LOGGER);
 
                 if (!stillOnSameInstance()) {
                     // Weder Meldung noch Merker anfassen - beides

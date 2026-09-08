@@ -18,6 +18,7 @@
 | 14 | **Dieselbe Instanz in zwei Tabs** | *last writer wins*, ohne Warnung — bewusst so |
 | 15 | **„Show Details" in der Fußleiste** | rechts erscheinen Notizen, Anhänge, Objektlinks — links bleibt die App |
 | 16 | Im Anhänge-Reiter eine Datei hochladen | geht durch, **ohne** Virenscan-Meldung — der Standard nutzt OData V2 |
+| 17 | **Nach dem Deploy: Netzwerk-Tab beim Öffnen des Workitems** | `Component-preload.js` wird geladen — **nicht** die Einzeldateien. Wird es nicht, läuft ein alter Stand |
 {% hint style="success" %}
 **Fall 9 ist der wertvollste.** Er prüft, ob ein angezeigter Wert auch ein gespeicherter Wert ist. Ein Test, der nur über die Oberfläche geht, findet ihn nie — dort sieht alles richtig aus.
 {% endhint %}

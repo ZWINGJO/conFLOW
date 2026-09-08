@@ -20,7 +20,7 @@ Alle Werte stammen aus demselben Container und über dieselben Routinen, die auc
 | ZCL_CFL_NNNNN_VH | CLAS | Query-Provider der Werteliste |
 | ZCL_CFL_NNNNN_BEHV | CLAS | Behavior Pool — global + Local Types |
 | ZCFL_NNNNN_SD / _SB | SRVD | Service Definition und Binding, OData V4 · UI |
-| ZCFL_NNNNN_UI | BSP | die UI5-Anwendung |
+| ZCFL_NNNNN_UI | BSP | die UI5-Anwendung — **gebaut aus einem Quellprojekt**, nicht in SE80 gepflegt |
 | ZCL_CFL_WORKFLOW_NNNNN | CLAS | conFLOW-BAdI — hier nur die Teile, die die App anbinden |
 Dazu außerhalb von ABAP: Semantic Object, Katalog mit Target Mapping, Rolle.
 
@@ -55,5 +55,5 @@ Der Umbau lohnt, wenn **mindestens zwei** zutreffen:
   - die Optik ist Teil des Auftrags
 
 {% hint style="info" %}
-Trifft nur **eines** zu, ist der Textblock die bessere Investition. Er kostet einen Nachmittag, die App ein Projektkapitel — und sie bringt einen Auslieferungsprozess mit, den es vorher nicht gab.
+Trifft nur **eines** zu, ist der Textblock die bessere Investition. Er kostet einen Nachmittag, die App ein Projektkapitel — und sie bringt einen Auslieferungsprozess mit, den es vorher nicht gab: Repository, Build, Deploy. Siehe [Kapitel „Das Quellprojekt"](oberflaeche/20-quellprojekt.md).
 {% endhint %}

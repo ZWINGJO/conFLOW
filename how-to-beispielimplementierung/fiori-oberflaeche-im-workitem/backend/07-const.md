@@ -333,6 +333,56 @@ CLASS zcl_cfl_const_00500 DEFINITION
 *--------------------------------------------------------------------*
     CONSTANTS mc_fiori_nature TYPE abap_bool VALUE abap_true .
 
+*--------------------------------------------------------------------*
+* 5. Buttons im SAP Business Workplace einfaerben?
+*
+* Das SAP GUI liest ALTNATURE nicht - Punkt 4 wirkt nur in Fiori. Der
+* Entscheidungs-Screen rendert stattdessen SWR_DECIALTS-ALTTEXT als
+* **HTML**. Farbe entsteht dort also im Text selbst, ueber ein <span>.
+*
+* In einem anderen Kundenprojekt seit 08/2026 im Betrieb: dieselbe
+* Technik faerbt dort "Genehmigen" gruen und "Ablehnen" rot. Zwei
+* Oberflaechen, zwei Mechanismen, eine Aussage.
+*
+* Warum es einen eigenen Schalter braucht: das Markup darf NUR ins
+* SAP GUI. Die neue Fiori-Inbox nimmt die Buttontexte aus demselben
+* Hook (BEFORE_DECISION) - dort stuende sonst das <span> als
+* Buttonbeschriftung. Der Guard ist GUI_IS_AVAILABLE, siehe
+* ZCL_CFL_WORKFLOW_00500=>IS_SAPGUI( ).
+*
+* ALTTEXT ist CHAR255 und der Wrapper kostet rund 50 Zeichen - die
+* c09t-Texte passen also mit Abstand. Wird es je knapp, ist die kurze
+* Form <font color=green>.
+*--------------------------------------------------------------------*
+    CONSTANTS mc_gui_html_color TYPE abap_bool VALUE abap_true .
+
+*--------------------------------------------------------------------*
+* Dieselbe Aussage wie NATURE, nur in der Sprache des GUI-Screens:
+* gruen die berechnete Empfehlung, rot die Aktion, die Kundenbedarf
+* endgueltig wegwirft. Kein drittes Signal - eine Palette waere keine
+* Aussage mehr.
+*--------------------------------------------------------------------*
+    CONSTANTS:
+      BEGIN OF mc_gui_color,
+        positive TYPE string VALUE 'green',
+        negative TYPE string VALUE 'red',
+      END OF mc_gui_color .
+
+*--------------------------------------------------------------------*
+* Schriftgroesse der eingefaerbten Knoepfe im SAP GUI.
+*
+* Farbe allein traegt im GUI zu wenig - die Leiste ist grau und der
+* Text klein. Groesse verstaerkt dieselbe Aussage, statt eine zweite
+* aufzumachen: hervorgehoben ist genau das, was auch farbig ist.
+*
+* 120 % laeuft in einem Kundenprojekt im Betrieb, und genau diese Form
+* wird hier nachgebaut - Farbe und Groesse, kein font-weight. Wird die
+* Buttonleiste zu breit und rutscht etwas ins Ueberlaufmenue, hier
+* zurueckdrehen; leer heisst "keine Groessenangabe", dann bleibt nur
+* die Farbe.
+*--------------------------------------------------------------------*
+    CONSTANTS mc_gui_font_size TYPE string VALUE '120%' ##NO_TEXT.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.

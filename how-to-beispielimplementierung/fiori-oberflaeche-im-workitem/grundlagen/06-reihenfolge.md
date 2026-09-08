@@ -13,7 +13,7 @@
 | 8b | `ZCL_CFL_NNNNN_RULES` | die Prozessregeln — von Query *und* Handler gerufen |
 | 9 | `ZCFL_NNNNN_X_<Sache>` | Metadata Extension — **Annotation-Scope im Zielrelease prüfen** |
 | 10 | `ZCFL_NNNNN_SD / _SB` | Service Definition + Binding, publizieren |
-| 11 | `ZCFL_NNNNN_UI` | BSP über den ADT-Generator, danach Fragment und Controller |
+| 11 | `ZCFL_NNNNN_UI` | BSP **einmal** über den ADT-Generator anlegen — danach nur noch aus dem [Quellprojekt](../oberflaeche/20-quellprojekt.md) deployen |
 | 12 | Semantic Object · Katalog · Target Mapping · Rolle | `/UI2/SEMOBJ`, `/UI2/FLPD_CUST`, PFCG |
 | 13 | `set_inbox_ui( )` im BAdI-Hook | **zuletzt** — sonst zeigen Workitems auf eine App, die es nicht gibt |
 {% hint style="success" %}
