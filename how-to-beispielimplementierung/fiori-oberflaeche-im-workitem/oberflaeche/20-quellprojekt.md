@@ -185,13 +185,13 @@ builder:
 **Nach dem ersten Deploy einmal `/UI5/APP_INDEX_CALCULATE`** und im Browser **Clear site data**. Sonst läuft der alte Stand weiter — siehe [Kapitel „Launchpad"](../anbindung/22-launchpad.md), Abschnitt „Der Cache".
 {% endhint %}
 {% hint style="info" %}
-**Was hier belegt ist — und was nicht**
+**Was hier belegt ist**
 
-**Der Build ist nachgemessen:** `Component-preload.js` enthält genau die fünf App-Module und keinen Framework-Code, `resources.json` entsteht mit, der 404 beim Laden ist weg.
+**Der Build:** `Component-preload.js` enthält genau die fünf App-Module und keinen Framework-Code, `resources.json` entsteht mit, der 404 beim Laden ist weg.
 
-**Der Upload ist es nicht.** Im Referenzprojekt kam die Anwendung über den Generator und SE80 ins System; das Quellprojekt entstand danach. Beide Wege oben — `fiori deploy` und `/UI5/UI5_REPOSITORY_LOAD` — sind SAP-Standard, in *diesem* Projekt aber noch nicht gefahren. Wer nachbaut, sollte das wissen und mit `deploy-test` anfangen.
+**Der Upload und die Laufzeit:** gefahren, und danach im **Netzwerk-Tab** gemessen. Gefiltert auf den Namen der BSP-Anwendung stehen beim Öffnen eines Workitems genau **zwei** Anfragen dort — der App-Deskriptor und `Component-preload.js`, zusammen rund 6 kB. **Keine einzelne Datei mehr:** weder der Controller noch das Fragment werden angefordert. Damit ist „neues JS, altes XML" nicht mehr unwahrscheinlich, sondern **unmöglich** — und das ist gemessen, nicht aus der Existenz der Bündeldatei geschlossen.
 
-Das steht hier, weil [Regel 14](../nachschlagen/26-regeln.md) es verlangt: eine Begründung, die niemand am Bildschirm geprüft hat, ist keine Begründung. Das gilt auch für die eigene.
+**Die Probe dazu dauert zehn Sekunden** und gehört nach jedem ersten Deploy: Netzwerk-Tab, Filter auf den Namen der BSP-Anwendung, Workitem öffnen. Kommen dort Einzeldateien, fehlt `/UI5/APP_INDEX_CALCULATE` oder der Browser-Storage ist alt. **Nicht im Debug-Modus messen** — dort umgeht UI5 die Bündel absichtlich, und der Netzwerk-Tab zeigt dann etwas, das im Normalbetrieb niemand sieht.
 {% endhint %}
 
 ## Der Wegweiser im System
