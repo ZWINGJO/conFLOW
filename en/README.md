@@ -1,5 +1,7 @@
 # conFLOW - SAP Workflows easy built
 
+> **Deutsch:** diese Dokumentation gibt es auch [auf Deutsch](../README.md).
+
 {% hint style="success" %}
 **conFLOW** implements approval and release workflows in your SAP system — without SAP workflow know-how, without the Workflow Builder, without workflow Customizing in SPRO.
 
