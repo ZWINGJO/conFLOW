@@ -19,11 +19,12 @@ An einem `CALL FUNCTION ... IMPORTING` ist eine Inline-Deklaration
 nicht erlaubt. In einem conFLOW-BAdI sind solche Aufrufe häufig.
 Dieser Fehler meldet sich immerhin beim Aktivieren.
 
-**3 · Der Container ohne `C07`**
+**3 · In den Container einer unbekannten Instanz schreiben**
 
-`SET_ATTRIBUT_VALUE` schreibt nur Elemente, die in `/C09/CFL_C07`
-gepflegt sind. Fehlt der Eintrag, wird der Wert verworfen - kein
-Fehler, kein Satz in `S04`, und beim Lesen kommt leer zurück.
+`SET_ATTRIBUT_VALUE` sucht die Instanz-ID zuerst in `/C09/CFL_S01`.
+Steht sie dort nicht - falsche ID, oder die ID aus dem falschen Feld -,
+wird der Wert verworfen: kein Fehler, kein Satz in `S04`, und beim
+Lesen kommt leer zurück. Das Element selbst muss nirgends gepflegt sein.
 
 **4 · Die BAdI-Implementierung ohne Filter**
 

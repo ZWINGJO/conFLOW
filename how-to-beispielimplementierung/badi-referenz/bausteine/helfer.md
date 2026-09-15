@@ -25,7 +25,7 @@ ENDIF.
 
 Das Gegenstück. SET_ATTRIBUT_VALUE ERSETZT den Inhalt des Elements - es hängt nicht an. Wer mehrere Werte will, baut die Tabelle selbst und ruft die Framework-Methode direkt.
 
-Das ELEMENT muss in /C09/CFL_C07 gepflegt sein. Ist es das nicht, wird der Wert kommentarlos verworfen: kein Fehler, kein Eintrag in S04, und beim Lesen kommt leer zurück. Das ist der häufigste Grund für "der Container bleibt leer".
+SET_ATTRIBUT_VALUE sucht die ID zuerst in /C09/CFL_S01. Steht die Instanz dort nicht, wird der Wert kommentarlos verworfen: kein Fehler, kein Eintrag in S04, und beim Lesen kommt leer zurück. Das Element selbst muss nirgends gepflegt sein.
 
 ```abap
 DATA lt_value TYPE /c09/cfl_value_s04_tt.

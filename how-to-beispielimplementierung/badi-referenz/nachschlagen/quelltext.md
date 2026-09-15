@@ -1627,28 +1627,32 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
   METHOD /c09/cfl_if_badi_0101~get_mail_language.
 *--------------------------------------------------------------------*
-* WANN   Nachdem die Empfaenger feststehen, vor dem Aufbau des Textes.
+* WANN   Ohne Welle 1: nie. Der Hook steht im Interface, das Framework
+*        ruft ihn nicht (geprueft 2026-09-11). Mit Welle 1: je
+*        Empfaenger, direkt vor dem Versand.
 *
-* REIN   IT_USER / IT_MAIL  die Empfaenger
-* RAUS   CS_DATA            die Instanz - relevant ist WI_LANG
+* REIN   IT_USER / IT_MAIL  der eine Empfaenger dieses Versands
+* RAUS   CS_DATA-WI_LANG    die Sprache fuer diesen Empfaenger
 *
-* WOFUER   Die Sprache des Mails festlegen. Standard ist die Sprache
-*        der Instanz; hier kann man sie am Empfaenger ausrichten.
+* OHNE WELLE 1 GEHT JEDE MAIL IN DER SPRACHE DES VERSENDERS
+*        Also in der Anmeldesprache dessen, der den Versand ausloest -
+*        Dialogbenutzer oder WF-BATCH -, nicht in der Sprache der
+*        Instanz (S01-WI_LANG). Deshalb ist der Hook in keiner der
+*        untersuchten Produktivimplementierungen gefuellt: er hatte
+*        keine Wirkung.
 *
-* IN KEINER DER UNTERSUCHTEN PRODUKTIVIMPLEMENTIERUNGEN GEFUELLT.
-*
-*        Nicht, weil Mehrsprachigkeit selten waere, sondern weil der
-*        Standard schon das Richtige tut: er nimmt die Sprache aus
-*        der Instanz, und die SO10-Textbausteine gibt es je Sprache.
+* MIT WELLE 1 KOMMT WI_LANG MIT DER SPRACHE DES VERSENDERS HEREIN
+*        Nicht mit der der Instanz - wer die will, liest sie ueber
+*        CS_DATA-ID aus /C09/CFL_S01. Laesst der Hook WI_LANG stehen,
+*        aendert sich nichts. Umgeschaltet wird nur, wenn die Sprache
+*        installiert ist und der Betreff (SO10) in ihr existiert.
 *
 * WANN MAN IHN BRAUCHT
-*        Wenn ein Mail an MEHRERE Empfaenger mit VERSCHIEDENEN
-*        Sprachen geht. Dann hilft dieser Hook allerdings auch nur
-*        halb - er setzt EINE Sprache fuer den ganzen Versand. Fuer
-*        echte Mehrsprachigkeit braucht es mehrere Versandvorgaenge,
-*        also mehrere Eintraege in C05.
+*        Wenn Empfaenger in ihrer eigenen Sprache angeschrieben werden
+*        sollen, typischerweise der aus dem Benutzerstamm (USR01-LANGU
+*        zu IT_USER).
 *
-*        BLEIBT LEER.
+*        BLEIBT HIER LEER: die Referenz setzt Welle 1 nicht voraus.
 *--------------------------------------------------------------------*
   ENDMETHOD.
 
@@ -2171,10 +2175,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * Elements - es haengt nicht an. Wer mehrere Werte will, baut die
 * Tabelle selbst und ruft die Framework-Methode direkt.
 *
-* Das ELEMENT muss in /C09/CFL_C07 gepflegt sein. Ist es das nicht,
-* wird der Wert kommentarlos verworfen: kein Fehler, kein Eintrag in
-* S04, und beim Lesen kommt leer zurueck. Das ist der haeufigste
-* Grund fuer "der Container bleibt leer".
+* SET_ATTRIBUT_VALUE sucht die ID zuerst in /C09/CFL_S01. Steht die
+* Instanz dort nicht, wird der Wert kommentarlos verworfen: kein
+* Fehler, kein Eintrag in S04, und beim Lesen kommt leer zurueck. Das
+* Element selbst muss nirgends gepflegt sein.
 *--------------------------------------------------------------------*
 
     DATA lt_value TYPE /c09/cfl_value_s04_tt.
