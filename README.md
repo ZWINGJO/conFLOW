@@ -1,4 +1,4 @@
-# conFLOW - SAP Workflows easy built
+# conFLOW - SAP Workflows Made Easy
 
 {% hint style="info" %}
 **English:** this documentation is also available [in English](en/README.md).
