@@ -1,6 +1,8 @@
 # conFLOW - SAP Workflows easy built
 
-> **English:** this documentation is also available [in English](en/README.md).
+{% hint style="info" %}
+**English:** this documentation is also available [in English](en/README.md).
+{% endhint %}
 
 {% hint style="success" %}
 **conFLOW** bildet Genehmigungs- und Freigabe-Workflows im SAP-System ab -- ohne SAP-Workflow-Know-how, ohne Workflow Builder, ohne WF-Customizing im SPRO.
