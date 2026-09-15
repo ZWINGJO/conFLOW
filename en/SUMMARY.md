@@ -1,6 +1,6 @@
 # Table of contents
 
-* [conFLOW - SAP Workflows easy built](README.md)
+* [conFLOW - SAP Workflows Made Easy](README.md)
 
 ## Workflow Stories
 
