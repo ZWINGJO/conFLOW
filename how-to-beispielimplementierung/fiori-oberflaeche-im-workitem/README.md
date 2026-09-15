@@ -1,72 +1,69 @@
-# Was hier gebaut wird
-*Ein Genehmigungs-Workitem zeigt in der SAP Fiori My Inbox statt eines Textblocks eine eigene Anwendung — mit gegliedertem Kontext, Ampel und einem Eingabebereich, der direkt in den Workflow-Container schreibt.*
+# Eigene Fiori-Oberfläche im Workitem
 
-| conFLOW-Standard | mit eigener Oberfläche |
-| --- | --- |
-| Ein Textblock im Beschreibungsfeld, gerendert aus SAPscript-ITF. Gegliedert, aber Fließtext — und ohne Eingabemöglichkeit. | Kopfzeile mit Ampel und Empfehlung, vier Reiter aus dem Container, ein Bereich **Your decision** mit Auswahlfeld und Notiz, der sofort speichert. Darunter unverändert die conFLOW-Buttons. |
+*Eine kleine UI5-App im Detailbereich der My Inbox, angehängt über conFLOW, ohne den Workflow umzubauen.*
 
-Alle Werte stammen aus demselben Container und über dieselben Routinen, die auch den Textblock füllen — **eine Quelle, ein Rechenweg**. Zwei Rechenwege für dieselbe Zahl fallen erst im Kundentermin auf.
+## Was am Ende dasteht
 
-## Die Objekte
-| Objekt |  | Rolle |
-| --- | --- | --- |
-| ZCFL_NNNNN_C_<Sache> | DDLS | Custom Entity — Anzeige-, Entscheidungs- und Statusfelder |
-| ZCFL_NNNNN_C_<Sache>VH | DDLS | Custom Entity für die Werteliste |
-| ZCFL_NNNNN_D_<Aktion> | DDLS | Abstract Entity — Parameter der Aktion |
-| ZCFL_NNNNN_X_<Sache> | DDLX | Metadata Extension — Facets, Feldgruppen, Criticality |
-| ZCFL_NNNNN_C_<Sache> | BDEF | Behavior Definition, `unmanaged`, eine Aktion |
-| ZCL_CFL_NNNNN_RULES | CLAS | **die Prozessregeln** — von Query-Provider und Handler gerufen |
-| ZCL_CFL_NNNNN_QUERY | CLAS | Query-Provider der Hauptentität |
-| ZCL_CFL_NNNNN_VH | CLAS | Query-Provider der Werteliste |
-| ZCL_CFL_NNNNN_BEHV | CLAS | Behavior Pool — global + Local Types |
-| ZCFL_NNNNN_SD / _SB | SRVD | Service Definition und Binding, OData V4 · UI |
-| ZCFL_NNNNN_UI | BSP | die UI5-Anwendung — **gebaut aus einem Quellprojekt**, nicht in SE80 gepflegt |
-| ZCL_CFL_WORKFLOW_NNNNN | CLAS | conFLOW-BAdI — hier nur die Teile, die die App anbinden |
-Dazu außerhalb von ABAP: Semantic Object, Katalog mit Target Mapping, Rolle.
+```
+┌─────────────────────────────────────────┬────────────────────────┐
+│  Titel des Workitems                    │ Comments │ Attachments │
+│                                         │ More ∨                 │
+│  Workitem-Text                          │                        │
+│  (Befund, Beleg, Mengen, Termine …)     │  ← Standard der Inbox, │
+│                                         │    über „Show Details" │
+│  Grund      [ Auswahl            ▾ ]    │                        │
+│  Notiz      [                      ]    │                        │
+│  Saved 09:26:03                         │                        │
+├─────────────────────────────────────────┴────────────────────────┤
+│  Partial delivery │ Accept new date │ Escalate │ Show Details │ ⋯ │
+└──────────────────────────────────────────────────────────────────┘
+      eigene App (links)              conFLOW-Knöpfe (unten)
+```
 
 {% hint style="info" %}
-**Alle Quellen in diesem Dokument sind vollständig** und werden beim Erzeugen aus `src/` gelesen — nicht abgetippt. Das Dokument kann deshalb nicht vom Code abweichen.
+**Die App entscheidet nichts.** Knöpfe, Bearbeiterfindung, Frist, Priorität und Protokoll bleiben conFLOW. Die App zeigt den Kontext und hält fest, *warum* entschieden wird: Grund und Notiz landen im conFLOW-Container. Entschieden wird weiter mit den Knöpfen darunter.
 {% endhint %}
 
-## Woher die Beispiele stammen — und wie weit sie tragen
-Jede Quelle in diesem Dokument ist echter, laufender Code aus **einem** Workflow: `ZCFL_00500`, „Order Promise Exception" — ein Vertriebs-Showcase mit Backorder-Ausnahmen aus dem Verkaufsbeleg. Belege wie `14668/10`, Material `MX_6122` und Kunde `BP1010` sind Demo-Daten aus dem eigenen System, kein Kundenprojekt.
+## Die Kette in einem Bild
 
-Das ist Absicht und keine Einschränkung: **ein durchgehendes Beispiel trägt weiter als zwanzig Ausschnitte.** Wer nachbaut, sieht dieselben Objekte in jedem Kapitel wieder und kann sie Stück für Stück auf den eigenen Fall übersetzen. Was fachlich ist — Ampel, Empfehlung, Backorder-Regeln — steht in den Beispielen an genau den Stellen, wo im eigenen Workflow etwas anderes hingehört.
+```
+conFLOW-BAdI
+  get_after_creation_workitem( )
+    └─ set_inbox_ui( )  setzt drei Container-Elemente am Workitem
+                           │
+Customizing SWFVMD1        ▼   (einmal je System)
+  Task TS00388601  →  Intent  #ZCFLOrderPromiseV2-openInInbox?CFLQueryObject00=<Instanz>
+                           │
+Launchpad                  ▼   (je Workflow)
+  Semantic Object · Target Mapping (openMode!) · Katalog · Rolle
+                           │
+App                        ▼   (je Workflow)
+  UI5 freestyle  →  OData V2 (SEGW)  →  conFLOW-Container /C09/CFL_S04
+```
 
-| Im Beispiel | Beim Nachbau |
+**Welche App erscheint, entscheidet das einzelne Workitem**, nicht der Task. conFLOW hat die Visualisierung generisch verdrahtet: Der Task liest zur Laufzeit die Container-Elemente, die das BAdI gesetzt hat. Fehlen sie, zeigt die Inbox wie bisher den Textblock.
+
+## Was angelegt wird
+
+| Bereich | Was | Wie oft | Seite |
+| --- | --- | --- | --- |
+| conFLOW | eine Methode im Hook `get_after_creation_workitem`, drei Konstanten | je Workflow | [conFLOW](conflow.md) |
+| conFLOW-Customizing | **nichts** — `C01` bis `C10` bleiben, wie sie sind | — | [conFLOW](conflow.md) |
+| SWFVMD1 | dynamische Visualisierung für Task `TS00388601` | **einmal je System** | [Customizing](customizing.md) |
+| Launchpad | Semantic Object, Target Mapping, Katalog, Rolle | je Workflow | [Customizing](customizing.md) |
+| Gateway | OData-Service registrieren | je Workflow | [Customizing](customizing.md) |
+| App | SEGW-Modell, zwei ABAP-Klassen, UI5-App | je Workflow | [Die App](app.md) |
+
+Die Reihenfolge beim Einspielen und die Proben nach jedem Schritt stehen unter [Prüfen](pruefen.md).
+
+## Voraussetzungen
+
+| | |
 | --- | --- |
-| Severity, Empfehlung, Backorder-Prozent | die eigenen Container-Elemente — **austauschbar** |
-| Sechs Entscheidungsgründe | die eigene Werteliste — **austauschbar** |
-| Schritte `01`, `02`, `03` | die eigenen `gen_stat`-Codes — **austauschbar** |
-| Query-Provider, Behavior Pool, Custom Section, Regelklasse | **Struktur bleibt** — nur die Feldnamen wechseln |
-| Die siebzehn Fallen | **gelten unverändert** — sie hängen am Framework, nicht am Prozess |
+| ABAP | SAP_BASIS **7.50**, SAP_GWFND 750 — kein RAP nötig |
+| UI5 | SAPUI5 **1.71** oder neuer |
+| Inbox | Fiori My Inbox (BSP `CA_FIORI_INBOX`) |
 
 {% hint style="info" %}
-**Stand und Gültigkeit.** Erzeugt aus dem Referenzprojekt zu `ZCFL_00500`; dort liegt die Quelle und dort läuft der Generator (`tools/build_howto_doc.py`). Eine Kopie dieses Dokuments an anderer Stelle ist eine **Momentaufnahme** — bei Änderungen am Referenz-Workflow neu erzeugen, sonst driftet sie vom Code weg. Getestet auf S/4HANA mit `minUI5Version 1.136`.
-{% endhint %}
-
-## Was *zugesichert* ist — und was nur beobachtet
-Ein Teil dieses Dokuments beschreibt **dokumentierte Schnittstellen**: RAP, CDS, OData V4, die conFLOW-BAdI-Hooks, die Customizing-Tabellen. Ein anderer Teil beschreibt, **wie sich SAPs My Inbox im Referenzsystem verhält** — gelesen im minifizierten Bundle der Anwendung `CA_FIORI_INBOX`, weil es anders nicht herauszufinden war.
-| Beobachtet, nicht zugesichert | Konsequenz |
-| --- | --- |
-| `openMode = embedIntoDetailsNestedRouter` und das Verhalten der übrigen fünf Modi | Nach einem **SAPUI5- oder S/4-Upgrade erneut prüfen.** Fällt eines davon weg, äußert es sich als „Detailbereich bleibt weiß" oder „Inhalt wechselt nicht" — **ohne Fehlermeldung**. Der [Notaus](oberflaeche/quellprojekt.md) und der Rückfall auf den Textblock sind genau dafür da |
-| Der Knopf „Show Details" und der `DynamicSideContent` |
-| `refreshForStartupParameter` / `navigateBasedOnStartupParameter` — undokumentiert |
-| Die Reihenfolge **SWFVMD1 vor SWFVISU** |
-| Dass je Intent genau *eine* Component wiederverwendet wird |
-{% hint style="info" %}
-**Das ist keine Warnung vor dem Muster**, sondern eine Einordnung. Wer eine Oberfläche in ein fremdes Programm einbettet, hängt immer an dessen Verhalten; man sollte nur wissen, an welchen Stellen — und dort zuerst nachsehen, wenn nach einem Upgrade etwas anders aussieht.
-{% endhint %}
-
-## Braucht es überhaupt eine App?
-Nicht jedes Workitem verdient eine. Der conFLOW-Textblock kann mehr, als man denkt: Gliederung, fette Überschriften (SAPscript-ITF, `<H>Text</>`), Ampel als Emoji, Priorität, farbige Buttons, sprechenden Objekt-Link.
-Der Umbau lohnt, wenn **mindestens zwei** zutreffen:
-
-  - der Bearbeiter soll **etwas eingeben**, das in keinen Button passt
-  - der Kontext braucht **Reiter** statt Fließtext
-  - es gibt Werte zum **Auswählen** statt Freitext
-  - die Optik ist Teil des Auftrags
-
-{% hint style="info" %}
-Trifft nur **eines** zu, ist der Textblock die bessere Investition. Er kostet einen Nachmittag, die App ein Projektkapitel — und sie bringt einen Auslieferungsprozess mit, den es vorher nicht gab: Repository, Build, Deploy. Siehe [Kapitel „Das Quellprojekt"](oberflaeche/quellprojekt.md).
+**Alle Namen sind Beispiele** aus einem Referenzworkflow (Nummer `00500`, eine Lieferterminabweichung im Kundenauftrag). Für den eigenen Workflow Nummer und Namen tauschen, das Muster bleibt.
 {% endhint %}
