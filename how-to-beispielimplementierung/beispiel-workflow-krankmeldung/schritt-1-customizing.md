@@ -74,7 +74,7 @@ Unter **"User Status Zuordnung"** ordnen Sie den Rollen die tatsächlichen Bearb
 
 ## 1.5 Laufweg definieren
 
-Unter **"Genehmigungsschritte"** (Übergangstabelle) definieren Sie, welcher Schritt auf welchen folgt. Jeder Schritt hat zwei Standard-Ausgänge:
+Unter **"Genehmigungsstatus - Steuerung"** (`/C09/CFL_C02`, die Übergangstabelle) definieren Sie, welcher Schritt auf welchen folgt. Jeder Schritt hat zwei Standard-Ausgänge:
 
 | Ausgang | Feld in `/C09/CFL_C02` | Bedeutung |
 | --- | --- | --- |

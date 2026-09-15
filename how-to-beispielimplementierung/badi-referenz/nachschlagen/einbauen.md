@@ -22,7 +22,7 @@ Customizing-Schlüssel zwanzigmal als Literal.
 | `C02` | die Übergänge: Schritt + Entscheidung → Folgeschritt |
 | `C05` | die Bearbeiterkreise je Schritt |
 | `C03` | wer der Kreis ist - oder `USER_BADI = 'X'` für die Findung im Code |
-| `C07` | die Container-Elemente. **Fehlt ein Element hier, wird sein Wert kommentarlos verworfen** |
+| `C07` | der Mailversand: wer bei welchem Schritt welches Mail bekommt |
 | `C09` / `C09T` | die Texte der Entscheidungen `UC1`–`UC5` |
 | `C08` | Objekt und Subobjekt fürs Anwendungsprotokoll |
 | `C10` | die Typkopplung, wenn der Start über ein Ereignis läuft |
@@ -70,4 +70,6 @@ selbst, und dann sieht man nichts.
 | Business Workplace | ein Workitem bei den Benutzern der Rolle |
 | Workflow-Protokoll | beim Hintergrundschritt der berechnete Text, nicht der aus dem Customizing |
 
-Steht in `S04` nichts, ist fast immer `C07` die Ursache.
+Steht in `S04` nichts, zuerst prüfen, ob `B1` überhaupt gelaufen ist
+(Workflow-Protokoll, SLG1). `SET_ATTRIBUT_VALUE` schreibt nur für eine
+Instanz, die in `/C09/CFL_S01` steht.
