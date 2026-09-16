@@ -1,16 +1,18 @@
 # Technical documentation
 
-This page describes the technical architecture of conFLOW: the Customizing model, the runtime data, the BAdI interface and the integration with SAP Business Workflow.
+This page describes conFLOW in full: the Customizing model, the runtime data, the step types, agent determination, email notification and the BAdI interface. It is meant to be read as a whole and replaces the earlier specification document.
 
 {% hint style="info" %}
-**Where to go next.** For a hands-on walkthrough, see the [sick leave how-to](how-to/sick-leave-workflow/README.md). For every BAdI method in detail, see the BAdI reference in the how-to section.
+**Where else to look.** Every BAdI method on its own, with source code, is in the [reference of all 26 BAdI methods](how-to/badi-reference/README.md). For a workflow built end to end, see the [sick leave how-to](how-to/sick-leave-workflow/README.md).
 {% endhint %}
 
 ---
 
-## Architecture at a glance
+## 1 Overview
 
-conFLOW is built on top of SAP Business Workflow and controls it through Customizing tables (`/C09/CFL_C*`) and a BAdI interface (`/C09/CFL_IF_BADI_0101`). Runtime data is stored in the tables `/C09/CFL_S*`.
+conFLOW is a framework on top of SAP Business Workflow. An approval process is not built in the Workflow Builder but in Customizing tables; the business logic hangs off a BAdI interface. You do not need SAP Workflow skills to build one.
+
+There is exactly **one** workflow template in the system for **all** conFLOW workflows. What an individual process does is not stored in a template of its own but in its Customizing rows. This is why there is no workflow development in the classic sense: no SWDD, and no transport dependency between a process change and the workflow definition.
 
 ```
 Customizing  /C09/CFL_C*          what the process looks like
@@ -26,54 +28,268 @@ SAP Business Workflow             generic conFLOW tasks, SBWP, Fiori My Inbox
 Runtime data  /C09/CFL_S*         instance · work item history · container
 ```
 
-## The Customizing model
+Every workflow has a five-digit number, for example `00208`. That number is the common thread: it identifies the workflow definition, it is the filter of the BAdI implementation, and it appears in every runtime row.
 
-The workflow definition, its steps, transitions, agents and deadlines are maintained entirely in Customizing tables. Transaction `/C09/CONFLOW_C` (view cluster `/C09/CFL_C`) is the central entry point.
+## 2 The Customizing model
+
+The entry point is transaction `/C09/CONFLOW_C`, a view cluster covering all nodes.
 
 | Node (EN logon) | Table | Content |
 | --- | --- | --- |
 | Workflow definition | `/C09/CFL_C06` | one row per workflow number |
-| Approval steps | `/C09/CFL_C01` | steps with status code `gen_stat`, type, texts, background method |
-| Approval status - control | `/C09/CFL_C02` | transitions (`OK` / `NOK`), deadlines |
+| Approval steps | `/C09/CFL_C01` | steps with status code `gen_stat`, attribute, texts, class/method |
+| Approval status - control | `/C09/CFL_C02` | transitions (OK / NOK / deadline), deadlines |
 | Control additional status | `/C09/CFL_C09` | decision options `UC1`–`UC5` per step |
-| User status definition | `/C09/CFL_C04` | roles (agent keys `gen_stat_user`) |
-| User status assignment (current settings) | `/C09/CFL_C03` | users, positions or PFCG roles per role, or `user_badi = 'X'` |
-| User status assignment (default - transport) | `/C09/CFL_C12` | transportable default for the assignment |
+| User status definition | `/C09/CFL_C04` | roles, that is the agent keys `gen_stat_user` |
+| User status assignment (current settings) | `/C09/CFL_C03` | who is behind a role |
+| User status assignment (default - transport) | `/C09/CFL_C12` | the transportable default for that assignment |
 | Assignment of user status | `/C09/CFL_C05` | which role processes which step |
-| Control mail setting | `/C09/CFL_C07` | who receives which email at which step |
-| General parameters | `/C09/CFL_C08` | e.g. object and subobject of the application log |
-| Type linkages standard | `/C09/CFL_C10` | links an event to a workflow definition |
+| Control mail setting | `/C09/CFL_C07` | who receives which email on which decision |
+| General parameters | `/C09/CFL_C08` | settings per workflow, see section 10 |
+| Type linkages standard | `/C09/CFL_C10` | which event starts which workflow |
 
-## Workflow definition and steps
+{% hint style="warning" %}
+**Texts never belong in `C01`, `C06` or `C09` themselves, but always in the matching `*t` table.** If you look for the text in the main table you will not find it — and if you maintain it there, you lose it with the next language.
+{% endhint %}
 
-Every workflow has a unique number (e.g. `00208`) and is registered in `/C09/CFL_C06`. The steps are stored in `/C09/CFL_C01`, the transitions in `/C09/CFL_C02`.
+You can also attach documentation and upload documents to a workflow definition through the GOS integration. Select the node *General parameters* in the maintenance tree to do so.
 
-| Type | Status code | Meaning |
+## 3 Starting a workflow
+
+There are three ways. The first one is the recommended one.
+
+**Through an event and the type linkage.** `/C09/CFL_C10` defines which event starts which workflow. An entry links object category, object type, event and the receiver type `CONFLOW` to a workflow definition. In standard Customizing the event must be registered in SWE2 with the same receiver type. The fields:
+
+| Field | Meaning |
+| --- | --- |
+| `OBJCATEG` | object category, `BO` for BOR objects |
+| `OBJTYPE` | object type, e.g. `BUS2012` |
+| `EVENT` | event of the object type |
+| `RECTYPE` | receiver type, `CONFLOW` |
+| `EXECUTE_FIRST` | the first step is confirmed automatically — the workflow starts at the second |
+
+{% hint style="warning" %}
+**Object type, event and receiver type must be unique.** A second entry with the same combination may start the wrong workflow. And: **only one open workflow per object is possible.** A further event while a workflow is open does nothing rather than starting a second one.
+{% endhint %}
+
+**Through your own event from a user exit, BAdI or enhancement.** If no standard event fits, you can raise the workflow yourself when an object is saved. The call optionally carries container values that are then available from the first step on:
+
+```abap
+DATA: ls_sweinstcou TYPE /c09/cfl_sweinstcou_st,
+      ls_swhactor   TYPE swhactor,
+      lt_container  TYPE /c09/cfl_value_multi_s04_tt,
+      ls_container  LIKE LINE OF lt_container.
+
+ls_sweinstcou-instid  = lv_document_number.
+ls_sweinstcou-objtype = 'BUS2012'.
+ls_sweinstcou-event   = 'CHANGED'.
+ls_sweinstcou-rectype = 'CONFLOW'.
+
+" optional - SY-UNAME is used if you leave this out
+ls_swhactor-otype = 'US'.
+ls_swhactor-objid = sy-uname.
+
+ls_container-element = 'AMOUNT'.
+ls_container-value   = lv_amount.
+APPEND ls_container TO lt_container.
+
+/c09/cfl_cl_workflow_0101=>start_workflow_int(
+  is_sweinstcou = ls_sweinstcou
+  is_creator    = ls_swhactor
+  it_container  = lt_container ).
+```
+
+**Directly, without an event.** Possible through `/c09/cfl_cl_workflow_0101=>start_workflow_extern`, but not the preferred way: the start then depends on the calling code instead of on the document event.
+
+{% hint style="info" %}
+`start_workflow_extern` checks by itself whether a workflow is already open for the object. If one is, a message is returned in `ET_BAPIRET2` and no second workflow is started.
+{% endhint %}
+
+## 4 Steps and step types
+
+Every step has a two-character status code `gen_stat`. The first character decides what kind of step it is.
+
+| Code | Meaning |
+| --- | --- |
+| `01`–`14` | process steps, business meaning per workflow from `C01` |
+| `X0` | workflow start |
+| `X1` | end — approved |
+| `X2` | end — withdrawn |
+| `X3` | end — rejected |
+| `Y1`–`Y5` | branch points: the follow-up status is determined at runtime, see below |
+| `B*` | background steps, run without a user |
+
+**Every status starting with `X` ends the workflow.** The framework checks the first character and sets the `wf_end` flag. The meaning of `X1`, `X2` and `X3` is convention — further `X*` statuses are allowed.
+
+**`X0` is the only status hard-coded in the framework.** `C02` needs a row with `gen_stat = 'X0'` whose OK outcome points to the first real step. That step may be a background step.
+
+In the *Attribute* column of the approval steps, four values control the behavior:
+
+| Attribute | Effect |
+| --- | --- |
+| `BACK` | background step — runs the assigned method, no work item |
+| `BACK_BATCH` | like `BACK`, but from the update task |
+| `WAIT` | wait step: the workflow waits until all triggered subworkflows are finished |
+| `BADI` | the follow-up status is determined through the BAdI, as with a `Y` step |
+
+### Branch points: `Y` steps
+
+A step whose code starts with `Y` is a decision point without an agent. Once conFLOW has determined the follow-up status from `C02`, it looks at that step: if its code starts with `Y` — or if it carries the attribute `BADI` — the class/method assigned in `C01` runs first, and then the BAdI method `GET_STATUS_DYNAMIC` is called. Both receive the intended status and the previous state, and both may overwrite the intended status.
+
+{% hint style="warning" %}
+**`GET_STATUS_DYNAMIC` does not run on every status change.** The framework calls the hook in exactly one place, and only under this condition: the target step starts with `Y`, or the target step carries the attribute `BADI`. If you implement the hook without setting up the step accordingly, you will wait for a call that never comes.
+{% endhint %}
+
+The price of a branch point: at that place the process flow is no longer in Customizing but in code. So check in this order whether an additional status in `C09` or a background step returning `EV_DECISION_KEY` already does the job — with both, the branch stays visible in `C02`.
+
+## 5 Outcomes and decision paths
+
+`C02` gives every step exactly three outcomes: OK, NOK and deadline expiry. Everything beyond that is in `C09`.
+
+| Decision | Key | Follow-up status from |
 | --- | --- | --- |
-| Start | `X0` | the entry point of every workflow |
-| Dialog | `01`, `02`, … | work item in the agent's inbox |
-| Background | `B1`, `B2`, … | automatic processing, no work item |
-| End | `X1`, `X2`, … | every status starting with `X` ends the workflow |
+| OK | `0001` | `C02-gen_stat_ok` |
+| NOK | `0002` | `C02-gen_stat_nok` |
+| deadline expiry | — | `C02-gen_stat_frist` |
+| `UC1` | `0003` | `C09-gen_stat_ok` |
+| `UC2` | `0004` | `C09-gen_stat_ok` |
+| `UC3` | `0005` | `C09-gen_stat_ok` |
+| `UC4` | `0006` | `C09-gen_stat_ok` |
+| `UC5` | `0007` | `C09-gen_stat_ok` |
 
-## Agent determination and roles
+That gives every step up to seven outcomes. The key of `C09` is `(wf_definition, gen_stat, gen_decision)` — **one row per step.** If the row is missing, pressing the button does nothing, without an error message.
 
-Steps are assigned to agents through agent keys (`gen_stat_user`) in `/C09/CFL_C04` and `/C09/CFL_C05`. The actual resolution — which user receives the work item — can be fixed in Customizing (`/C09/CFL_C03`) or determined dynamically by the BAdI method `GET_ACTORS`.
+The checkbox *no display* hides a decision option. The outcome still exists and can be set from code, but the agent is not offered a button for it. That is the way to model technical outcomes nobody should pick by hand.
 
-## Runtime data model
+### A loop instead of a restart
 
-Runtime data lives in three tables:
+A recurring pattern: a document goes back for rework and is to be processed again.
 
-| Table | One row per | Content |
+| Table | Step | Decision | Follow-up status |
+| --- | --- | --- | --- |
+| `C09` | `01` | `UC4` | `B1` |
+| `C02` | `B1` | OK | `01` — new work item, same instance |
+
+The background step `B1` is deliberately empty. Its purpose is not logic but reporting: every pass leaves a row in the history. A direct `01 → 01` could not be told apart from an ordinary resubmission later; with `B1` you can count how often a document went back for rework.
+
+## 6 Agent determination
+
+Two keys that must not be confused:
+
+- **`gen_stat`** — *where* the process stands, that is the step code.
+- **`gen_stat_user`** — *who* is up next, that is the agent key. Several steps may share the same agent key.
+
+`C04` defines the roles, `C05` defines which role processes which step, and `C03` holds who is actually behind a role. The options:
+
+| Setting | Meaning |
+| --- | --- |
+| `WF_INITIATOR` | the creator of the workflow |
+| SAP user (`US`) | a fixed user |
+| Organizational unit / position | resolved through the organizational structure |
+| Email address | for email notification only, no work item |
+| BAdI | `GET_ACTORS` does the resolution — the way to BRFplus, custom tables or rule sets |
+
+Three agent keys have a fixed meaning: `BU` for background steps, `WI` for the initiator and `$$` internally for deadline steps.
+
+`C12` holds the same assignment as `C03`, but transportable. `C03` is a current setting maintained in the target system; `C12` ships the default with the transport.
+
+**Parallel agent paths** are created by assigning several agent keys to one step. All agents receive a work item at the same time, and the workflow waits until all of them have decided.
+
+## 7 Background steps
+
+A background step runs a static method, without a work item and without a user. Class and method are stored in `C01`. The method receives the workflow instance and determines how the process continues:
+
+- `EV_DECISION_KEY` set → that outcome is taken (`0001` OK, `0002` NOK, `0003`–`0007` for `UC1`–`UC5`).
+- `EV_DECISION_KEY` not set → `ET_BAPIRET2` decides: a message of type E or A sends the workflow down the NOK path, otherwise it continues with OK.
+
+If a step carrying attribute `BACK` has no method assigned at all, it passes through positively without doing anything.
+
+Messages from a background step go to the application log (SLG1). **This happens only if an `OBJECT` is maintained in the general parameters** — without that entry the step runs, but nothing is logged.
+
+The other way round: if a step is *not* marked as a background step and no class/method is maintained either, conFLOW generates a standard decision task. If you want to show a screen of your own instead, assign a class/method here as well; its `EV_DECISION_KEY` then controls the outcome.
+
+## 8 Deadlines and escalation
+
+Deadlines are maintained in `C02`: value, unit and the status to switch to on expiry. No deadline agents, no workflow Customizing in SPRO — one table row.
+
+Which factory calendar applies to the calculation can be set through the BAdI method `GET_FACTORY_CALENDAR`.
+
+## 9 Email notification
+
+conFLOW sends HTML emails per step and decision, controlled through `C07`. Five fields carry the dispatch:
+
+| Field | Meaning |
+| --- | --- |
+| Decision | which action triggers the email |
+| User status | who receives the email |
+| Subject | SO10 text for the subject line |
+| HTML header / item / footer | HTML templates for building the email |
+| Text name | SO10 text for the content |
+
+The texts and templates contain placeholders that are replaced while the email is built. The BAdI method `GET_DATASOURCE_MAIL` supplies the values.
+
+**Dynamic recipients:** if the agent key in `C07` starts with `Y`, the framework calls the BAdI method `GET_STATUS_MAIL_DYNAMIC`. That method may not only change the recipient but return a whole table of recipients — the way to model distribution lists that are only known at runtime. If the method returns nothing, the maintained recipient stands.
+
+`Y` means the same thing in both places: *ask the BAdI*. In the step code it leads to `GET_STATUS_DYNAMIC`, in the recipient key of the email notification to `GET_STATUS_MAIL_DYNAMIC`.
+
+## 10 General parameters and inheritance
+
+`C08` holds settings per workflow definition. The key is the workflow number plus the parameter name; the permitted names are fixed values of a domain, so a new parameter is a new fixed value and not a table change.
+
+| Parameter | Meaning |
+| --- | --- |
+| `OBJECT` / `SUBOBJECT` | object and subobject of the application log for background steps |
+| `WF_DEF` | inheritance: which workflow definition this workflow inherits its Customizing from |
+| `GEN_TASK` | relevant for type linkage when the first step is to be confirmed automatically |
+| `LICENSE` | license information |
+| `REPPR` | report setting |
+| `TCLASS` | class for additional processing |
+
+### What `WF_DEF` inherits — and what it does not
+
+A workflow with `WF_DEF` maintained takes over the Customizing of the parent definition. Inherited are `C01`, `C02`, `C03`, `C04`, `C05`, `C07` and `C09` together with their text tables.
+
+{% hint style="warning" %}
+**The general parameters themselves (`C08`) and the definition text (`C06T`) are not inherited.** An inheriting workflow therefore has the steps and outcomes of its parent, but not its application log object. If you rely on it, you get a workflow that runs but logs nothing.
+{% endhint %}
+
+Your own rows win: inherited rows are appended at the end, even when your own definition already has the same key. An access therefore always hits your own row first.
+
+## 11 Subworkflows
+
+In *Assignment of user status* you can start a subworkflow per decision: field *Def. OK* on decision OK, *Def. NOK* on NOK. The subworkflow is a workflow definition of its own with an instance of its own.
+
+{% hint style="warning" %}
+**If the main workflow is to wait for the subworkflow, it needs a wait step.** Without a step carrying attribute `WAIT`, the main workflow continues while the subworkflow is still open. The wait step moves on only once no triggered workflow is open any more.
+{% endhint %}
+
+## 12 The runtime data model
+
+Three tables, linked by the instance `id`:
+
+| Table | One row per | Important fields |
 | --- | --- | --- |
-| `/C09/CFL_S01` | workflow instance | workflow number, object key (`instid`), current step, end flag |
-| `/C09/CFL_S03` | work item, chronologically | step, agent key, work item ID, creator, time |
-| `/C09/CFL_S04` | container element | attribute-value pairs of the instance |
+| `/C09/CFL_S01` | workflow instance | `id`, `wf_definition`, `instid` (object key), `gen_stat` (current step), `wf_end` |
+| `/C09/CFL_S03` | work item, chronologically | `id`, `wi_id`, `gen_stat`, `gen_stat_user`, creator and time |
+| `/C09/CFL_S04` | container element | `id`, element, value |
 
-The three tables are linked by the instance `id`.
+This gives you a complete audit trail without a custom table: who processed which step when and with which outcome, and which data was available at the time of the decision.
 
-## BAdI interface
+{% hint style="info" %}
+**The entry point when tracing a problem** is almost always the same path: `wi_id` → `/C09/CFL_S03` → `id` → `/C09/CFL_S01`.
+{% endhint %}
 
-The interface `/C09/CFL_IF_BADI_0101` defines the hooks where business logic plugs in. Each workflow implements the interface in its own class `ZCL_CFL_WORKFLOW_<nnnnn>`, restricted by a filter on the workflow number. The most important hooks:
+## 13 The container and passing data
+
+The container `/C09/CFL_S04` stores any attribute-value pairs per instance. It is written and read with the framework methods `SET_ATTRIBUT_VALUE` and `GET_ATTRIBUT_VALUE`. Values can be passed in at start (see section 3) or created in any step.
+
+The container is also the natural source for placeholders in work item texts and emails — and the reason the audit trail comes for free: whatever is stored there can be traced later.
+
+## 14 The BAdI interface
+
+The interface `/C09/CFL_IF_BADI_0101` defines the places where business logic plugs in. Each workflow implements this interface in its own class `ZCL_CFL_WORKFLOW_<nnnnn>`; the filter of the implementation is the workflow number. Hooks you do not need stay empty.
+
+The most important ones:
 
 | Hook | Purpose |
 | --- | --- |
@@ -81,47 +297,71 @@ The interface `/C09/CFL_IF_BADI_0101` defines the hooks where business logic plu
 | `GET_DESCRIPTION` / `GET_WORKITEM_TEXT` | work item title and text |
 | `GET_BEFORE_DECISION_WORKITEM` | control the buttons |
 | `EXECUTE_DEFAULT_METHOD` | navigation to the business object |
-| `GET_STATUS_DYNAMIC` | determine the next step in code |
-| `GET_DATASOURCE_MAIL` | values for mail placeholders |
+| `GET_STATUS_DYNAMIC` | determine the follow-up status in code (only on `Y` steps, see section 4) |
+| `GET_STATUS_MAIL_DYNAMIC` | determine email recipients in code |
+| `GET_DATASOURCE_MAIL` | values for the placeholders in the mail text |
+| `GET_FACTORY_CALENDAR` | factory calendar for deadline calculation |
 
-Hooks you don't need stay empty.
+{% hint style="info" %}
+**All 26 methods, each with its purpose, signature, source code and a note on when it is better left empty,** are in the [BAdI reference](how-to/badi-reference/README.md).
+{% endhint %}
 
-## Decision options
+## 15 User interfaces
 
-Every step offers up to seven outcomes: `OK` and `NOK` (controlled via `/C09/CFL_C02`) and `UC1` to `UC5` (controlled via `/C09/CFL_C09`). The button labels are maintained in the corresponding text tables.
+Work items appear in the SAP Business Workplace (`SBWP`) and in SAP Fiori My Inbox. conFLOW controls the button labels, the context block and navigation to the business object in both through the same BAdI hooks.
 
-## Background steps
+On top of that, every step can be displayed on a mobile device: a conMOBILE app reads the same container and uses the same decision keys. One data source, one decision model — no matter where the decision is made.
 
-Background steps execute a static method automatically — without a work item in an inbox. The method receives the current workflow instance and returns a decision key that determines the next step. This lets you model branches, enrichment and automatic postings within the process.
+If you need input fields of your own on the work item in Fiori My Inbox, the [how-to on the Fiori UI](how-to/fiori-ui-in-work-item/README.md) shows the way that was actually built.
 
-## Deadlines and escalation
+## 16 Transactions and the admin console
 
-Deadlines are maintained in Customizing (`/C09/CFL_C02`): value, unit and follow-up status when the deadline expires. No deadline agents, no workflow Customizing in SPRO — everything in one table row.
+| Transaction | Purpose |
+| --- | --- |
+| `/C09/CONFLOW_C` | conFLOW Customizing — the view cluster across all nodes |
+| `/C09/CFL_ADMIN_CON` | admin console: running and completed workflows at a glance |
+| `/C09/CFL_START_WF_TE` | start a workflow for test purposes |
 
-## Email notification
+{% hint style="warning" %}
+**`/C09/CONFLOW_C` starts in display mode.** The transaction calls the view cluster with the display flag set. To maintain, switch to change mode after entering.
+{% endhint %}
 
-conFLOW sends emails per step, controlled by Customizing. The contents come from SO10 texts in which placeholders are replaced dynamically. The BAdI method `GET_DATASOURCE_MAIL` supplies the replacement values.
+### The admin console
 
-## Container and data transfer
+The console answers the questions that come up in daily operations: what is running, where is it stuck, and who would have to act.
 
-The conFLOW container (`/C09/CFL_S04`) stores any attribute-value pairs per workflow instance. It is written and read with the framework methods `SET_ATTRIBUT_VALUE` and `GET_ATTRIBUT_VALUE`. Every value stored there can be traced later.
+**You can restrict** by workflow definition, instance and object type, by creation date and time of the work item, by agent, step code and work item status, and by work item text. Two switches decide whether running, completed or both kinds of workflows are shown. You can switch between a **header view** per workflow instance and an **item view** per work item.
 
-## Starting a workflow
+**The list** shows work item number, text and status, creation and change date, the agent in clear text, who forwarded it, the decision taken, the details of the email sent, and how long the item has been lying around. A traffic light marks work items that have been open for longer than the configured number of days — three by default.
 
-There are several ways to start a conFLOW workflow: from an application BAdI (e.g. after a document is saved), via SAP status management (a status change raises a BOR event) or from a report. The key element is the **type linkage** in `/C09/CFL_C10`, which links the event to the workflow definition.
+**From the list** you can display and execute the work item, show the actual agents, open the email that was sent, forward a work item and cancel a workflow. Cancellations are logged.
 
-## SAP GUI and Fiori
+**Instead of the list** you can display an **evaluation**: per workflow definition and step, the number of items in total, open and completed, the longest and average waiting time of the open ones, the longest and average throughput time of the completed ones, and the distribution of decisions including the rejection rate. This is the fastest way to answer which step a process really gets stuck at.
 
-Work items appear both in the SAP Business Workplace (transaction `SBWP`) and in SAP Fiori My Inbox. conFLOW controls button labels, the context block and navigation to the business object in both UIs through the same BAdI hooks.
+## 17 Objects in the system
 
-## conMOBILE integration
+The enhancement interface:
 
-The integration with conMOBILE provides a mobile display of every workflow step. The conMOBILE app reads the same conFLOW container and uses the same decision keys — one data source, one decision model.
+| Object | Name |
+| --- | --- |
+| Enhancement spot | `/C09/CFL_ENHANCEMENT_0101` |
+| BAdI definition | `/C09/CFL_BADI_0101` — multiple use, no fallback class |
+| Interface | `/C09/CFL_IF_BADI_0101` |
+| Filter | `WF_DEFINITION` — the workflow number |
 
-## Parallel processing
+{% hint style="warning" %}
+**`/C09/CFL_CL_BADI_0101` is the sample implementation that ships with conFLOW, not the BAdI definition and not your implementation.** It is registered in the spot as the sample class and serves as a copy template. Your own logic belongs in a class of your own, `ZCL_CFL_WORKFLOW_<nnnnn>`, filtered on your workflow number.
+{% endhint %}
 
-conFLOW supports parallel agent paths: several agents receive a work item at the same time, and the workflow waits for all decisions before it continues. This is configured by assigning several agent keys to one approval step.
+The classes you meet most often when tracing errors and when extending:
 
-## Status management and audit trail
+| Area | Classes |
+| --- | --- |
+| Process | `/C09/CFL_CL_WORKFLOW_0101` (start, control, cancel), `/C09/CFL_CL_WORKFLOW_EXIT_0101` (work item exit) |
+| Agents and rules | `/C09/CFL_CL_ACTORS_0101`, `/C09/CFL_CL_RULE_0101`, `/C09/CFL_CL_DECIKEY_0101` |
+| Mail and texts | `/C09/CFL_CL_MAIL_0101`, `/C09/CFL_CL_MAIL_LANG_0101`, `/C09/CFL_CL_TEXTPARSER_0101`, `/C09/CFL_CL_OBJTEXT_0101` |
+| Extension | `/C09/CFL_IF_BADI_0101`, `/C09/CFL_IF_BACKGROUND_0101`, `/C09/CFL_IF_TEMPLATE_0101` |
 
-The workflow status is kept in `/C09/CFL_S01` (current step) and `/C09/CFL_S03` (history of all work items). Together with the container (`S04`) this results in a complete audit trail without a custom Z table: who processed which step when, with which outcome, and which data was available at the time of the decision.
+For common business objects, **templates** ship with the product as a pattern for the integration — among others for purchase order, purchase requisition, sales order, incoming invoice, business partner, FI document header, customer and vendor.
+
+For long-term storage there is an **archiving object** of its own with a write and a delete program, used to move completed workflows out of the runtime tables.
