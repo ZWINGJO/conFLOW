@@ -62,14 +62,19 @@ There are three ways. The first one is the recommended one.
 
 | Field | Meaning |
 | --- | --- |
+| `WF_DEFINITION` | the workflow definition that is started |
 | `OBJCATEG` | object category, `BO` for BOR objects |
 | `OBJTYPE` | object type, e.g. `BUS2012` |
 | `EVENT` | event of the object type |
 | `RECTYPE` | receiver type, `CONFLOW` |
-| `EXECUTE_FIRST` | the first step is confirmed automatically — the workflow starts at the second |
+| `EXECUTE_FIRST` | labelled *Step 1 auto* — the first step is confirmed automatically, the workflow starts at the second |
 
 {% hint style="warning" %}
-**Object type, event and receiver type must be unique.** A second entry with the same combination may start the wrong workflow. And: **only one open workflow per object is possible.** A further event while a workflow is open does nothing rather than starting a second one.
+**`EXECUTE_FIRST` only takes effect if `GEN_TASK` is maintained in the general parameters.** Without the generic conFLOW task the framework has no task to confirm automatically — the flag is set but does nothing.
+{% endhint %}
+
+{% hint style="warning" %}
+**Object type, event and receiver type must be unique.** A second entry with the same combination may start the wrong workflow. And: **only one open workflow per object and workflow definition is possible.** When creating a workflow, the framework looks for an open instance with the same object key, object type and workflow definition; if it finds one, the start is rejected with a message instead of creating a second workflow. A *different* workflow definition may run on the same object at the same time.
 {% endhint %}
 
 **Through your own event from a user exit, BAdI or enhancement.** If no standard event fits, you can raise the workflow yourself when an object is saved. The call optionally carries container values that are then available from the first step on:
@@ -77,7 +82,7 @@ There are three ways. The first one is the recommended one.
 ```abap
 DATA: ls_sweinstcou TYPE /c09/cfl_sweinstcou_st,
       ls_swhactor   TYPE swhactor,
-      lt_container  TYPE /c09/cfl_value_multi_s04_tt,
+      lt_container  TYPE swconttab,
       ls_container  LIKE LINE OF lt_container.
 
 ls_sweinstcou-instid  = lv_document_number.
@@ -123,14 +128,17 @@ Every step has a two-character status code `gen_stat`. The first character decid
 
 **`X0` is the only status hard-coded in the framework.** `C02` needs a row with `gen_stat = 'X0'` whose OK outcome points to the first real step. That step may be a background step.
 
-In the *Attribute* column of the approval steps, four values control the behavior:
+In the *Attribute* column (`ATTRIBUT`) of the approval steps, five fixed values control the behavior. The normal case is the empty value:
 
 | Attribute | Effect |
 | --- | --- |
-| `BACK` | background step — runs the assigned method, no work item |
-| `BACK_BATCH` | like `BACK`, but from the update task |
-| `WAIT` | wait step: the workflow waits until all triggered subworkflows are finished |
-| `BADI` | the follow-up status is determined through the BAdI, as with a `Y` step |
+| *(empty)* | standard: user decision — the agent decides in the work item |
+| `BACK` | background task in the **update task** — runs the assigned method, no work item |
+| `BACK_BATCH` | background task in **batch** |
+| `WAIT` | wait step for parallel processing: the workflow waits until all triggered subworkflows are finished |
+| `BADI` | the next step is determined dynamically through the BAdI, as with a `Y` step |
+
+The class and method of a step are stored in `CLSNAME` and `CMPNAME`, the SO10 text for the work item text in `TDNAME`.
 
 ### Branch points: `Y` steps
 
@@ -159,7 +167,9 @@ The price of a branch point: at that place the process flow is no longer in Cust
 
 That gives every step up to seven outcomes. The key of `C09` is `(wf_definition, gen_stat, gen_decision)` — **one row per step.** If the row is missing, pressing the button does nothing, without an error message.
 
-The checkbox *no display* hides a decision option. The outcome still exists and can be set from code, but the agent is not offered a button for it. That is the way to model technical outcomes nobody should pick by hand.
+The checkbox *no display* (`NODISPLAY`) hides a decision option. The outcome still exists and can be set from code, but the agent is not offered a button for it. That is the way to model technical outcomes nobody should pick by hand.
+
+`C09` carries three further columns that are visible in the maintenance view: `NATURE` colors the button in the Fiori inbox, `COMMENT_REQ` makes a comment mandatory there, and `BEDINGUNG` holds a condition for the outcome.
 
 ### A loop instead of a restart
 
@@ -210,21 +220,26 @@ The other way round: if a step is *not* marked as a background step and no class
 
 ## 8 Deadlines and escalation
 
-Deadlines are maintained in `C02`: value, unit and the status to switch to on expiry. No deadline agents, no workflow Customizing in SPRO — one table row.
+Deadlines are maintained in `C02`, in three fields: `FRIST_STUNDEN` the value, `FRIST_MSEHI` the unit and `GEN_STAT_FRIST` the status to switch to on expiry. No deadline agents, no workflow Customizing in SPRO — one table row.
+
+{% hint style="warning" %}
+**The field name `FRIST_STUNDEN` is misleading.** The unit is freely selectable and stored in `FRIST_MSEHI`; in the maintenance view the column is therefore simply labelled *number*. If you read the field name and assume hours, you will calculate wrongly.
+{% endhint %}
 
 Which factory calendar applies to the calculation can be set through the BAdI method `GET_FACTORY_CALENDAR`.
 
 ## 9 Email notification
 
-conFLOW sends HTML emails per step and decision, controlled through `C07`. Five fields carry the dispatch:
+conFLOW sends HTML emails, controlled through `C07`. The key has four parts — **one row per approval step, decision and recipient role**:
 
 | Field | Meaning |
 | --- | --- |
-| Decision | which action triggers the email |
-| User status | who receives the email |
-| Subject | SO10 text for the subject line |
-| HTML header / item / footer | HTML templates for building the email |
-| Text name | SO10 text for the content |
+| `GEN_STAT` | at which step the email is sent |
+| `GEN_DECISION` | which decision triggers the email |
+| `GEN_STAT_USER` | who receives the email |
+| `SUBJECT` | SO10 text for the subject line |
+| `OBJID_HEADER` / `OBJID_ITEM` / `OBJID_FOOTER` | the three HTML templates the email is built from |
+| `TDNAME` | SO10 text for the content |
 
 The texts and templates contain placeholders that are replaced while the email is built. The BAdI method `GET_DATASOURCE_MAIL` supplies the values.
 
@@ -234,16 +249,19 @@ The texts and templates contain placeholders that are replaced while the email i
 
 ## 10 General parameters and inheritance
 
-`C08` holds settings per workflow definition. The key is the workflow number plus the parameter name; the permitted names are fixed values of a domain, so a new parameter is a new fixed value and not a table change.
+`C08` holds settings per workflow definition. The key is the workflow number plus the parameter name `PARAM`, the value is stored in `VALUE`. The permitted names are fixed values of a domain — a new parameter is a new fixed value and not a table change.
 
 | Parameter | Meaning |
 | --- | --- |
 | `OBJECT` / `SUBOBJECT` | object and subobject of the application log for background steps |
 | `WF_DEF` | inheritance: which workflow definition this workflow inherits its Customizing from |
-| `GEN_TASK` | relevant for type linkage when the first step is to be confirmed automatically |
+| `GEN_TASK` | the generic conFLOW task, required to confirm the first step automatically |
 | `LICENSE` | license information |
-| `REPPR` | report setting |
-| `TCLASS` | class for additional processing |
+| `REPPR` | substitute profile |
+| `TCLASS` | classification of tasks for the substitution rules |
+| `TEMPLATE` | template class for rules |
+| `RULE_CURR` | rule currency |
+| `RATE_TYPE` | exchange rate type for rules |
 
 ### What `WF_DEF` inherits — and what it does not
 
@@ -257,7 +275,9 @@ Your own rows win: inherited rows are appended at the end, even when your own de
 
 ## 11 Subworkflows
 
-In *Assignment of user status* you can start a subworkflow per decision: field *Def. OK* on decision OK, *Def. NOK* on NOK. The subworkflow is a workflow definition of its own with an instance of its own.
+In *Assignment of user status* you can start a subworkflow per decision: `WF_DEFINITION_OK` (labelled *Definition OK*) on decision OK, `WF_DEFINITION_NOK` (*Definition NOK*) on NOK. The subworkflow is a workflow definition of its own with an instance of its own.
+
+The key of `C05` includes the sort field `SORTF`. **Several rows per approval step** are therefore possible — each with its own role and its own subworkflow.
 
 {% hint style="warning" %}
 **If the main workflow is to wait for the subworkflow, it needs a wait step.** Without a step carrying attribute `WAIT`, the main workflow continues while the subworkflow is still open. The wait step moves on only once no triggered workflow is open any more.
@@ -271,7 +291,9 @@ Three tables, linked by the instance `id`:
 | --- | --- | --- |
 | `/C09/CFL_S01` | workflow instance | `id`, `wf_definition`, `instid` (object key), `gen_stat` (current step), `wf_end` |
 | `/C09/CFL_S03` | work item, chronologically | `id`, `wi_id`, `gen_stat`, `gen_stat_user`, creator and time |
-| `/C09/CFL_S04` | container element | `id`, element, value |
+| `/C09/CFL_S04` | container element | `id`, `element`, `tab_index`, `value` |
+
+The key of `S04` includes `TAB_INDEX` — one element can therefore carry **several values**, not just one.
 
 This gives you a complete audit trail without a custom table: who processed which step when and with which outcome, and which data was available at the time of the decision.
 
