@@ -203,7 +203,32 @@ Drei Bearbeiter-Keys haben eine feste Bedeutung: `BU` für Hintergrundschritte, 
 
 `C12` enthält dieselbe Zuordnung wie `C03`, aber transportfähig. `C03` ist laufende Einstellung und wird im Zielsystem gepflegt; `C12` liefert die Voreinstellung mit.
 
-**Parallele Bearbeiterwege** entstehen, indem einem Schritt mehrere Bearbeiter-Keys zugeordnet werden. Alle Bearbeiter bekommen gleichzeitig ein Workitem, und der Workflow wartet, bis alle entschieden haben.
+### Parallele Bearbeiterwege
+
+Mehrere Bearbeiter-Keys an einem Schritt ergeben mehrere Bearbeiter. Das Framework stellt die zutreffenden Rollen als Liste in das Container-Element `RT_NUMBER_ACTORS` — daraus entsteht **je Zeile ein Workitem**, alle gleichzeitig.
+
+Damit sind zwei Prozesse möglich, und es lohnt sich, vorher zu entscheiden, welcher gemeint ist:
+
+| | |
+| --- | --- |
+| **Alle müssen entscheiden** | jeder Bearbeiter arbeitet sein Workitem ab, der Vorgang läuft danach weiter |
+| **Einer entscheidet für alle** | die erste Entscheidung zählt, die übrigen Workitems sollen verschwinden |
+
+Der zweite Fall ist der häufigere — und er passiert **nicht von selbst.** Ohne Zutun bleiben die anderen Workitems offen in den Eingängen stehen, und jemand arbeitet an einem Vorgang, der längst entschieden ist. Dafür gibt es einen Helfer:
+
+```abap
+" im Hook GET_AFTER_EXECUTION_WORKITEM, der nach dem Abschluss eines Workitems laeuft
+/c09/cfl_cl_helper_0101=>set_workitem_obsolet( is_data_step = is_data_step ).
+COMMIT WORK AND WAIT.
+```
+
+`SET_WORKITEM_OBSOLET` sucht alle offenen Dialog-Workitems desselben Top-Workflows und setzt sie auf *obsolet* — das eigene ausgenommen. Soll das nur bei einer bestimmten Entscheidung geschehen, etwa nur bei Ablehnung, fragen Sie vorher `IV_KEY` ab.
+
+{% hint style="warning" %}
+**Das `COMMIT` muss der Aufrufer schreiben.** Der Helfer ruft `SAP_WAPI_WORKITEM_COMPLETE` bewusst mit `DO_COMMIT = FALSE`, damit nicht je Workitem einzeln festgeschrieben wird. Fehlt die Zeile, bleiben die Workitems offen — **ohne Fehlermeldung**.
+{% endhint %}
+
+Den Hook im Detail, samt Abgrenzung zu `GET_AFTER_EXECUTION`, beschreibt die [BAdI-Referenz](../how-to-beispielimplementierung/badi-referenz/lebenszyklus/get-after-execution-workitem.md).
 
 ## 7 Hintergrundschritte
 

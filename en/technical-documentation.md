@@ -203,7 +203,32 @@ Three agent keys have a fixed meaning: `BU` for background steps, `WI` for the i
 
 `C12` holds the same assignment as `C03`, but transportable. `C03` is a current setting maintained in the target system; `C12` ships the default with the transport.
 
-**Parallel agent paths** are created by assigning several agent keys to one step. All agents receive a work item at the same time, and the workflow waits until all of them have decided.
+### Parallel agent paths
+
+Several agent keys on one step mean several agents. The framework puts the applicable roles into the container element `RT_NUMBER_ACTORS` as a list — **one work item per row**, all created at the same time.
+
+That allows two different processes, and it pays to decide up front which one you mean:
+
+| | |
+| --- | --- |
+| **Everyone has to decide** | each agent works their own work item, the process continues afterwards |
+| **One decides for all** | the first decision counts, the remaining work items are meant to disappear |
+
+The second case is the more common one — and it does **not** happen by itself. Left alone, the other work items stay open in people's inboxes, and someone works on a case that has long been decided. There is a helper for this:
+
+```abap
+" in the hook GET_AFTER_EXECUTION_WORKITEM, which runs after a work item is completed
+/c09/cfl_cl_helper_0101=>set_workitem_obsolet( is_data_step = is_data_step ).
+COMMIT WORK AND WAIT.
+```
+
+`SET_WORKITEM_OBSOLET` looks for all open dialog work items of the same top workflow and sets them to *obsolete* — except your own. If this should only happen on a particular outcome, rejection for instance, check `IV_KEY` first.
+
+{% hint style="warning" %}
+**The `COMMIT` is up to the caller.** The helper calls `SAP_WAPI_WORKITEM_COMPLETE` with `DO_COMMIT = FALSE` on purpose, so that it does not commit once per work item. Without that line the work items stay open — **with no error message**.
+{% endhint %}
+
+The hook in detail, including how it differs from `GET_AFTER_EXECUTION`, is described in the [BAdI reference](how-to/badi-reference/lifecycle/get-after-execution-workitem.md).
 
 ## 7 Background steps
 
