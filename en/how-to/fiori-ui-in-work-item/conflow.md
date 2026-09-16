@@ -82,6 +82,24 @@ The values are stored in the work item container and stay there. As a consequenc
 - **An existing work item does not switch its UI.** If you change `mc_inbox_ui` or the BAdI, you need a **new** work item to test.
 - A different app for a specific step is an `IF` on `is_data_step-gen_stat` before the `set`.
 
+## The simple way: parameter `VISU` in Customizing
+
+As of the product level of 16.09.2026 you no longer have to call `set_inbox_ui` yourself. conFLOW sets the three container elements on its own as soon as the parameter `VISU` is maintained on the workflow.
+
+Maintain it in **c08 (general parameters)** per workflow definition:
+
+| Parameter | Value |
+| --- | --- |
+| `VISU` | the semantic object of the app, e.g. `ZCFLOrderPromiseV2` |
+
+From it the framework sets, at each work item's creation, `/C09/CFL_VISU_SEMANTIC_OBJECT` (from `VISU`), `/C09/CFL_VISU_ACTION` (`openInInbox`) and `/C09/CFL_VISU_QUERY_OBJ00` (the workflow instance). **Empty = as before**, the work item shows the text block. Not inherited via `WF_DEF` — maintain per definition. Fiori only.
+
+{% hint style="info" %}
+**Existing open work items** only get the elements at creation. The report `/C09/CFL_MIGRATE_VISU` retrofits them — simulation by default, it only writes once the flag is set, via `SAP_WAPI_WRITE_CONTAINER`.
+{% endhint %}
+
+The BAdI route above remains for **special cases**: a different app per step or a computed semantic object. It overrides `VISU`, because `get_after_creation_workitem` runs after the framework.
+
 ## What the app needs from the workflow
 
 The app reads and writes **only through conFLOW**. It needs no tables of its own.

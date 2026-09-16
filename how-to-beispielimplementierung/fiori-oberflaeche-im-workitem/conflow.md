@@ -82,6 +82,24 @@ Die Werte wandern in den Workitem-Container und bleiben dort. Daraus folgt:
 - **Ein bestehendes Workitem wechselt die Oberfläche nicht.** Wer `mc_inbox_ui` umstellt oder das BAdI ändert, braucht zum Testen ein **neues** Workitem.
 - Eine andere App für einen bestimmten Schritt ist ein `IF` auf `is_data_step-gen_stat` vor dem `set`.
 
+## Der einfache Weg: Parameter `VISU` im Customizing
+
+Seit dem Produktstand 16.09.2026 muss man `set_inbox_ui` **nicht mehr selbst** rufen. conFLOW setzt die drei Container-Elemente von sich aus, sobald am Workflow der Parameter `VISU` gepflegt ist.
+
+Pflege in **c08 (Allgemeine Parameter)** je Workflow-Definition:
+
+| Parameter | Wert |
+| --- | --- |
+| `VISU` | das Semantic Object der App, z. B. `ZCFLOrderPromiseV2` |
+
+Daraus setzt das Framework beim Anlegen jedes Workitems `/C09/CFL_VISU_SEMANTIC_OBJECT` (aus `VISU`), `/C09/CFL_VISU_ACTION` (`openInInbox`) und `/C09/CFL_VISU_QUERY_OBJ00` (die Workflow-Instanz). **Leer = wie bisher**, das Workitem zeigt den Textblock. Kein Erben über `WF_DEF` — je Definition pflegen. Wirkt nur in Fiori.
+
+{% hint style="info" %}
+**Bestehende offene Workitems** bekommen die Elemente erst beim Anlegen. Der Report `/C09/CFL_MIGRATE_VISU` trägt sie nach — Vorgabe Simulation, geschrieben wird erst mit gesetztem Haken, über `SAP_WAPI_WRITE_CONTAINER`.
+{% endhint %}
+
+Der BAdI-Weg oben bleibt für **Sonderfälle**: eine andere App je Schritt oder ein berechnetes Semantic Object. Er übersteuert `VISU`, weil `get_after_creation_workitem` nach dem Framework läuft.
+
 ## Was die App vom Workflow braucht
 
 Die App liest und schreibt **nur über conFLOW**. Eigene Tabellen braucht sie nicht.
@@ -107,7 +125,7 @@ Die App speichert **immer**, auch Halbfertiges, sonst kann niemand arbeiten. Ob 
 | Hook | Abbruch | Meldung an den Bearbeiter |
 | --- | --- | --- |
 | [`get_after_execution_mobile`](../badi-referenz/lebenszyklus/get-after-execution-mobile.md) | `cv_subrc = 9` | ja, `cs_t100msg` |
-| [`get_after_execution`](../badi-referenz/lebenszyklus/get-after-execution.md) | `cv_subrc = 9` | nein |
+| [`get_after_execution`](../badi-referenz/lebenszyklus/get-after-execution.md) | `cv_subrc = 1` — **nicht 9**, sonst läuft die Entscheidung im SAP GUI trotzdem durch | nein |
 
 Beide bekommen `iv_altkey`, also den tatsächlich geklickten Ausgang. Beide Hooks sollten dieselbe Prüfmethode rufen, dann gilt eine Bedingung auf beiden Wegen.
 
