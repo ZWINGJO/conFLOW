@@ -62,14 +62,19 @@ Es gibt drei Wege. Der erste ist der empfohlene.
 
 | Feld | Bedeutung |
 | --- | --- |
+| `WF_DEFINITION` | die Workflow-Definition, die gestartet wird |
 | `OBJCATEG` | Objektkategorie, für BOR-Objekte `BO` |
 | `OBJTYPE` | Objekttyp, z. B. `BUS2012` |
 | `EVENT` | Ereignis des Objekttyps |
 | `RECTYPE` | Empfängertyp, `CONFLOW` |
-| `EXECUTE_FIRST` | der erste Schritt wird automatisch quittiert — der Workflow startet direkt mit dem zweiten |
+| `EXECUTE_FIRST` | im Pflegebild *1 Schritt auto* — der erste Schritt wird automatisch quittiert, der Workflow startet mit dem zweiten |
 
 {% hint style="warning" %}
-**Objekttyp, Ereignis und Empfängertyp müssen eindeutig sein.** Ein zweiter Eintrag mit derselben Kombination startet womöglich den falschen Workflow. Und: **je Objekt ist nur ein offener Workflow möglich.** Ein weiteres Ereignis bei offenem Workflow läuft ins Leere, statt einen zweiten zu starten.
+**`EXECUTE_FIRST` greift nur, wenn in den allgemeinen Parametern `GEN_TASK` gepflegt ist.** Ohne den generischen conFLOW-Task fehlt dem Framework die Aufgabe, die es automatisch quittieren soll — der Haken steht dann da und wirkt nicht.
+{% endhint %}
+
+{% hint style="warning" %}
+**Objekttyp, Ereignis und Empfängertyp müssen eindeutig sein.** Ein zweiter Eintrag mit derselben Kombination startet womöglich den falschen Workflow. Und: **je Objekt und Workflow-Definition ist nur ein offener Workflow möglich.** Das Framework sucht beim Anlegen nach einer offenen Instanz zu Objektschlüssel, Objekttyp und Workflow-Definition; findet es eine, wird der Start mit einer Meldung abgewiesen, statt einen zweiten Workflow zu erzeugen. Eine *andere* Workflow-Definition darf zum selben Objekt gleichzeitig laufen.
 {% endhint %}
 
 **Über ein eigenes Ereignis aus Userexit, BAdI oder Enhancement.** Wenn kein Standardereignis passt, lässt sich der Workflow beim Sichern eines Objekts selbst auslösen. Der Aufruf nimmt optional gleich Container-Werte mit, die dann ab dem ersten Schritt zur Verfügung stehen:
@@ -77,7 +82,7 @@ Es gibt drei Wege. Der erste ist der empfohlene.
 ```abap
 DATA: ls_sweinstcou TYPE /c09/cfl_sweinstcou_st,
       ls_swhactor   TYPE swhactor,
-      lt_container  TYPE /c09/cfl_value_multi_s04_tt,
+      lt_container  TYPE swconttab,
       ls_container  LIKE LINE OF lt_container.
 
 ls_sweinstcou-instid  = lv_belegnummer.
@@ -123,14 +128,17 @@ Jeder Schritt hat einen zweistelligen Status-Code `gen_stat`. Der erste Buchstab
 
 **`X0` ist der einzige im Framework fest verdrahtete Status.** `C02` braucht eine Zeile mit `gen_stat = 'X0'`, deren OK-Ausgang auf den ersten echten Schritt zeigt. Dieser darf ein Hintergrundschritt sein.
 
-In der Spalte *Attribut* der Genehmigungsschritte steuern vier Werte das Verhalten:
+In der Spalte *Attribut* (`ATTRIBUT`) der Genehmigungsschritte steuern fünf Festwerte das Verhalten. Der Normalfall ist der Leerwert:
 
 | Attribut | Wirkung |
 | --- | --- |
-| `BACK` | Hintergrundschritt — führt die hinterlegte Methode aus, kein Workitem |
-| `BACK_BATCH` | wie `BACK`, aber aus dem Verbucher heraus |
-| `WAIT` | Warteschritt: der Workflow wartet, bis alle angestoßenen Subworkflows erledigt sind |
-| `BADI` | der Folgestatus wird über die BAdI ermittelt, wie bei einem `Y`-Schritt |
+| *(leer)* | Standard: Entscheidungsaufgabe — der Bearbeiter entscheidet im Workitem |
+| `BACK` | Hintergrundaufgabe im **Verbucher** — führt die hinterlegte Methode aus, kein Workitem |
+| `BACK_BATCH` | Hintergrundaufgabe im **Batch** |
+| `WAIT` | Warteschritt bei Parallelverarbeitung: der Workflow wartet, bis alle angestoßenen Subworkflows erledigt sind |
+| `BADI` | der Folgeschritt wird dynamisch über die BAdI ermittelt, wie bei einem `Y`-Schritt |
+
+Klasse und Methode eines Schritts stehen in `CLSNAME` und `CMPNAME`, der SO10-Text für den Workitem-Text in `TDNAME`.
 
 ### Weichen: `Y`-Schritte
 
@@ -159,7 +167,9 @@ Der Preis einer Weiche: der Laufweg steht an dieser Stelle nicht mehr im Customi
 
 Damit bietet jeder Schritt bis zu sieben Ausgänge. Der Schlüssel von `C09` ist `(wf_definition, gen_stat, gen_decision)` — **je Schritt eine eigene Zeile.** Fehlt sie, passiert beim Drücken des Knopfes nichts, ohne Fehlermeldung.
 
-Über die Checkbox *keine Anzeige* lässt sich eine Entscheidungsalternative verstecken. Der Ausgang existiert dann weiterhin und kann aus dem Coding gesetzt werden, dem Bearbeiter wird aber kein Knopf angeboten. Das ist der Weg für technische Ausgänge, die niemand von Hand wählen soll.
+Über die Checkbox *keine Anzeige* (`NODISPLAY`) lässt sich eine Entscheidungsalternative verstecken. Der Ausgang existiert dann weiterhin und kann aus dem Coding gesetzt werden, dem Bearbeiter wird aber kein Knopf angeboten. Das ist der Weg für technische Ausgänge, die niemand von Hand wählen soll.
+
+`C09` trägt drei weitere Spalten, die im Pflegebild sichtbar sind: `NATURE` färbt den Knopf in der Fiori-Inbox, `COMMENT_REQ` macht dort einen Kommentar zur Pflicht, und `BEDINGUNG` hinterlegt eine Bedingung für den Ausgang.
 
 ### Schleife statt Neustart
 
@@ -210,21 +220,26 @@ Umgekehrt gilt: Ist ein Schritt *nicht* als Hintergrundschritt gekennzeichnet un
 
 ## 8 Fristen und Eskalation
 
-Fristen stehen in `C02`: Wert, Einheit und der Status, auf den bei Ablauf gewechselt wird. Keine Deadline-Agents, kein Workflow-Customizing im SPRO — eine Tabellenzeile.
+Fristen stehen in `C02`, in drei Feldern: `FRIST_STUNDEN` der Wert, `FRIST_MSEHI` die Einheit und `GEN_STAT_FRIST` der Status, auf den bei Ablauf gewechselt wird. Keine Deadline-Agents, kein Workflow-Customizing im SPRO — eine Tabellenzeile.
+
+{% hint style="warning" %}
+**Der Feldname `FRIST_STUNDEN` führt in die Irre.** Die Einheit ist frei wählbar und steht in `FRIST_MSEHI`; im Pflegebild heißt die Spalte darum schlicht *Anzahl*. Wer den Feldnamen liest und Stunden annimmt, rechnet falsch.
+{% endhint %}
 
 Welcher Fabrikkalender für die Berechnung gilt, lässt sich über die BAdI-Methode `GET_FACTORY_CALENDAR` bestimmen.
 
 ## 9 Mailversand
 
-conFLOW versendet HTML-Mails je Schritt und Entscheidung, gesteuert über `C07`. Fünf Felder tragen den Versand:
+conFLOW versendet HTML-Mails, gesteuert über `C07`. Der Schlüssel ist vierteilig — **je Genehmigungsschritt, Entscheidung und Empfängerrolle eine Zeile**:
 
 | Feld | Bedeutung |
 | --- | --- |
-| Entscheidung | welche Aktion den Versand auslöst |
-| User Status | wer die Mail bekommt |
-| Subject | SO10-Text für den Betreff |
-| HTML-Header / Item / Footer | HTML-Schablonen für den Aufbau der Mail |
-| Textname | SO10-Text für den Inhalt |
+| `GEN_STAT` | bei welchem Schritt versendet wird |
+| `GEN_DECISION` | welche Entscheidung den Versand auslöst |
+| `GEN_STAT_USER` | wer die Mail bekommt |
+| `SUBJECT` | SO10-Text für den Betreff |
+| `OBJID_HEADER` / `OBJID_ITEM` / `OBJID_FOOTER` | die drei HTML-Schablonen, aus denen die Mail aufgebaut wird |
+| `TDNAME` | SO10-Text für den Inhalt |
 
 In den Texten und Schablonen stehen Platzhalter, die beim Aufbau der Mail ersetzt werden. Die Werte dafür liefert die BAdI-Methode `GET_DATASOURCE_MAIL`.
 
@@ -234,16 +249,19 @@ In den Texten und Schablonen stehen Platzhalter, die beim Aufbau der Mail ersetz
 
 ## 10 Allgemeine Parameter und Vererbung
 
-`C08` hält Einstellungen je Workflow-Definition. Schlüssel ist die Workflow-Nummer plus der Parametername; die zulässigen Namen sind Festwerte einer Domäne, ein neuer Parameter ist also ein neuer Festwert und keine Tabellenänderung.
+`C08` hält Einstellungen je Workflow-Definition. Schlüssel ist die Workflow-Nummer plus der Parametername `PARAM`, der Wert steht in `VALUE`. Die zulässigen Namen sind Festwerte einer Domäne — ein neuer Parameter ist also ein neuer Festwert und keine Tabellenänderung.
 
 | Parameter | Bedeutung |
 | --- | --- |
 | `OBJECT` / `SUBOBJECT` | Objekt und Unterobjekt des Anwendungslogs für Hintergrundschritte |
 | `WF_DEF` | Vererbung: von welcher Workflow-Definition dieser Workflow das Customizing erbt |
-| `GEN_TASK` | relevant bei Typkoppelung, wenn der erste Schritt automatisch quittiert werden soll |
+| `GEN_TASK` | der generische conFLOW-Task, nötig für das automatische Quittieren des ersten Schritts |
 | `LICENSE` | Lizenzangaben |
-| `REPPR` | Report-Einstellung |
-| `TCLASS` | Klasse für Zusatzverarbeitung |
+| `REPPR` | Vertreterprofil |
+| `TCLASS` | Klassifikation von Aufgaben für die Vertretungsregelung |
+| `TEMPLATE` | Template-Klasse für Regeln |
+| `RULE_CURR` | Regelwährung |
+| `RATE_TYPE` | Kursart für Regeln |
 
 ### Was `WF_DEF` vererbt — und was nicht
 
@@ -257,7 +275,9 @@ Die eigenen Zeilen gewinnen: geerbte Zeilen werden hinten angehängt, auch wenn 
 
 ## 11 Subworkflows
 
-In der Zuordnung Userstatus lässt sich je Entscheidung ein Subworkflow starten: Feld *Def. OK* bei Entscheidung OK, *Def. NOK* bei NOK. Der Subworkflow ist eine eigene Workflow-Definition mit eigener Instanz.
+In der Zuordnung Userstatus lässt sich je Entscheidung ein Subworkflow starten: `WF_DEFINITION_OK` (im Pflegebild *Definition OK*) bei Entscheidung OK, `WF_DEFINITION_NOK` (*Definition NOK*) bei NOK. Der Subworkflow ist eine eigene Workflow-Definition mit eigener Instanz.
+
+Zum Schlüssel von `C05` gehört das Sortierfeld `SORTF`. Je Genehmigungsschritt sind daher **mehrere Zeilen** möglich — jede mit eigener Rolle und eigenem Subworkflow.
 
 {% hint style="warning" %}
 **Soll der Hauptworkflow auf den Subworkflow warten, braucht es einen Warteschritt.** Ohne einen Schritt mit Attribut `WAIT` läuft der Hauptworkflow weiter, während der Subworkflow noch offen ist. Der Warteschritt schaltet erst weiter, wenn kein angestoßener Workflow mehr offen ist.
@@ -271,7 +291,9 @@ Drei Tabellen, verbunden über die Instanz-`id`:
 | --- | --- | --- |
 | `/C09/CFL_S01` | Workflow-Instanz | `id`, `wf_definition`, `instid` (Objektschlüssel), `gen_stat` (aktueller Schritt), `wf_end` |
 | `/C09/CFL_S03` | Workitem, chronologisch | `id`, `wi_id`, `gen_stat`, `gen_stat_user`, Anleger und Zeit |
-| `/C09/CFL_S04` | Container-Element | `id`, Element, Wert |
+| `/C09/CFL_S04` | Container-Element | `id`, `element`, `tab_index`, `value` |
+
+Der Schlüssel von `S04` enthält `TAB_INDEX` — ein Element kann also **mehrere Werte** tragen, nicht nur einen.
 
 Damit entsteht ein vollständiger Audit Trail ohne eigene Z-Tabelle: wer hat wann welchen Schritt mit welchem Ergebnis bearbeitet, und welche Daten lagen zum Zeitpunkt der Entscheidung vor.
 
