@@ -58,7 +58,16 @@ You can also attach documentation and upload documents to a workflow definition 
 
 There are three ways. The first one is the recommended one.
 
-**Through an event and the type linkage.** `/C09/CFL_C10` defines which event starts which workflow. An entry links object category, object type, event and the receiver type `CONFLOW` to a workflow definition. In standard Customizing the event must be registered in SWE2 with the same receiver type. The fields:
+**Through an event and the type linkage.** `/C09/CFL_C10` defines which event starts which workflow. An entry links object category, object type, event and the receiver type `CONFLOW` to a workflow definition. For the event to reach conFLOW at all, you also need the **event type linkage** in the SAP standard (`SWETYPV`). There you register the object type, the event and the receiver type `CONFLOW`:
+
+| Setting | Value |
+| --- | --- |
+| Receiver call | function module |
+| Receiver function module | **`/C09/CFL_WI_CREATE_0101`** |
+| Event delivery | using tRFC (default) |
+| Linkage activated | set |
+
+Without that entry nothing happens when the event is raised — the conFLOW Customizing on its own does not start a workflow. The fields on the conFLOW side:
 
 | Field | Meaning |
 | --- | --- |
@@ -225,6 +234,14 @@ COMMIT WORK AND WAIT.
 `SET_WORKITEM_OBSOLET` looks for all open dialog work items of the same top workflow and sets them to *obsolete* — except your own. If this should only happen on a particular outcome, rejection for instance, check `IV_KEY` first.
 
 {% hint style="warning" %}
+**Mind the scope.** The helper clears the **entire workflow**. If parallel work items exist in several steps at the same time, it also hits the ones you wanted to keep. In that case select the rows yourself and restrict on `GEN_STAT` — the pattern is in the [how-to](how-to/sick-leave-workflow/step-4-start-and-test.md).
+{% endhint %}
+
+### When the majority should decide
+
+Then the first vote does not count, the result of all of them does. For that, put a **collecting step** after the parallel step — a `Y` step that all outcomes point to. There, `GET_STATUS_DYNAMIC` counts the workflow log and sets the follow-up status accordingly. The [how-to](how-to/sick-leave-workflow/step-4-start-and-test.md) shows the ready-made building block.
+
+{% hint style="warning" %}
 **The `COMMIT` is up to the caller.** The helper calls `SAP_WAPI_WORKITEM_COMPLETE` with `DO_COMMIT = FALSE` on purpose, so that it does not commit once per work item. Without that line the work items stay open — **with no error message**.
 {% endhint %}
 
@@ -265,6 +282,10 @@ conFLOW sends HTML emails, controlled through `C07`. The key has four parts — 
 | `SUBJECT` | SO10 text for the subject line |
 | `OBJID_HEADER` / `OBJID_ITEM` / `OBJID_FOOTER` | the three HTML templates the email is built from |
 | `TDNAME` | SO10 text for the content |
+
+{% hint style="warning" %}
+**The three templates are web objects from `SMW0`, not SO10 texts.** The subject and the content are SO10 texts, the templates are not — if you look for them in SO10 you will not find them.
+{% endhint %}
 
 The texts and templates contain placeholders that are replaced while the email is built. The BAdI method `GET_DATASOURCE_MAIL` supplies the values.
 

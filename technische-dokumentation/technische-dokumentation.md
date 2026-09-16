@@ -58,7 +58,16 @@ Zu jeder Workflow-Definition lassen sich außerdem über die GOS-Anbindung eine 
 
 Es gibt drei Wege. Der erste ist der empfohlene.
 
-**Über ein Ereignis und die Typkoppelung.** In `/C09/CFL_C10` wird festgelegt, welches Ereignis welchen Workflow startet. Ein Eintrag verknüpft Objektkategorie, Objekttyp, Ereignis und den Empfängertyp `CONFLOW` mit einer Workflow-Definition. Im Standard-Customizing muss das Ereignis in SWE2 mit demselben Empfängertyp eingetragen sein. Die Kennzeichen:
+**Über ein Ereignis und die Typkoppelung.** In `/C09/CFL_C10` wird festgelegt, welches Ereignis welchen Workflow startet. Ein Eintrag verknüpft Objektkategorie, Objekttyp, Ereignis und den Empfängertyp `CONFLOW` mit einer Workflow-Definition. Damit das Ereignis conFLOW überhaupt erreicht, braucht es zusätzlich die **Ereignistypkopplung** im SAP-Standard (`SWETYPV`). Dort wird zu Objekttyp, Ereignis und Empfängertyp `CONFLOW` eingetragen:
+
+| Einstellung | Wert |
+| --- | --- |
+| Aufruf des Verbrauchers | Funktionsbaustein |
+| Verbraucher-Funktionsbaustein | **`/C09/CFL_WI_CREATE_0101`** |
+| Ereigniszustellung | über tRFC (Standard) |
+| Kopplung aktiviert | gesetzt |
+
+Ohne diesen Eintrag passiert beim Auslösen des Ereignisses nichts — das conFLOW-Customizing allein startet keinen Workflow. Die Felder auf conFLOW-Seite:
 
 | Feld | Bedeutung |
 | --- | --- |
@@ -225,6 +234,14 @@ COMMIT WORK AND WAIT.
 `SET_WORKITEM_OBSOLET` sucht alle offenen Dialog-Workitems desselben Top-Workflows und setzt sie auf *obsolet* — das eigene ausgenommen. Soll das nur bei einer bestimmten Entscheidung geschehen, etwa nur bei Ablehnung, fragen Sie vorher `IV_KEY` ab.
 
 {% hint style="warning" %}
+**Achten Sie auf die Reichweite.** Der Helfer räumt den **ganzen Workflow** ab. Laufen parallele Workitems in mehreren Schritten gleichzeitig, trifft er auch die, die Sie behalten wollten. In dem Fall selbst selektieren und auf `GEN_STAT` einschränken — das Muster steht im [How-To](../how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-4-workflow-starten.md).
+{% endhint %}
+
+### Wenn die Mehrheit entscheiden soll
+
+Dann zählt nicht die erste Stimme, sondern das Ergebnis aller. Dafür setzen Sie hinter den Parallelschritt einen **Sammelschritt** — einen `Y`-Schritt, auf den alle Ausgänge zeigen. Dort wird in `GET_STATUS_DYNAMIC` das Workflow-Protokoll ausgezählt und der Folgestatus danach gesetzt. Den fertigen Baustein dazu zeigt das [How-To](../how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-4-workflow-starten.md).
+
+{% hint style="warning" %}
 **Das `COMMIT` muss der Aufrufer schreiben.** Der Helfer ruft `SAP_WAPI_WORKITEM_COMPLETE` bewusst mit `DO_COMMIT = FALSE`, damit nicht je Workitem einzeln festgeschrieben wird. Fehlt die Zeile, bleiben die Workitems offen — **ohne Fehlermeldung**.
 {% endhint %}
 
@@ -265,6 +282,10 @@ conFLOW versendet HTML-Mails, gesteuert über `C07`. Der Schlüssel ist vierteil
 | `SUBJECT` | SO10-Text für den Betreff |
 | `OBJID_HEADER` / `OBJID_ITEM` / `OBJID_FOOTER` | die drei HTML-Schablonen, aus denen die Mail aufgebaut wird |
 | `TDNAME` | SO10-Text für den Inhalt |
+
+{% hint style="warning" %}
+**Die drei Schablonen sind Web-Objekte aus `SMW0`, keine SO10-Texte.** Betreff und Inhalt sind SO10-Texte, die Schablonen nicht — wer sie im SO10 sucht, findet sie nicht.
+{% endhint %}
 
 In den Texten und Schablonen stehen Platzhalter, die beim Aufbau der Mail ersetzt werden. Die Werte dafür liefert die BAdI-Methode `GET_DATASOURCE_MAIL`.
 
