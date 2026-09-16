@@ -59,15 +59,91 @@ DATA(lt_val) = /c09/cfl_cl_workflow_0101=>get_attribut_value(
 
 ## 4.4 Follow-up logic for parallel steps
 
-With parallel work items, several agents decide. The BAdI method `GET_AFTER_EXECUTION_WORKITEM` is called after each individual decision and receives the context: which agent decided how, and whether further work items are still open.
+With parallel work items, several agents decide at the same time. That raises a question Customizing alone does not answer: **what should count?** The first decision, or the majority?
 
-This lets you, for example, calculate a summary after the last decision or trigger a follow-up action.
+The BAdI method `GET_AFTER_EXECUTION_WORKITEM` is called after **each individual** decision. It receives three things:
 
-<figure><img src="../../.gitbook/assets/folie37.png" alt="GET_AFTER_EXECUTION_WORKITEM"><figcaption><p>Follow-up logic after parallel decisions</p></figcaption></figure>
+| Parameter | Content |
+| --- | --- |
+| `IS_DATA_STEP` | the step, including the instance `ID`, `GEN_STAT` and its own `WI_ID` |
+| `IS_SWR_WIHDR` | the work item header |
+| `IV_KEY` | the outcome chosen (`0001` = OK, `0002` = NOK, `0003`–`0007` = `UC1`–`UC5`) |
 
-<figure><img src="../../.gitbook/assets/folie38.png" alt="Parallel tasks result"><figcaption><p>Merging and further processing</p></figcaption></figure>
+### Option A: the first rejection ends the parallel step
 
----
+The most common case. If one agent rejects, the other agents' work items should disappear — otherwise someone works on a case that has already been decided.
+
+```abap
+" GET_AFTER_EXECUTION_WORKITEM
+IF iv_key = '0002'.                              " on NOK only
+
+  SELECT * FROM /c09/cfl_s03 INTO TABLE lt_cfl_s03
+    WHERE id       = is_data_step-id
+      AND gen_stat = is_data_step-gen_stat       " this step only
+      AND wi_id   NE is_data_step-wi_id.         " not your own
+
+  LOOP AT lt_cfl_s03 INTO ls_cfl_s03.
+    CALL FUNCTION 'SAP_WAPI_WORKITEM_COMPLETE'
+      EXPORTING
+        workitem_id = ls_cfl_s03-wi_id
+        set_obsolet = 'X'.
+  ENDLOOP.
+
+ENDIF.
+```
+
+<figure><img src="../../.gitbook/assets/folie37.png" alt="GET_AFTER_EXECUTION_WORKITEM"><figcaption><p>Ending a parallel step: set the remaining work items to obsolete on NOK (labels in German)</p></figcaption></figure>
+
+{% hint style="info" %}
+**The same thing exists ready-made** — `/C09/CFL_CL_HELPER_0101=>SET_WORKITEM_OBSOLET( is_data_step = is_data_step )`. One difference matters: the helper clears **all** open dialog work items of the entire workflow, the coding above only those of the **same step**. If your process has parallel work items in several steps at once, use the narrower variant. And in both cases: **the `COMMIT WORK` is up to the caller**, otherwise the work items stay open, with no error message.
+{% endhint %}
+
+### Option B: the majority decides
+
+If the first vote should not count but the result of all of them, you need a **collecting step**: a `Y` step after the parallel step that all outcomes point to. The votes are counted there — in `GET_STATUS_DYNAMIC`, which is called precisely for `Y` steps.
+
+Counting is done on the workflow log. It is read from the end backwards until the start of the parallel block is reached:
+
+```abap
+" GET_STATUS_DYNAMIC, at the collecting step
+CALL FUNCTION 'SWL_GET_PROCESS_STEPLIST'
+  EXPORTING
+    wf_id          = cs_data-top_wi_id
+    with_expansion = abap_true
+    with_errors    = abap_true
+  TABLES
+    wfm_steplog    = lt_wfm_steplog.
+
+lv_lines = lines( lt_wfm_steplog ) + 1.
+
+DO.
+  SUBTRACT 1 FROM lv_lines.
+  READ TABLE lt_wfm_steplog ASSIGNING <fs_steplog> INDEX lv_lines.
+
+  CASE <fs_steplog>-rc_intern.
+    WHEN '0003'.  ADD 1 TO lv_plus.              " approval
+    WHEN OTHERS.  ADD 1 TO lv_minus.
+  ENDCASE.
+
+  IF <fs_steplog>-node_p_ind = 1.                " start of the parallel block
+    EXIT.
+  ENDIF.
+ENDDO.
+
+IF lv_plus GT lv_minus.
+  cs_data-gen_stat = '01'.                       " majority in favor
+ELSE.
+  cs_data-gen_stat = 'X1'.                       " majority against
+ENDIF.
+```
+
+<figure><img src="../../.gitbook/assets/folie38.png" alt="Majority decision"><figcaption><p>Majority decision: counting in the collecting step through GET_STATUS_DYNAMIC (labels in German)</p></figcaption></figure>
+
+{% hint style="warning" %}
+**Which result code counts as approval depends on your workflow.** In the example it is `0003`. Check this against your own log instead of copying the value — and remember that `node_p_ind` is the exit condition: without it you count the whole workflow, not just the parallel block.
+{% endhint %}
+
+There is a third way when the point is not majorities but different answers: give the agents their own outcomes through `UC1`–`UC5` and evaluate those in a subsequent step.
 
 ## 4.5 Checklist: first test
 
