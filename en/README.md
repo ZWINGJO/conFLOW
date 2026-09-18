@@ -4,6 +4,11 @@
 **Deutsch:** diese Dokumentation gibt es auch [auf Deutsch](../README.md).
 {% endhint %}
 
+{% hint style="info" %}
+**New to conFLOW?** See how a complete approval process is configured, run and changed, using a real case.
+[**Explore conFLOW in action →**](https://story.conflow-help.com)
+{% endhint %}
+
 {% hint style="success" %}
 **conFLOW** implements approval and release workflows in your SAP system — without SAP workflow know-how, without the Workflow Builder, without workflow Customizing in SPRO.
 
