@@ -1,12 +1,16 @@
 # conFLOW - SAP Workflows Made Easy
 
-{% hint style="info" %}
-**Deutsch:** diese Dokumentation gibt es auch [auf Deutsch](../README.md).
-{% endhint %}
+## conFLOW in action
+
+A real approval process from start to finish: how it is configured, how it runs and how easily it can be changed. With screenshots from an SAP system, to click through.
+
+<a href="https://story.conflow-help.com" class="button primary">Explore conFLOW in action →</a>
+
+<figure><img src=".gitbook/assets/story-cover.png" alt="conFLOW in action: slides from the product story"><figcaption><p><a href="https://story.conflow-help.com">story.conflow-help.com</a></p></figcaption></figure>
+
 
 {% hint style="info" %}
-**New to conFLOW?** See how a complete approval process is configured, run and changed, using a real case.
-[**Explore conFLOW in action →**](https://story.conflow-help.com)
+**Deutsch:** diese Dokumentation gibt es auch [auf Deutsch](../README.md).
 {% endhint %}
 
 {% hint style="success" %}
