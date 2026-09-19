@@ -16,6 +16,7 @@ There are several ways to trigger a conFLOW workflow. The choice depends on the 
 
 | Option | When to use | How |
 | --- | --- | --- |
+| **Event + type linkage** | Automatically on an event of the business object | Maintain the type linkage in `/C09/CFL_C10`, see [Technical documentation, section 3](../../technical-documentation.md#3-starting-a-workflow) |
 | **Report / program** | Demos, tests, manual triggering | Call `start_workflow_int( )` directly |
 | **Application BAdI** | Automatically when a document changes | Check and start in the save exit of the application object |
 | **Status management** | Automatically on a status change | SAP status management (BSVW) raises a BOR event, the SWETYPV type linkage triggers the workflow |
@@ -59,7 +60,7 @@ DATA(lt_val) = /c09/cfl_cl_workflow_0101=>get_attribut_value(
 
 ## 4.4 Follow-up logic for parallel steps
 
-With parallel work items, several agents decide at the same time. That raises a question Customizing alone does not answer: **what should count?** The first decision, or the majority?
+With parallel work items, several agents decide at the same time. **What should count is set on the step:** column *Decision rule* in Approval steps — veto, first decision or majority. See [Parallel agent paths](../../technical-documentation.md#parallel-agent-paths). The BAdI variants below are only needed for rules none of the settings covers, such as weighted votes.
 
 The BAdI method `GET_AFTER_EXECUTION_WORKITEM` is called after **each individual** decision. It receives three things:
 

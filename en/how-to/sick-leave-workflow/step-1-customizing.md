@@ -10,7 +10,7 @@ In this step you create the workflow definition and configure the process flow. 
 
 ## 1.1 Create the workflow definition
 
-Start transaction **`/C09/CONFLOW_C`**. Create a new workflow definition or copy copy template 1. The workflow number (e.g. `00100`) identifies the process across the whole system — it reappears in Customizing, in the BAdI class and in reporting.
+Start transaction **`/C09/CONFLOW_C`**. Create a new workflow definition or copy template 1. The workflow number (e.g. `00100`) identifies the process across the whole system — it reappears in Customizing, in the BAdI class and in reporting.
 
 {% hint style="info" %}
 **Tip:** Before creating it, check in `/C09/CFL_C06` that the number is still free. Each number may exist only once in the system.
@@ -64,7 +64,7 @@ In the node **User status assignment (current settings)** (`/C09/CFL_C03`) you a
 | --- | --- | --- |
 | `US` | `MEIER` | Individual SAP user |
 | `S` | `50000123` | SAP position |
-| `AC` | `Z_HR_ADMIN` | PFCG role |
+| `AG` + column `AGR_NAME` | `Z_HR_ADMIN` | PFCG role: all dialog users of the role |
 | `US` | `WF-BATCH` | Technical background user |
 | `US` | `WF_INITIATOR` | Workflow initiator (dynamic) |
 
@@ -100,7 +100,7 @@ You can define up to five additional decision options (`UC1`–`UC5`) — this f
 In the node **Assignment of user status** (`/C09/CFL_C05`) you link each approval step to the role that processes it.
 
 {% hint style="info" %}
-**Parallel steps:** Assign **several** agent keys to one approval step. conFLOW then creates a separate work item for each, and the workflow waits until all of them have decided.
+**Parallel steps:** Assign **several** agent keys to one approval step. conFLOW then creates a separate work item for each, and the workflow waits — with the default setting — until all of them have decided. Other rules (veto, first decision, majority) are set in Approval steps, column *Decision rule*.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/folie11.png" alt="Assignment of user status"><figcaption><p>Link: which role processes which step</p></figcaption></figure>

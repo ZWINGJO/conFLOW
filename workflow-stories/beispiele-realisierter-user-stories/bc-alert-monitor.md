@@ -6,7 +6,7 @@ Systemwarnungen (Alerts) im SAP-Basis-Betrieb müssen zuverlässig beim richtige
 
 ## Was conFLOW hier leistet
 
-Der Workflow nimmt einen Alert entgegen und erzeugt ein Workitem für den zuständigen Basis-Betreuer. Wird der Alert nicht innerhalb einer definierten **Frist** bearbeitet, eskaliert conFLOW automatisch an die nächste Stufe. Die Frist wird im Customizing gepflegt, nicht im Code -- eine Anpassung erfordert keinen Transport.
+Der Workflow nimmt einen Alert entgegen und erzeugt ein Workitem für den zuständigen Basis-Betreuer. Wird der Alert nicht innerhalb einer definierten **Frist** bearbeitet, eskaliert conFLOW automatisch an die nächste Stufe. Die Frist wird im Customizing gepflegt, nicht im Code -- eine Anpassung ist eine Customizing-Änderung, keine Entwicklung.
 
 Am Ende steht ein vollständiger Audit Trail: wann wurde der Alert ausgelöst, wer hat ihn wann bearbeitet, wie wurde entschieden. Das ist für regulierte Umgebungen und für die Auswertung wiederkehrender Probleme gleichermaßen relevant.
 

@@ -8,7 +8,7 @@ Ein Vergabevorschlag im Einkauf durchläuft mehrere Genehmigungsstufen, bevor er
 
 Der Workflow bildet eine **mehrstufige Genehmigung** ab: der Vergabevorschlag geht zunächst an den Fachbereich, dann an den Einkaufsleiter, und bei Überschreitung einer Wertgrenze an die Geschäftsführung. Jede Stufe hat eigene Bearbeiter und kann eigene Entscheidungsalternativen anbieten -- neben Genehmigen und Ablehnen auch Rückfrage oder Weiterleitung.
 
-Die Bearbeiterfindung kann dabei dynamisch erfolgen: die BAdI-Methode `GET_ACTORS` ermittelt den richtigen Freigeber zur Laufzeit, abhängig von Belegdaten wie Einkaufsorganisation, Warengruppe oder Bestellwert.
+Die Wertgrenze ist eine Regel im Customizing. Die Bearbeiterfindung kann über eine PFCG-Rolle oder dynamisch erfolgen: die BAdI-Methode `GET_ACTORS` ermittelt den richtigen Freigeber zur Laufzeit, abhängig von Belegdaten wie Einkaufsorganisation, Warengruppe oder Bestellwert.
 
 conFLOW bietet hier bis zu **sieben Entscheidungsalternativen** je Schritt (`OK`, `NOK`, `UC1` bis `UC5`). Damit lassen sich differenzierte Entscheidungen abbilden -- etwa "Genehmigen", "Ablehnen", "Genehmigen mit Auflage", "Zurück an Ersteller" oder "Weiterleiten an nächste Stufe".
 

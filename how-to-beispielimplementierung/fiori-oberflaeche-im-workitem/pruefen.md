@@ -13,7 +13,7 @@
 | 5 | Service fachlich | `…/DecisionSet('<id>')?$format=json` liefert den Vorgang; eine fremde GUID liefert **404** |
 | 6 | App bauen und hochladen, Caches | `/sap/bc/ui5_ui5/sap/zcfl_00500_uiv2/index.html` meldet „No work item key was passed". **Das ist der Erfolgsfall.** |
 | 7 | Semantic Object, Target Mapping, Rolle | `…/flp#ZCFLOrderPromiseV2-openInInbox?CFLQueryObject00=<id>` öffnet den Vorgang |
-| 8 | BAdI: `set_inbox_ui( )` einspielen | **neues** Workitem erzeugen; im Workitem-Container stehen die drei `/C09/CFL_VISU_*`-Werte |
+| 8 | `VISU` in `C08` pflegen (oder BAdI `set_inbox_ui( )`) | **neues** Workitem erzeugen; im Workitem-Container stehen die drei `/C09/CFL_VISU_*`-Werte |
 | 9 | My Inbox | App im Detailbereich, conFLOW-Knöpfe darunter, „Show Details" in der Fußleiste |
 
 `<id>` ist die conFLOW-Instanz (`/C09/CFL_S03-ID`) eines offenen Dialog-Workitems, als 32-stellige Hex-Kette.
@@ -54,8 +54,8 @@
 | Ziel | Handgriff | wirkt auf |
 | --- | --- | --- |
 | sofort weg, auch in offenen Workitems | Target Mapping im Katalog löschen | **alle** Workitems, ohne Transport |
-| neue Workitems ohne App | `mc_inbox_ui = abap_false` | nur **neue** Workitems |
-| ganz entfernen | Target Mapping, Semantic Object, BSP-Anwendung, Service, SEGW-Projekt, Datenklasse, Aufruf im BAdI | — |
+| neue Workitems ohne App | `VISU` in `C08` leeren (beim BAdI-Weg `mc_inbox_ui = abap_false`) | nur **neue** Workitems |
+| ganz entfernen | Target Mapping, Semantic Object, BSP-Anwendung, Service, SEGW-Projekt, Datenklasse, Parameter `VISU` bzw. Aufruf im BAdI | — |
 
 {% hint style="success" %}
 **Der Rückfall ist keine Notlösung, sondern der Normalfall** für jedes Workitem ohne die drei Container-Elemente. Deshalb funktioniert er zuverlässig: Er ist ständig in Gebrauch und nicht nur im Fehlerfall.

@@ -1,6 +1,6 @@
 # conFLOW: die App ans Workitem hängen
 
-*Eine Methode im BAdI und drei Konstanten. Am conFLOW-Customizing ändert sich nichts.*
+*Ein Parameter im Customizing. Das BAdI nur für Sonderfälle — der einfache Weg steht [weiter unten](#der-einfache-weg-parameter-visu-im-customizing).*
 
 ## Der Hook
 

@@ -24,7 +24,7 @@ This how-to shows step by step how to build a conFLOW workflow, using a sick lea
 ## Prerequisites
 
 - Access to transaction `/C09/CONFLOW_C` (conFLOW Customizing)
-- Development access for the BAdI implementation (SE80 or ADT)
+- Development access for the BAdI implementation (SE80 or ADT) — only if you need the BAdI
 - A transport request
 
 ## The four steps
@@ -39,5 +39,5 @@ This how-to shows step by step how to build a conFLOW workflow, using a sick lea
 | [Step 4: Start and test the workflow](step-4-start-and-test.md) | Trigger, container, test | Production-ready workflow |
 
 {% hint style="warning" %}
-**Keep the order:** Customizing first (steps 1 and 2), then the BAdI implementation (step 3), and the trigger last (step 4). The BAdI class builds on the Customizing entries, and the trigger requires a working workflow.
+**Keep the order:** Customizing first (steps 1 and 2), then the BAdI implementation (step 3), and the trigger last (step 4). A BAdI class builds on the Customizing entries, and the trigger requires a working workflow.
 {% endhint %}

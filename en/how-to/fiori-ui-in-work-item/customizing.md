@@ -4,7 +4,7 @@
 
 ## 1 · SWFVMD1: once per system
 
-The link between work item and intent is **not** maintained per workflow, but once for the generic conFLOW task `TS00388601`. The entries are **dynamic**: they read the container elements set by the BAdI.
+The link between work item and intent is **not** maintained per workflow, but once for the generic conFLOW task `TS00388601`. The entries are **dynamic**: they read the container elements set by conFLOW.
 
 Transaction `SWFVMD1` → task `TS00388601` → task visualization `INTENT`:
 
@@ -29,7 +29,7 @@ Transaction `/UI2/SEMOBJ` → new entry:
 
 | Field | Value |
 | --- | --- |
-| Semantic object | `ZCFLOrderPromiseV2` — **exactly** as the constant in the BAdI |
+| Semantic object | `ZCFLOrderPromiseV2` — **exactly** as the value of `VISU` |
 | Description | any |
 
 Underscores are allowed, a hyphen is not — it separates semantic object and action.

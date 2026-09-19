@@ -16,6 +16,7 @@ Es gibt mehrere Wege, einen conFLOW-Workflow auszulösen. Die Wahl hängt vom An
 
 | Variante | Wann einsetzen | Wie |
 | --- | --- | --- |
+| **Ereignis + Typkoppelung** | Automatisch bei einem Ereignis des Geschäftsobjekts | Typkoppelung in `/C09/CFL_C10` pflegen, siehe [Technische Dokumentation, Abschnitt 3](../../technische-dokumentation/technische-dokumentation.md#3-den-workflow-starten) |
 | **Report / Programm** | Demos, Tests, manuelle Auslösung | `start_workflow_int( )` direkt aufrufen |
 | **Anwendungs-BAdI** | Automatisch bei Belegänderung | Im Save-Exit des Anwendungsobjekts prüfen und starten |
 | **Statusverwaltung** | Automatisch bei Statuswechsel | SAP-Statusverwaltung (BSVW) wirft BOR-Ereignis, SWETYPV-Kopplung löst den Workflow aus |
@@ -59,7 +60,7 @@ DATA(lt_val) = /c09/cfl_cl_workflow_0101=>get_attribut_value(
 
 ## 4.4 Nachlauflogik bei parallelen Schritten
 
-Bei parallelen Workitems entscheiden mehrere Bearbeiter gleichzeitig. Dann stellt sich eine Frage, die das Customizing allein nicht beantwortet: **Was soll gelten?** Die erste Entscheidung, oder die Mehrheit?
+Bei parallelen Workitems entscheiden mehrere Bearbeiter gleichzeitig. **Was gelten soll, stellen Sie am Schritt ein:** Spalte *Entscheidungsregel* in den Genehmigungsschritten -- Veto, erste Entscheidung oder Mehrheit. Siehe [Parallele Bearbeiterwege](../../technische-dokumentation/technische-dokumentation.md#parallele-bearbeiterwege). Die folgenden BAdI-Varianten brauchen Sie nur für Regeln, die keine der Einstellungen abdeckt, etwa gewichtete Stimmen.
 
 Die BAdI-Methode `GET_AFTER_EXECUTION_WORKITEM` wird nach **jeder einzelnen** Entscheidung aufgerufen. Sie bekommt drei Dinge:
 

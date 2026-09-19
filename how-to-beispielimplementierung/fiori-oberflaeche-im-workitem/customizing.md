@@ -4,7 +4,7 @@
 
 ## 1 · SWFVMD1: einmal je System
 
-Die Verbindung von Workitem und Intent pflegt man **nicht je Workflow**, sondern einmal für den generischen conFLOW-Task `TS00388601`. Die Einträge sind **dynamisch**, das heißt, sie lesen die Container-Elemente, die das BAdI gesetzt hat.
+Die Verbindung von Workitem und Intent pflegt man **nicht je Workflow**, sondern einmal für den generischen conFLOW-Task `TS00388601`. Die Einträge sind **dynamisch**, das heißt, sie lesen die Container-Elemente, die conFLOW gesetzt hat.
 
 Transaktion `SWFVMD1` → Task `TS00388601` → Aufgabenvisualisierung `INTENT`:
 
@@ -29,7 +29,7 @@ Transaktion `/UI2/SEMOBJ` → neuer Eintrag:
 
 | Feld | Wert |
 | --- | --- |
-| Semantic Object | `ZCFLOrderPromiseV2` — **zeichengenau** wie die Konstante im BAdI |
+| Semantic Object | `ZCFLOrderPromiseV2` — **zeichengenau** wie der Wert von `VISU` |
 | Beschreibung | frei |
 
 Unterstriche sind erlaubt, ein Bindestrich nicht, denn der trennt Semantic Object und Action.
