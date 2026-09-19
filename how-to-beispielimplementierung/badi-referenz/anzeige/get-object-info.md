@@ -32,7 +32,7 @@ FALLE BEIM TRANSPORT: Textsymbole hängen am Textpool, nicht am Code. Wer die Kl
 
 **DIESER HOOK SIEHT IM AUFRUFNACHWEIS TOT AUS**
 
-Where-Used findet ihn nicht, weil er über eine Enhancement gerufen wird. Er läuft trotzdem. Merksatz für conFLOW-BAdI- Hooks allgemein: AUSPROBIEREN STATT WHERE-USED GLAUBEN.
+Where-Used findet ihn nicht, weil er über eine Enhancement gerufen wird. Er läuft trotzdem. Merksatz für conFLOW-BAdI-Hooks allgemein: AUSPROBIEREN STATT WHERE-USED GLAUBEN.
 
 ## Der Code
 

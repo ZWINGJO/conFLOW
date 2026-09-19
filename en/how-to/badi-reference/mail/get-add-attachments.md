@@ -12,7 +12,7 @@
 
 A .SAP file in the attachment opens the right system, the right client and the right transaction directly on the recipient's side - with a double click from the mail. For approvers who rarely use the system, that is the difference between "gets done" and "sits there".
 
-IMPORTANT: the shortcut contains a user name. A mail to several recipients therefore gets only ONE shortcut, that of the first recipient - otherwise everyone would see the IDs of the others. If you want one per recipient, you need individual dispatch.
+IMPORTANT: the shortcut contains a user name. By default conFLOW sends to each recipient separately, so that fits. If IT_SMTP does hold several, only the first gets a shortcut - otherwise everyone would see the IDs of the others.
 
 **THREE SOURCES, THREE PRODUCT METHODS**
 

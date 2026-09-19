@@ -22,7 +22,7 @@ keys as literals twenty times.
 | `C05` | the agent groups per step |
 | `C03` | who the group is - users, PFCG role (`AGR_NAME`), exclusion (`EXCLUDE`) - or `USER_BADI = 'X'` for determination in code |
 | `C07` | email notification: who receives which mail at which step |
-| `C09` / `C09T` | the decisions `UC1`–`UC5` with colour, mandatory comment and rule; the texts in `C09T` |
+| `C09` / `C09T` | the decisions `UC1`–`UC5` with color, mandatory comment and rule; the texts in `C09T` |
 | `C08` | object and subobject for the application log, if needed `TEMPLATE` and `VISU` |
 | `C10` | the type linkage, if the start runs via an event |
 

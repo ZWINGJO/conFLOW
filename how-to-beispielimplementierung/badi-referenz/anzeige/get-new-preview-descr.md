@@ -15,7 +15,7 @@ WOFÜR   Dasselbe wie GET_OBJECT_INFO, nur für die andere
 
 **DER CHECK AUF DEN OBJTYP IST NICHT OPTIONAL**
 
-In der Liste stehen mehrere Einträge: das conFLOW- Instanzobjekt, Notizen (SOFM), Anlagen. Wer ohne CHECK durch die Tabelle läuft, beschriftet alles gleich - auch die Notizen, die dann ihren eigenen Namen verlieren.
+In der Liste stehen mehrere Einträge: das conFLOW-Instanzobjekt, Notizen (SOFM), Anlagen. Wer ohne CHECK durch die Tabelle läuft, beschriftet alles gleich - auch die Notizen, die dann ihren eigenen Namen verlieren.
 
 **AUCH LÖSCHEN IST ERLAUBT**
 

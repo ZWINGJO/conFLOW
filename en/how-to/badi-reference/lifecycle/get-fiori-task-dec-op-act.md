@@ -6,9 +6,9 @@
 | **In** | IV_INSTANCE_ID  the WI_ID |
 | **Out** | CT_DEC_OPT      the options of the inbox |
 
-FIXED COLOUR AND MANDATORY COMMENT: c09-NATURE / c09-COMMENT_REQ,
+**FIXED COLOR AND MANDATORY COMMENT**
 
-without code. The framework sets them right after this hook and only where the hook has set nothing.
+They come from c09-NATURE and c09-COMMENT_REQ, without code. The framework sets them right after this hook and only where the hook has set nothing.
 
 **THIS HOOK LOOKS DEAD IN THE WHERE-USED LIST - AND STILL RUNS**
 

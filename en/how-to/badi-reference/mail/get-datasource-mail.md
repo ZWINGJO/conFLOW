@@ -35,9 +35,7 @@ The product helper delivers both ready-made. Building them yourself is not worth
 
 **LIMIT: ONLY THE FIRST FIVE STRUCTURES**
 
-The mail dispatch reads only five entries from
-
-**CT_APPLICATION_INPUT - the framework's ones count too.**
+The mail dispatch reads only five entries from the table CT_APPLICATION_INPUT; the framework's ones count too.
 
 ## The code
 
@@ -62,7 +60,7 @@ The mail dispatch reads only five entries from
     ENDIF.
 
 *--------------------------------------------------------------------*
-* 3. The notes of the previous agents.
+* 2. The notes of the previous agents.
 *
 * The entry point is the work item, not the instance - hence read
 * /C09/CFL_S03 first. GET_PROT_WORKITEM_MAIL then collects all notes
@@ -90,7 +88,7 @@ The mail dispatch reads only five entries from
     ENDIF.
 
 *--------------------------------------------------------------------*
-* 4. The workflow log as an HTML table.
+* 3. The workflow log as an HTML table.
 *
 * Unlike the work item text, the MAIL is real HTML - here <b> and
 * <table> are correct. The risk of confusing it with the ITF format

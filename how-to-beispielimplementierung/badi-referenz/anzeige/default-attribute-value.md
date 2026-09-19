@@ -9,9 +9,9 @@
 
 Von allen 26 Hooks ist dies der einzige, der in jeder untersuchten Produktivimplementierung gefüllt war - und zwar jedesmal mit exakt derselben Zeile.
 
-MIT c06t-OBJTEXT: LEER LASSEN
+**MIT OBJTEXT: LEER LASSEN**
 
-Dann liefert das Framework den Belegschlüssel selbst, aus der richtigen Instanz, VOR diesem Hook. Deshalb setzt die Zeile unten RESULT nur, wenn es noch leer ist.
+Ist c06t-OBJTEXT gepflegt, liefert das Framework den Belegschlüssel selbst, aus der richtigen Instanz, VOR diesem Hook. Deshalb setzt die Zeile unten RESULT nur, wenn es noch leer ist.
 
 **WARUM GET REFERENCE OF UND NICHT EINE ZUWEISUNG**
 

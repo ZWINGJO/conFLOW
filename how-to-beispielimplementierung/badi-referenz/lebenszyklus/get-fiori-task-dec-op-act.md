@@ -6,9 +6,9 @@
 | **Rein** | IV_INSTANCE_ID  die WI_ID |
 | **Raus** | CT_DEC_OPT      die Optionen der Inbox |
 
-FESTE FARBE UND KOMMENTARPFLICHT: c09-NATURE / c09-COMMENT_REQ,
+**FESTE FARBE UND KOMMENTARPFLICHT**
 
-ohne Code. Das Framework setzt sie direkt nach diesem Hook und nur dort, wo der Hook nichts gesetzt hat.
+Kommen aus c09-NATURE und c09-COMMENT_REQ, ohne Code. Das Framework setzt sie direkt nach diesem Hook und nur dort, wo der Hook nichts gesetzt hat.
 
 **DIESER HOOK SIEHT IM AUFRUFNACHWEIS TOT AUS - UND LÄUFT**
 

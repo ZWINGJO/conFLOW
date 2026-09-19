@@ -29,7 +29,7 @@ In transaction **SE80** (or ADT), create an enhancement implementation for the e
 If the next step should not come from Customizing (`/C09/CFL_C02`) but be calculated at runtime, set the type of the approval step to **"BADI"**. conFLOW then calls the BAdI method `GET_STATUS_DYNAMIC` and expects the next `gen_stat` as the return value.
 
 {% hint style="warning" %}
-**Caution:** When `GET_STATUS_DYNAMIC` is active, the transitions in `/C09/CFL_C02` are **ignored** for this step. All routing logic then lives in ABAP code. Use this mode only if the decision really has to be dynamic. If the process branches on document values (e.g. amount above a limit), use a background step without a method and a condition in `/C09/CFL_C09` (column `BEDINGUNG`) instead — the branch then stays visible in Customizing.
+**Caution:** When `GET_STATUS_DYNAMIC` is active, the transitions in `/C09/CFL_C02` are **ignored** for this step. All routing logic then lives in ABAP code. Use this mode only if the decision really has to be dynamic. If the process branches on document values (e.g. amount above a limit), use a background step without a method (attribute `BACK_BATCH`, a template in `/C09/CFL_C08` required) and a condition in `/C09/CFL_C09` (column `BEDINGUNG`) instead — the branch then stays visible in Customizing.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/folie21-1.png" alt="Dynamic step determination"><figcaption><p>Type "BADI": dynamic step determination at runtime</p></figcaption></figure>
@@ -105,6 +105,6 @@ If a `TEMPLATE` is maintained in `/C09/CFL_C08` and an object label (`OBJTEXT`) 
 
 ## 3.9 Further options
 
-The BAdI interface offers many more hooks — for most workflows the ones shown above are enough. Further hooks such as `GET_AFTER_EXECUTION_WORKITEM`, `GET_BEFORE_DECISION_WORKITEM` or `GET_OBJECT_INFO` enable follow-up logic, button control and adjustments to the Fiori display. Much of this is now a setting: button colour and mandatory comment (`/C09/CFL_C09`, `NATURE`/`COMMENT_REQ`), object label (`OBJTEXT` of the workflow definition), priority (`PRIO` on the approval step).
+The BAdI interface offers many more hooks — for most workflows the ones shown above are enough. Further hooks such as `GET_AFTER_EXECUTION_WORKITEM`, `GET_BEFORE_DECISION_WORKITEM` or `GET_OBJECT_INFO` enable follow-up logic, button control and adjustments to the Fiori display. Much of this is now a setting: button color and mandatory comment (`/C09/CFL_C09`, `NATURE`/`COMMENT_REQ`), object label (`OBJTEXT` of the workflow definition), priority (`PRIO` on the approval step).
 
 <figure><img src="../../.gitbook/assets/folie31.png" alt="Further options"><figcaption><p>Further BAdI hooks for special requirements</p></figcaption></figure>

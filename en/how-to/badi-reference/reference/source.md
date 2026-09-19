@@ -345,8 +345,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        fixed assignments GET_ACTORS therefore stays EMPTY, and you
 *        need neither a role nor code.
 *
-*        Also without code: a PFCG role (C03 with OTYPE AG and column
-*        AGR_NAME - dialog users only, locked users are left out)
+*        Also without code: a PFCG role (C03 with OTYPE AG and the
+*        column AGR_NAME - dialog users only, locked users are left out)
 *        and exclusion (column EXCLUDE, special value WF_APPROVERS =
 *        whoever has already decided at another stage). Only what
 *        that does not cover needs this hook.
@@ -376,7 +376,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * VARIANT A - role
 *
 * For a role alone, C03 with AGR_NAME is enough (see above). This
-* variant shows the call for cases that does not cover. The customer
+* variant shows the call for cases this does not cover. The customer
 * maintains the role, and the code stays unchanged when people
 * change.
 *
@@ -892,8 +892,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        every production implementation examined - and every time
 *        with exactly the same line.
 *
-* WITH c06t-OBJTEXT: LEAVE IT EMPTY
-*        The framework then supplies the document key itself, from
+* WITH OBJTEXT: LEAVE IT EMPTY
+*        If c06t-OBJTEXT is maintained, the framework supplies the document key itself, from
 *        the right instance, BEFORE this hook. That is why the line
 *        below only sets RESULT if it is still empty.
 *
@@ -904,8 +904,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        the whole time.
 *
 * PITFALL  If you return a reference to a METHOD-LOCAL variable, you
-*        get no error, but garbled data later. Hence the reference to
-*        MS_INSTANCES.
+*        get no error, but garbled data later. Hence the reference
+*        to the class-wide MS_INSTANCES.
 *
 * CAUTION MS_INSTANCES
 *        MS_INSTANCES is class-wide and overwritten by every
@@ -953,6 +953,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        workflow (the normal case) this is not needed.
 *--------------------------------------------------------------------*
 
+* Only needed without c06t-OBJTEXT and c08 TEMPLATE - otherwise the
+* framework already opens the document, and this method stays empty.
     DATA lv_ebeln TYPE ekko-ebeln.
 
     lv_ebeln = /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid.
@@ -1089,7 +1091,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *            ones back into it.
 *
 * CUSTOMIZING FIRST
-*        Fixed colour per outcome: c09-NATURE (P/N). Mandatory
+*        Fixed color per outcome: c09-NATURE (P/N). Mandatory
 *        comment: c09-COMMENT_REQ. Hide: c09-NODISPLAY. All of it
 *        works in SAP GUI and Fiori, without code. This hook only for
 *        what depends on the document, as in the example below.
@@ -1240,9 +1242,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * IN     IV_INSTANCE_ID  the WI_ID
 * OUT    CT_DEC_OPT      the options of the inbox
 *
-* FIXED COLOUR AND MANDATORY COMMENT: c09-NATURE / c09-COMMENT_REQ,
-*        without code. The framework sets them right after this hook
-*        and only where the hook has set nothing.
+* FIXED COLOR AND MANDATORY COMMENT
+*        They come from c09-NATURE and c09-COMMENT_REQ, without code.
+*        The framework sets them right after this hook and only where
+*        the hook has set nothing.
 *
 * THIS HOOK LOOKS DEAD IN THE WHERE-USED LIST - AND STILL RUNS
 *        /C09/CL_TGW_RFC_HANDLER is not a class of its own, but a
@@ -1801,8 +1804,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        currency. Here only what is missing from that.
 *
 * LIMIT: ONLY THE FIRST FIVE STRUCTURES
-*        The mail dispatch reads only five entries from
-*        CT_APPLICATION_INPUT - the framework's ones count too.
+*        The mail dispatch reads only five entries from the table
+*        CT_APPLICATION_INPUT; the framework's ones count too.
 *--------------------------------------------------------------------*
 
 *--------------------------------------------------------------------*
@@ -1825,7 +1828,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
     ENDIF.
 
 *--------------------------------------------------------------------*
-* 3. The notes of the previous agents.
+* 2. The notes of the previous agents.
 *
 * The entry point is the work item, not the instance - hence read
 * /C09/CFL_S03 first. GET_PROT_WORKITEM_MAIL then collects all notes
@@ -1853,7 +1856,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
     ENDIF.
 
 *--------------------------------------------------------------------*
-* 4. The workflow log as an HTML table.
+* 3. The workflow log as an HTML table.
 *
 * Unlike the work item text, the MAIL is real HTML - here <b> and
 * <table> are correct. The risk of confusing it with the ITF format
@@ -1888,11 +1891,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        For approvers who rarely use the system, that is the
 *        difference between "gets done" and "sits there".
 *
-*        IMPORTANT: the shortcut contains a user name. A mail to
-*        several recipients therefore gets only ONE shortcut, that of
-*        the first recipient - otherwise everyone would see the IDs of
-*        the others. If you want one per recipient, you need
-*        individual dispatch.
+*        IMPORTANT: the shortcut contains a user name. By default
+*        conFLOW sends to each recipient separately, so that fits. If
+*        IT_SMTP does hold several, only the first gets a shortcut -
+*        otherwise everyone would see the IDs of the others.
 *
 * THREE SOURCES, THREE PRODUCT METHODS
 *        GET_SHORTCUT   the SAP shortcut
@@ -2469,7 +2471,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 * ONLY NEEDED IF THE PRIORITY DEPENDS ON THE DOCUMENT
 *     A fixed priority per step is c01-PRIO, without any code.
-*     Maintaining both on the same step: then only one of them.
+*     Do not maintain both on the same step - only one takes effect,
+*     and not reliably the BAdI.
 *
 * THE OBVIOUS APPROACH DOES NOT WORK
 *     SAP_WAPI_CHANGE_WORKITEM_PRIO reads SWWWIHEAD from the database.

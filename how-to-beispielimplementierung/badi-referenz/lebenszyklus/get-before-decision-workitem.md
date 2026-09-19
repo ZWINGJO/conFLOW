@@ -7,7 +7,7 @@
 
 **ERST DAS CUSTOMIZING**
 
-Feste Farbe je Ausgang: c09-NATURE (P/N). Kommentarpflicht: c09-COMMENT_REQ. Ausblenden: c09-NODISPLAY. Beides wirkt im SAP GUI und in Fiori, ohne Code. Dieser Hook nur für das, was vom Beleg abhängt, wie im Beispiel unten.
+Feste Farbe je Ausgang: c09-NATURE (P/N). Kommentarpflicht: c09-COMMENT_REQ. Ausblenden: c09-NODISPLAY. Alle drei wirken im SAP GUI und in Fiori, ohne Code. Dieser Hook nur für das, was vom Beleg abhängt, wie im Beispiel unten.
 
 **DREI DINGE GEHEN HIER, UND NUR HIER**
 

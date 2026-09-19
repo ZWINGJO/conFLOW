@@ -10,11 +10,7 @@
 
 /C09/CFL_C03 holds OTYPE and OBJID directly per GEN_STAT_USER - for example US/MEIER, US/WF-BATCH, US/WF_INITIATOR. Only USER_BADI = 'X' switches to this hook. For PoCs, demos and fixed assignments GET_ACTORS therefore stays EMPTY, and you need neither a role nor code.
 
-Also without code: a PFCG role (C03 with OTYPE AG and column
-
-**AGR_NAME - dialog users only, locked users are left out)**
-
-and exclusion (column EXCLUDE, special value WF_APPROVERS = whoever has already decided at another stage). Only what that does not cover needs this hook.
+Also without code: a PFCG role (C03 with OTYPE AG and the column AGR_NAME - dialog users only, locked users are left out) and exclusion (column EXCLUDE, special value WF_APPROVERS = whoever has already decided at another stage). Only what that does not cover needs this hook.
 
 **THE FORMAT IS THE MOST COMMON MISTAKE**
 
@@ -41,7 +37,7 @@ Leave CT_ACTORS empty. The framework sets the fallback agent 'C09_NO_USER' itsel
 * VARIANT A - role
 *
 * For a role alone, C03 with AGR_NAME is enough (see above). This
-* variant shows the call for cases that does not cover. The customer
+* variant shows the call for cases this does not cover. The customer
 * maintains the role, and the code stays unchanged when people
 * change.
 *

@@ -22,7 +22,7 @@ The method must have a fixed signature:
 | `ET_BAPIRET2` | Exporting | `BAPIRET2_T` | Messages (an E/A message makes the outcome NOK) |
 | `EV_DECISION_KEY` | Exporting | `SWR_DECIKEY` | Decision (determines the next step) |
 
-Alternatively `clsname` holds a class implementing the interface `/C09/CFL_IF_BACKGROUND_0101` (`cmpname` stays empty). A background step without any method can decide through a condition in `/C09/CFL_C09`, see [Technical documentation, section 7](../../technical-documentation.md#7-background-steps).
+Alternatively `clsname` holds a class implementing the interface `/C09/CFL_IF_BACKGROUND_0101` (`cmpname` stays empty). A background step without any method (attribute `BACK_BATCH`, a template in `/C09/CFL_C08` required) can decide through a condition in `/C09/CFL_C09`, see [Technical documentation, section 7](../../technical-documentation.md#7-background-steps).
 
 {% hint style="warning" %}
 **Always set `EV_DECISION_KEY`.** Without a return value the framework sets the outcome to `OK` — but to `NOK` if there is an error message in `ET_BAPIRET2`. This reserves `NOK` on background steps for the error case; business results belong on `UC1`–`UC5`.
@@ -47,7 +47,7 @@ In addition to `OK` and `NOK` you can create up to five further decision options
 The **labels** of the buttons (including `OK` and `NOK`) are maintained in the text table `/C09/CFL_C09T`. Without an entry there, the work item shows the standard texts of the SAP task.
 
 {% hint style="info" %}
-**Button control:** Set `nodisplay = 'X'` in `/C09/CFL_C09` to hide a button for a specific step. This lets you, for example, forbid cancellation on the first step while allowing it on the escalation step. In the same node you colour the button (`nature` = `P` green, `N` red) and make a comment mandatory (`comment_req`) — in SAP GUI and in Fiori.
+**Button control:** Set `nodisplay = 'X'` in `/C09/CFL_C09` to hide a button for a specific step. This lets you, for example, forbid cancellation on the first step while allowing it on the escalation step. In the same node you color the button (`nature` = `P` green, `N` red) and make a comment mandatory (`comment_req`) — in SAP GUI and in Fiori.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/folie17-2.png" alt="Decision options"><figcaption><p>Decision options UC1–UC5 and their labels</p></figcaption></figure>

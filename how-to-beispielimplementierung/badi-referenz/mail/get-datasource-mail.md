@@ -60,7 +60,7 @@ Der Mailversand liest aus CT_APPLICATION_INPUT nur fünf Einträge - die des Fra
     ENDIF.
 
 *--------------------------------------------------------------------*
-* 3. Die Notizen der bisherigen Bearbeiter.
+* 2. Die Notizen der bisherigen Bearbeiter.
 *
 * Der Einstieg geht ueber das Workitem, nicht ueber die Instanz -
 * deshalb erst /C09/CFL_S03 lesen. GET_PROT_WORKITEM_MAIL sammelt
@@ -89,7 +89,7 @@ Der Mailversand liest aus CT_APPLICATION_INPUT nur fünf Einträge - die des Fra
     ENDIF.
 
 *--------------------------------------------------------------------*
-* 4. Das Workflow-Protokoll als HTML-Tabelle.
+* 3. Das Workflow-Protokoll als HTML-Tabelle.
 *
 * Anders als der Workitem-Text ist das MAIL echtes HTML - hier sind
 * <b> und <table> richtig. Die Verwechslungsgefahr mit dem ITF-Format
