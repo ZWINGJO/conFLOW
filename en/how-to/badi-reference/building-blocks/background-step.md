@@ -8,6 +8,8 @@ The step where the work happens:
 
 1. Read the document 2. Write the values to the container 3. Classify 4. Use EV_DECISION_KEY to say how the process continues
 
+Alternative to the static method: a class implementing /C09/CFL_IF_BACKGROUND_0101 (CMPNAME empty) - then the compiler checks the signature. And where only a value limit decides, a rule in c09-BEDINGUNG is enough, without any code.
+
 **WHY THE VALUES GO INTO THE CONTAINER INSTEAD OF JUST BEING READ**
 
 The container is the basis for the decision, and it is frozen. If the agent decides tomorrow and the document was changed tonight, the agent still has the figures in front of them that the decision is about - and the audit trail shows afterwards which figures those were.

@@ -29,11 +29,11 @@
 
    ACHTUNG BEIM VERGLEICH MIT ÄLTEREM CODE: in der Praxis findet man häufig `+12`. Das ist nicht falsch, nur ungenau - es lässt ein führendes Leerzeichen stehen, das beim Anzeigen niemandem auffällt. Wer 13 nimmt, spart sich das CONDENSE.
 
-   NICHT UNGEPRÜFT ABSCHNEIDEN: ist der Text kürzer als der Präfix, läuft der Offset ins Leere und der Kurzdump kommt zur Anzeigezeit - also genau dann, wenn jemand zuschaut.
+   NICHT BLIND ABSCHNEIDEN: der Präfix wird aus der Instanz gebaut und verglichen. Passt er nicht, bleibt der Text stehen. Ist c06t-OBJTEXT gepflegt, schneidet das Framework den Präfix schon VOR diesem Hook ab - ein blindes +13 nähme dann die ersten 13 Zeichen des echten Textes weg.
 
 **2. DIE PLATZHALTER**
 
-   Der Text hinter dem Präfix kommt aus /C09/CFL_C01T und kann Platzhalter der Form §{name} enthalten. Der Kunde pflegt sie im Customizing, dieser Hook ersetzt sie. Damit ändert sich die Zeile ohne Transport.
+   Der Text hinter dem Präfix kommt aus /C09/CFL_C01T und kann Platzhalter der Form §{name} enthalten. Der Kunde pflegt sie im Customizing, dieser Hook ersetzt sie. Damit ändert sich die Zeile ohne Transport. Mit c06t-OBJTEXT und c08 TEMPLATE löst das Framework §{feld} aus dem Template selbst auf - hier nur eigene Platzhalter ersetzen.
 
 **WAS VORNE STEHEN SOLL**
 
@@ -42,13 +42,16 @@ Die erste Bildschirmspalte ist die teuerste. Dort gehört der BEFUND hin, nicht 
 ## Der Code
 
 ```abap
-    CONSTANTS lc_prefix_len TYPE i VALUE 13.
-    CONSTANTS lc_max_len    TYPE i VALUE 100.
+    CONSTANTS lc_max_len TYPE i VALUE 100.
 
     DATA lv_text TYPE string.
 
-    IF strlen( cv_description ) > lc_prefix_len.
-      lv_text = cv_description+lc_prefix_len.
+    DATA(lv_prefix) = |{ is_data-wf_definition } \| { is_data-gen_stat } - |.
+    DATA(lv_plen)   = strlen( lv_prefix ).
+
+    IF strlen( cv_description ) > lv_plen AND
+       cv_description(lv_plen) = lv_prefix.
+      lv_text = cv_description+lv_plen.
     ELSE.
       lv_text = cv_description.
     ENDIF.

@@ -2,7 +2,8 @@
 
 All 26 hooks of the interface, in the order in which they occur
 in the process. The **Code** column says whether the reference class
-fills them - six stay empty on purpose.
+fills them. Six hooks are empty in every implementation examined,
+three more stay empty in this example.
 
 ## Start
 
@@ -69,8 +70,9 @@ for and how to tell whether your own case belongs there:
 - `get_event_raised_workitem` - needs a "while the workflow is running"
 - `get_status_dynamic` - hides the branching that Customizing makes visible
 - `get_send_mail_user` - the group of recipients belongs in Customizing
-- `get_mail_language` - the standard already does the right thing
+- `get_mail_language` - only needed if recipients should get their own language
 - `get_factory_calendar` - only needed once deadlines run in days
 
-In addition, `get_wf_definition_text` and `release` stay empty in this
-example, but are needed more often than the six above.
+In addition, `get_wf_definition_text`, `get_status_mail_dynamic` and
+`release` stay empty in this example, but are needed more often than
+the six above.

@@ -140,18 +140,19 @@ CLASS zcl_cfl_const_00900 DEFINITION
 *
 * It is a constant here because it should be easy to follow in a
 * reference example. In a real installation, a value like this belongs
-* in a customizing table or in BRFplus - otherwise every change needs a
-* transport.
+* in a rule: c09-BEDINGUNG on a background step, e.g.
+* GESAMTWERT_RW > '10000.00' with c08 TEMPLATE = the template class
+* for BUS2012 - changeable without development.
 *--------------------------------------------------------------------*
     CONSTANTS mc_limit_value TYPE p LENGTH 8 DECIMALS 2 VALUE '10000.00'.
 
 *--------------------------------------------------------------------*
 * Work item priority (SWW_PRIO, 1-9, 1 = highest)
 *
-* Watch out for 1: SAP sends work items with priority 1 as express
-* messages. Nobody notices in the test system; in the production
-* system the agent gets a popup. 4 is the highest level that My Inbox
-* still shows as "High" without triggering that.
+* Watch out for 1: SAP sends every agent an express message, a
+* popup in SAP GUI. Only level 1 triggers that - 2 is the highest
+* level without this effect. A fixed priority per step is c01-PRIO,
+* without any code.
 *--------------------------------------------------------------------*
     CONSTANTS:
       BEGIN OF mc_prio,

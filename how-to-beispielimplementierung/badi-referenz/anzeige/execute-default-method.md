@@ -6,10 +6,14 @@
 | **Rein** | nichts - die Instanz steht in /C09/CFL_CL_WORKFLOW_0101=>MS_INSTANCES-INSTANCE->MS_DATA |
 
 ```
-WOFÜR   "Zeig mir den Beleg". Ohne diesen Hook passiert beim
-       Doppelklick nichts, und der Bearbeiter muss die Belegnummer
-       abschreiben und die Transaktion selbst aufrufen.
+WOFÜR   "Zeig mir den Beleg". Mit c06t-OBJTEXT und c08 TEMPLATE
+       öffnet das Framework den Beleg selbst (Default-Methode des
+       Template-Objekttyps) - dann leer lassen, sonst öffnet er
+       zweimal. Ohne beides passiert beim Doppelklick nichts, und
+       der Bearbeiter muss die Belegnummer abschreiben.
 ```
+
+MS_INSTANCES ist klassenweit - bei mehreren Workitems in einer Sitzung nicht unbedingt die eigene Instanz.
 
 **MIT ANZEIGE-TRANSAKTION, NICHT MIT ÄNDERUNGS-TRANSAKTION**
 

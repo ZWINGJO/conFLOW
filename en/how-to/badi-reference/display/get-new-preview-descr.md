@@ -9,6 +9,8 @@
 ```
 PURPOSE   Same as GET_OBJECT_INFO, just for the other user interface.
        Maintain both, otherwise one of the two looks ugly.
+       With c06t-OBJTEXT the framework does both itself - leave it
+       empty then.
 ```
 
 **THE CHECK ON OBJTYPE IS NOT OPTIONAL**

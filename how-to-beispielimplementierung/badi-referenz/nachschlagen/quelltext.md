@@ -208,8 +208,9 @@ CLASS zcl_cfl_workflow_00900 DEFINITION
 * Befund zu FILTERN, statt ihn nur zu sehen.
 *--------------------------------------------------------------------*
     CLASS-METHODS set_priority
-      IMPORTING iv_wi_id TYPE sww_wiid
-                iv_prio  TYPE sww_prio.
+      IMPORTING iv_wi_id        TYPE sww_wiid
+                iv_prio         TYPE sww_prio
+                iv_prio_created TYPE sww_prio.
 
 *--------------------------------------------------------------------*
 * Der Entscheidungsschluessel, den das System empfiehlt.
@@ -346,6 +347,13 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        Demos und feste Zuordnungen bleibt GET_ACTORS damit LEER,
 *        und es braucht weder Rolle noch Code.
 *
+*        Ebenfalls ohne Code: eine PFCG-Rolle (C03 mit OTYPE AG und
+*        Spalte AGR_NAME - nur Dialogbenutzer, gesperrte fallen
+*        raus) und der Ausschluss (Spalte EXCLUDE, Sonderwert
+*        WF_APPROVERS = wer auf einer anderen Stufe schon
+*        entschieden hat). Erst was das nicht abdeckt, braucht
+*        diesen Hook.
+*
 * DAS FORMAT IST DER HAEUFIGSTE FEHLER
 *        Ein Eintrag in CT_ACTORS ist immer ein TYPISIERTES
 *        Org-Objekt, nie ein blanker Benutzername:
@@ -353,18 +361,16 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *          US<uname>      Benutzer
 *          S<planstelle>  Planstelle
 *          O<orgeinheit>  Organisationseinheit
-*          AC<rolle>      Rolle
 *
 *        'MEIER' erzeugt kein Workitem und keine Fehlermeldung. Das
 *        Workitem landet bei niemandem und faellt erst auf, wenn
 *        jemand fragt, wo es geblieben ist.
 *
 * WENN NIEMAND GEFUNDEN WIRD
-*        Ein Workitem ohne Bearbeiter geht in den Fehlerstatus und
-*        bleibt liegen. Besser ist ein definierter Auffangbearbeiter:
-*        conFLOW kennt dafuer den Eintrag 'C09_NO_USER'. Der Prozess
-*        laeuft weiter und die Luecke ist sichtbar, statt still zu
-*        stehen. Siehe ganz unten in dieser Methode.
+*        CT_ACTORS leer lassen. Das Framework setzt den
+*        Auffangbearbeiter 'C09_NO_USER' selbst - erst nach allen
+*        C03-Zeilen und nach EXCLUDE. Hier gesetzt, stuende er neben
+*        Bearbeitern aus anderen Zeilen desselben Schluessels.
 *--------------------------------------------------------------------*
 
     CASE is_cfl_c05-gen_stat_user.
@@ -372,8 +378,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *--------------------------------------------------------------------*
 * VARIANTE A - Rolle
 *
-* Der haeufigste Fall. Die Rolle pflegt der Kunde selbst, der Code
-* bleibt unveraendert, wenn Personen wechseln.
+* Fuer eine Rolle allein reicht C03 mit AGR_NAME (siehe oben). Diese
+* Variante zeigt den Aufruf fuer Faelle, die das nicht abdecken. Die
+* Rolle pflegt der Kunde selbst, der Code bleibt unveraendert, wenn
+* Personen wechseln.
 *
 * Der Aufruf gehoert NICHT hierher, sondern in eine zentrale Klasse
 * ZCL_CFL_GET_ACTORS. Grund: dieselbe Rolle wird von mehreren
@@ -481,16 +489,6 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
     IF mv_process = 'MAIL'.
       CLEAR mv_process.
       RETURN.
-    ENDIF.
-
-*--------------------------------------------------------------------*
-* NACHLAUF 2 - Auffangbearbeiter
-*
-* Nur fuer Workitems, nicht fuer Mails: eine Mail an niemanden ist
-* harmlos, ein Workitem an niemanden bleibt liegen.
-*--------------------------------------------------------------------*
-    IF ct_actors IS INITIAL.
-      APPEND 'C09_NO_USER' TO ct_actors.
     ENDIF.
 
   ENDMETHOD.
@@ -612,15 +610,19 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *    ein fuehrendes Leerzeichen stehen, das beim Anzeigen niemandem
 *    auffaellt. Wer 13 nimmt, spart sich das CONDENSE.
 *
-*    NICHT UNGEPRUEFT ABSCHNEIDEN: ist der Text kuerzer als der
-*    Praefix, laeuft der Offset ins Leere und der Kurzdump kommt zur
-*    Anzeigezeit - also genau dann, wenn jemand zuschaut.
+*    NICHT BLIND ABSCHNEIDEN: der Praefix wird aus der Instanz
+*    gebaut und verglichen. Passt er nicht, bleibt der Text stehen.
+*    Ist c06t-OBJTEXT gepflegt, schneidet das Framework den Praefix
+*    schon VOR diesem Hook ab - ein blindes +13 naehme dann die
+*    ersten 13 Zeichen des echten Textes weg.
 *
 * 2. DIE PLATZHALTER
 *    Der Text hinter dem Praefix kommt aus /C09/CFL_C01T und kann
 *    Platzhalter der Form §{name} enthalten. Der Kunde pflegt sie im
 *    Customizing, dieser Hook ersetzt sie. Damit aendert sich die
-*    Zeile ohne Transport.
+*    Zeile ohne Transport. Mit c06t-OBJTEXT und c08 TEMPLATE loest
+*    das Framework §{feld} aus dem Template selbst auf - hier nur
+*    eigene Platzhalter ersetzen.
 *
 * WAS VORNE STEHEN SOLL
 *    Die erste Bildschirmspalte ist die teuerste. Dort gehoert der
@@ -629,13 +631,16 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *    Arbeitsliste, die man ueberfliegen kann.
 *--------------------------------------------------------------------*
 
-    CONSTANTS lc_prefix_len TYPE i VALUE 13.
-    CONSTANTS lc_max_len    TYPE i VALUE 100.
+    CONSTANTS lc_max_len TYPE i VALUE 100.
 
     DATA lv_text TYPE string.
 
-    IF strlen( cv_description ) > lc_prefix_len.
-      lv_text = cv_description+lc_prefix_len.
+    DATA(lv_prefix) = |{ is_data-wf_definition } \| { is_data-gen_stat } - |.
+    DATA(lv_plen)   = strlen( lv_prefix ).
+
+    IF strlen( cv_description ) > lv_plen AND
+       cv_description(lv_plen) = lv_prefix.
+      lv_text = cv_description+lv_plen.
     ELSE.
       lv_text = cv_description.
     ENDIF.
@@ -788,6 +793,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        Die Instanz-ID haengt das Framework selbst an - CV_RETURN
 *        ersetzt nur den Teil davor.
 *
+*        Mit c06t-OBJTEXT beschriftet das Framework selbst, VOR
+*        diesem Hook. Dann leer lassen - sonst ueberschreibt der Hook
+*        den Customizing-Text.
+*
 * DER TEXT GEHOERT IN EIN TEXTSYMBOL, NICHT IN DEN CODE
 *        TEXT-001 haengt am Textpool der Klasse. Damit ist er
 *        uebersetzbar, und dieselbe Beschriftung steht fuer beide
@@ -819,6 +828,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 * WOFUER   Dasselbe wie GET_OBJECT_INFO, nur fuer die andere
 *        Oberflaeche. Beide pflegen, sonst ist eine von beiden haesslich.
+*        Mit c06t-OBJTEXT macht das Framework beides selbst - dann
+*        leer lassen.
 *
 * DER CHECK AUF DEN OBJTYP IST NICHT OPTIONAL
 *        In der Liste stehen mehrere Eintraege: das conFLOW-
@@ -884,8 +895,12 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 *        Von allen 26 Hooks ist dies der einzige, der in jeder
 *        untersuchten Produktivimplementierung gefuellt war - und
-*        zwar jedesmal mit exakt derselben Zeile. Wer sie
-*        uebernimmt, hat sie richtig.
+*        zwar jedesmal mit exakt derselben Zeile.
+*
+* MIT c06t-OBJTEXT: LEER LASSEN
+*        Dann liefert das Framework den Belegschluessel selbst, aus
+*        der richtigen Instanz, VOR diesem Hook. Deshalb setzt die
+*        Zeile unten RESULT nur, wenn es noch leer ist.
 *
 * WARUM GET REFERENCE OF UND NICHT EINE ZUWEISUNG
 *        RESULT ist REF TO DATA. Das Framework dereferenziert
@@ -895,11 +910,18 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 * FALLE  Wer eine Referenz auf eine METHODENLOKALE Variable
 *        zurueckgibt, bekommt keinen Fehler, sondern spaeter
-*        Datensalat. Immer auf MS_INSTANCES-INSTANCE->MS_DATA
-*        referenzieren.
+*        Datensalat. Deshalb die Referenz auf MS_INSTANCES.
+*
+* ACHTUNG MS_INSTANCES
+*        MS_INSTANCES ist klassenweit und wird bei jedem
+*        FIND_BY_LPOR ueberschrieben. Mehrere Workitems in einer
+*        Sitzung liefern darueber den Schluessel des zuletzt
+*        erzeugten Objekts - ein Grund mehr fuer c06t-OBJTEXT.
 *--------------------------------------------------------------------*
 
-    GET REFERENCE OF /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid INTO result.
+    IF result IS INITIAL.
+      GET REFERENCE OF /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid INTO result.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -911,9 +933,14 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * REIN   nichts - die Instanz steht in
 *        /C09/CFL_CL_WORKFLOW_0101=>MS_INSTANCES-INSTANCE->MS_DATA
 *
-* WOFUER   "Zeig mir den Beleg". Ohne diesen Hook passiert beim
-*        Doppelklick nichts, und der Bearbeiter muss die Belegnummer
-*        abschreiben und die Transaktion selbst aufrufen.
+* WOFUER   "Zeig mir den Beleg". Mit c06t-OBJTEXT und c08 TEMPLATE
+*        oeffnet das Framework den Beleg selbst (Default-Methode des
+*        Template-Objekttyps) - dann leer lassen, sonst oeffnet er
+*        zweimal. Ohne beides passiert beim Doppelklick nichts, und
+*        der Bearbeiter muss die Belegnummer abschreiben.
+*
+*        MS_INSTANCES ist klassenweit - bei mehreren Workitems in
+*        einer Sitzung nicht unbedingt die eigene Instanz.
 *
 * MIT ANZEIGE-TRANSAKTION, NICHT MIT AENDERUNGS-TRANSAKTION
 *        ME23N, nicht ME22N. Der Bearbeiter soll den Beleg SEHEN,
@@ -981,6 +1008,9 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        Anlagen, Notizen, Container vorbereiten, eine eigene
 *        Oberflaeche anhaengen.
 *
+*        OHNE CODE: eine feste Prioritaet je Schritt ist c01-PRIO,
+*        die Fiori-App ist c08 VISU. Hier nur, was vom Beleg abhaengt.
+*
 * DER HOOK LAEUFT AUCH FUER HINTERGRUNDSCHRITTE
 *        Und das ist fast immer unerwuenscht. Eine Prioritaet an
 *        einem Workitem, das kein Mensch sieht, kostet nur Laufzeit.
@@ -992,8 +1022,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        haeufigsten Enttaeuschung: jede API, die SWWWIHEAD LIEST,
 *        laeuft ins Leere. SAP_WAPI_CHANGE_WORKITEM_PRIO tut genau
 *        das - sie meldet keinen Fehler, sie wirkt nur nicht. Der
-*        richtige Weg geht ueber den Workitem-Manager der laufenden
-*        Transaktion, siehe SET_PRIORITY( ).
+*        richtige Weg ist ein tRFC NACH dem COMMIT, siehe
+*        SET_PRIORITY( ).
 *--------------------------------------------------------------------*
 
     IF is_data_step-gen_stat <> zcl_cfl_const_00900=>mc_stat-approve AND
@@ -1023,8 +1053,9 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
       lv_prio = zcl_cfl_const_00900=>mc_prio-medium.
     ENDIF.
 
-    set_priority( iv_wi_id = is_swr_wihdr-wi_id
-                  iv_prio  = lv_prio ).
+    set_priority( iv_wi_id        = is_swr_wihdr-wi_id
+                  iv_prio         = lv_prio
+                  iv_prio_created = is_swr_wihdr-wi_prio ).
 
   ENDMETHOD.
 
@@ -1063,6 +1094,12 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * REIN/RAUS  CM_WORKITEM_CONTEXT - der Workitem-Kontext. Aus ihm holt
 *            man Kopf und Alternativen, in ihn schreibt man die
 *            geaenderten zurueck.
+*
+* ERST DAS CUSTOMIZING
+*        Feste Farbe je Ausgang: c09-NATURE (P/N). Kommentarpflicht:
+*        c09-COMMENT_REQ. Ausblenden: c09-NODISPLAY. Beides wirkt im
+*        SAP GUI und in Fiori, ohne Code. Dieser Hook nur fuer das,
+*        was vom Beleg abhaengt, wie im Beispiel unten.
 *
 * DREI DINGE GEHEN HIER, UND NUR HIER
 *
@@ -1213,6 +1250,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * REIN   IV_INSTANCE_ID  die WI_ID
 * RAUS   CT_DEC_OPT      die Optionen der Inbox
 *
+* FESTE FARBE UND KOMMENTARPFLICHT: c09-NATURE / c09-COMMENT_REQ,
+*        ohne Code. Das Framework setzt sie direkt nach diesem Hook
+*        und nur dort, wo der Hook nichts gesetzt hat.
+*
 * DIESER HOOK SIEHT IM AUFRUFNACHWEIS TOT AUS - UND LAEUFT
 *        /C09/CL_TGW_RFC_HANDLER ist keine eigene Klasse, sondern
 *        eine conFLOW-ENHANCEMENT auf den Task-Gateway-Handler.
@@ -1272,7 +1313,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        IV_ALT_TEXT  dessen Text
 *        IV_MSELNOTE  Vorgabe fuer den Notiz-Dialog
 *
-* RAUS   CV_SUBRC      <> 0 bricht ab
+* RAUS   CV_SUBRC      1 bricht ab (andere Werte nicht)
 *        CS_OBJECT_ID  Referenz auf eine erfasste Notiz
 *
 * ZWEI VERSCHIEDENE AUFGABEN, DIE HIER ZUSAMMENFALLEN
@@ -1280,11 +1321,14 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * 1. NACHLAUFLOGIK - den Container fortschreiben, festhalten wer
 *    entschieden hat. Das ist der uebliche Fall.
 *
-* 2. EINE NOTIZ ERZWINGEN - ueber SWU_INTERN_DECI_NOTE_POPUP. Das
-*    ist der Standardweg fuer "Ablehnung bitte begruenden".
+* 2. EINE NOTIZ ERZWINGEN - zuerst c09-COMMENT_REQ am Ausgang: wirkt
+*    im SAP GUI und in Fiori, ohne Code. Hier nur, wenn die Pflicht
+*    vom Beleg abhaengt - dann ueber SWU_INTERN_DECI_NOTE_POPUP mit
+*    MSELNOTE = '2' (IV_MSELNOTE ist meist leer = optional) und nur,
+*    wenn CS_OBJECT_ID noch leer ist.
 *
 * DER ABBRUCH KANN NICHT SAGEN WARUM
-*        CV_SUBRC <> 0 haelt den Prozess an, aber es gibt keinen
+*        CV_SUBRC = 1 haelt den Prozess an, aber es gibt keinen
 *        Meldungsparameter. Der Bearbeiter klickt und es passiert
 *        nichts - die schlechteste aller Rueckmeldungen. Wer eine
 *        Pruefung MIT Begruendung braucht, ruft dieselbe Pruefung
@@ -1327,19 +1371,24 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * Der Popup gehoert dem Workflow-Standard, nicht conFLOW. Bricht der
 * Bearbeiter ihn ab (RETURNCODE 'A'), liefert die FM eine Exception -
 * dann wird auch die Entscheidung nicht wirksam.
+*
+* MSELNOTE = '2' macht die Notiz zur Pflicht. Ist CS_OBJECT_ID schon
+* gefuellt, hat c09-COMMENT_REQ die Notiz bereits verlangt - kein
+* zweiter Popup.
 *--------------------------------------------------------------------*
-    IF iv_altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok.
+    IF iv_altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok AND
+       cs_object_id IS INITIAL.
 
       CALL FUNCTION 'SWU_INTERN_DECI_NOTE_POPUP'
         EXPORTING  wi_id          = iv_wi_id
                    alt_text       = iv_alt_text
-                   mselnote       = iv_mselnote
+                   mselnote       = '2'
         IMPORTING  ex_object_id   = cs_object_id
         EXCEPTIONS user_cancelled = 1
                    OTHERS         = 2.
 
       IF sy-subrc <> 0.
-        cv_subrc = sy-subrc.
+        cv_subrc = 1.
         RETURN.
       ENDIF.
 
@@ -1553,12 +1602,17 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 *        DESHALB DIE REIHENFOLGE DER FRAGEN:
 *        1. Geht es mit einem zusaetzlichen Status in C02?
-*        2. Geht es mit einem Hintergrundschritt, der ueber
-*           EV_DECISION_KEY verzweigt? (Das ist der saubere Weg -
-*           die Verzweigung bleibt in C02 sichtbar.)
-*        3. Erst dann dieser Hook.
+*        2. Reicht eine Regel? c09-BEDINGUNG am Hintergrundschritt
+*           ohne Methode, Felder aus dem c08 TEMPLATE, Dezimalzahl
+*           in Hochkommata: GESAMTWERT_RW > '10000.00'.
+*        3. Mehrere Bearbeiter an einem Schritt: c01-DECI_RULE
+*           (Veto, erste Entscheidung, Mehrheit).
+*        4. Geht es mit einem Hintergrundschritt, der ueber
+*           EV_DECISION_KEY verzweigt? (Die Verzweigung bleibt in
+*           C02 sichtbar.)
+*        5. Erst dann dieser Hook.
 *
-*        Der Beispielprozess kommt mit 2 aus - siehe
+*        Der Beispielprozess kommt mit 4 aus - siehe
 *        BACKGROUND_CLASSIFY( ) ganz unten, die genau das tut.
 *
 * WORAN MAN DENKEN MUSS
@@ -1634,32 +1688,31 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
   METHOD /c09/cfl_if_badi_0101~get_mail_language.
 *--------------------------------------------------------------------*
-* WANN   Ohne Welle 1: nie. Der Hook steht im Interface, das Framework
-*        ruft ihn nicht (geprueft 2026-09-11). Mit Welle 1: je
-*        Empfaenger, direkt vor dem Versand.
+* WANN   Je Empfaenger, direkt vor dem Versand. Aeltere conFLOW-
+*        Staende rufen den Hook nicht - dort geht jede Mail in der
+*        Sprache des Versenders.
 *
 * REIN   IT_USER / IT_MAIL  der eine Empfaenger dieses Versands
 * RAUS   CS_DATA-WI_LANG    die Sprache fuer diesen Empfaenger
 *
-* OHNE WELLE 1 GEHT JEDE MAIL IN DER SPRACHE DES VERSENDERS
+* OHNE DIESEN HOOK GEHT JEDE MAIL IN DER SPRACHE DES VERSENDERS
 *        Also in der Anmeldesprache dessen, der den Versand ausloest -
 *        Dialogbenutzer oder WF-BATCH -, nicht in der Sprache der
-*        Instanz (S01-WI_LANG). Deshalb ist der Hook in keiner der
-*        untersuchten Produktivimplementierungen gefuellt: er hatte
-*        keine Wirkung.
+*        Instanz (S01-WI_LANG).
 *
-* MIT WELLE 1 KOMMT WI_LANG MIT DER SPRACHE DES VERSENDERS HEREIN
+* WI_LANG KOMMT MIT DER SPRACHE DES VERSENDERS HEREIN
 *        Nicht mit der der Instanz - wer die will, liest sie ueber
 *        CS_DATA-ID aus /C09/CFL_S01. Laesst der Hook WI_LANG stehen,
 *        aendert sich nichts. Umgeschaltet wird nur, wenn die Sprache
-*        installiert ist und der Betreff (SO10) in ihr existiert.
+*        installiert ist und Betreff und Texte (SO10) in ihr existieren.
 *
 * WANN MAN IHN BRAUCHT
 *        Wenn Empfaenger in ihrer eigenen Sprache angeschrieben werden
 *        sollen, typischerweise der aus dem Benutzerstamm (USR01-LANGU
 *        zu IT_USER).
 *
-*        BLEIBT HIER LEER: die Referenz setzt Welle 1 nicht voraus.
+*        BLEIBT HIER LEER: fuer den Beispielprozess reicht die Sprache
+*        des Versenders.
 *--------------------------------------------------------------------*
   ENDMETHOD.
 
@@ -1758,28 +1811,22 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 *        Beides liefert der Produkt-Helper fertig. Selbst bauen
 *        lohnt nicht.
+*
+* WAS DAS FRAMEWORK SCHON LIEFERT - VOR DIESEM HOOK
+*        /C09/CFL_C06T (VTEXT, OBJTEXT, mit Sprach-Rueckfall) und mit
+*        c08 TEMPLATE die Belegzeile als &/C09/CFL_S_TPL_<typ>-<feld>&,
+*        Betraege nach Waehrung formatiert. Hier nur, was darin fehlt.
+*
+* GRENZE: NUR DIE ERSTEN FUENF STRUKTUREN
+*        Der Mailversand liest aus CT_APPLICATION_INPUT nur fuenf
+*        Eintraege - die des Frameworks zaehlen mit.
 *--------------------------------------------------------------------*
 
 *--------------------------------------------------------------------*
-* 1. Der Kopftext des Workflows aus dem Customizing.
+* 1. Die Belegdaten - hier als ganze DDIC-Struktur.
 *
-* Damit steht im Mail dieselbe Bezeichnung wie ueberall sonst - und
-* sie ist uebersetzt, weil C06T sprachabhaengig ist.
-*--------------------------------------------------------------------*
-    SELECT SINGLE * FROM /c09/cfl_c06t INTO @DATA(ls_c06t)  "#EC CI_ALL_FIELDS_NEEDED
-      WHERE wf_definition = @is_data-wf_definition
-        AND lang          = @sy-langu.
-    IF sy-subrc = 0.
-      /c09/cfl_cl_helper_0101=>add_datasource_mail(
-        EXPORTING is_datastruc         = ls_c06t
-        CHANGING  ct_application_input = ct_application_input ).
-    ENDIF.
-
-*--------------------------------------------------------------------*
-* 2. Die Belegdaten - hier als ganze DDIC-Strukturen.
-*
-* Bewusst OHNE Vorauswahl: es kostet nichts, EKKO und EKPO komplett
-* zu uebergeben, und der Kunde kann jedes Feld im Textbaustein
+* Bewusst OHNE Vorauswahl: EKKO komplett zu uebergeben kostet einen
+* der fuenf Plaetze, und der Kunde kann jedes Feld im Textbaustein
 * verwenden, ohne dass jemand den Code anfasst.
 *--------------------------------------------------------------------*
     DATA lv_ebeln TYPE ekko-ebeln.
@@ -1859,10 +1906,11 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        Fuer Genehmiger, die selten im System sind, ist das der
 *        Unterschied zwischen "wird erledigt" und "liegt liegen".
 *
-*        WICHTIG: der Shortcut wird JE EMPFAENGER erzeugt, weil der
-*        Benutzername darin steht. Deshalb die Schleife ueber
-*        IT_SMTP - und deshalb ist es falsch, ihn einmal zu bauen
-*        und allen zu schicken.
+*        WICHTIG: im Shortcut steht ein Benutzername. Eine Mail an
+*        mehrere Empfaenger bekommt deshalb nur EINEN Shortcut, den
+*        des ersten Empfaengers - sonst saehe jeder die Kennungen
+*        der anderen. Wer einen je Empfaenger will, braucht
+*        Einzelversand.
 *
 * DREI QUELLEN, DREI PRODUKT-METHODEN
 *        GET_SHORTCUT   der SAP-Shortcut
@@ -1992,6 +2040,11 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *   2. Werte in den Container schreiben
 *   3. Bewerten
 *   4. ueber EV_DECISION_KEY sagen, wie es weitergeht
+*
+* Alternative zur statischen Methode: eine Klasse, die
+* /C09/CFL_IF_BACKGROUND_0101 implementiert (CMPNAME leer) - dann
+* prueft der Compiler die Signatur. Und wo nur eine Wertgrenze
+* entscheidet, reicht eine Regel in c09-BEDINGUNG ganz ohne Code.
 *
 * WARUM DIE WERTE IN DEN CONTAINER GEHEN UND NICHT NUR GELESEN WERDEN
 *
@@ -2281,7 +2334,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * In einer echten Installation gehoert diese Methode in eine EIGENE
 * REGELKLASSE, die auch die Wertehilfe der Oberflaeche bedient. Dann
 * kommen Anzeige, Vorschlag und Pruefung nachweislich aus derselben
-* Quelle.
+* Quelle. Geht es nur um eine Wertgrenze, reicht eine Regel in
+* c09-BEDINGUNG mit einem Feld aus dem c08 TEMPLATE.
 *--------------------------------------------------------------------*
 
     IF iv_net_value > zcl_cfl_const_00900=>mc_limit_value * 5.
@@ -2303,8 +2357,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * in beiden Oberflaechen.
 *
 * Die Methode gibt einen SCHLUESSEL zurueck, keinen Text. Das ist
-* Absicht: die Buttontexte kommen aus /C09/CFL_C02T und /C09/CFL_C09T
-* und sind uebersetzt. Wer hier auf Text vergliche, haette eine
+* Absicht: die Buttontexte kommen aus /C09/CFL_C09T (sonst aus der
+* Aufgabe) und sind uebersetzt. Wer hier auf Text vergliche, haette eine
 * Empfehlung, die in Englisch funktioniert und in Deutsch nicht.
 *--------------------------------------------------------------------*
 
@@ -2433,71 +2487,36 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
   METHOD set_priority.
 *--------------------------------------------------------------------*
-* Prioritaet setzen - zweistufig, und beide Stufen werden gebraucht.
+* Prioritaet setzen - per tRFC NACH dem COMMIT.
+*
+* NUR NOETIG, WENN DIE PRIORITAET VOM BELEG ABHAENGT
+*     Eine feste Prioritaet je Schritt ist c01-PRIO, ganz ohne Code.
+*     Beides am selben Schritt pflegen: dann nur eines von beiden.
 *
 * DER NAHELIEGENDE WEG FUNKTIONIERT NICHT
 *     SAP_WAPI_CHANGE_WORKITEM_PRIO liest SWWWIHEAD von der
 *     Datenbank. Im After-Create-Hook steht das Workitem dort noch
 *     nicht. Der Aufruf laeuft still ins Leere - kein Fehler, die
-*     Prioritaet bleibt auf dem Vorgabewert. Nachgemessen.
+*     Prioritaet bleibt auf dem Vorgabewert.
 *
-* STUFE 1 - der Workitem-Manager der laufenden Transaktion
-*     CL_SWF_RUN_WIM_FACTORY kennt die Workitems, die GERADE
-*     entstehen. Gesucht wird ueber die WI_ID, nicht ueber den Typ:
-*     der Hook meint ein bestimmtes Workitem, nicht irgendeins.
+* UND DER DIREKTE AUCH NICHT
+*     SWW_WI_PRIORITY_CHANGE bringt einen eigenen Transaktions-
+*     manager mit, sichert und entsperrt - mitten in der Anlage des
+*     Workitems. Fuer ein Darstellungsdetail zu viel Risiko.
 *
-* STUFE 2 - SWW_WI_PRIORITY_CHANGE mit abgeschalteten Pruefungen
-*     Dieselbe Funktion, die unter der WAPI liegt - aber
-*     AUTHORIZATION_CHECKED und PRECONDITIONS_CHECKED auf 'X'.
-*     Genau diese Pruefungen sind die Blockade, denn das Workitem
-*     hat noch keinen Status, den sie akzeptieren wuerden.
-*
-*     DO_COMMIT BLEIBT LEER. Das COMMIT gehoert dem Framework - wer
-*     hier selbst festschreibt, schneidet die laufende Transaktion
-*     mitten durch.
-*
-* DIE TRY-BLOECKE SIND ABSICHT
-*     Der Hook laeuft mitten im Anlegen eines Workitems. Eine
-*     ungefangene Ausnahme wegen einer PRIORITAET waere ein
-*     ausgesprochen teurer Preis fuer ein Darstellungsdetail.
+* DESHALB DER PRODUKT-BAUSTEIN IN EINER EIGENEN EINHEIT
+*     /C09/CFL_SET_PRIORITY_0101 laeuft nach dem COMMIT der Laufzeit,
+*     wenn das Workitem fertig auf der Datenbank steht. Er setzt nur,
+*     wenn die Prioritaet noch die vom Anlegen ist. Faellt er aus,
+*     bleibt die Prioritaet der Aufgabe und ein Eintrag in SM58.
 *--------------------------------------------------------------------*
 
-    DATA lt_instances TYPE swwtwihndl.
-    DATA ls_instances LIKE LINE OF lt_instances.
-    DATA lo_flow      TYPE REF TO if_swf_run_wim_internal.
-
-    TRY.
-        DATA(lo_factory) = cl_swf_run_wim_factory=>get_instance( ).
-        lt_instances = lo_factory->get_registered_workitems( ).
-
-        LOOP AT lt_instances INTO ls_instances.
-          TRY.
-              lo_flow ?= ls_instances.
-              IF lo_flow->m_sww_wihead-wi_id = iv_wi_id.
-                lo_flow->if_swf_run_wim~change_priority( iv_prio ).
-              ENDIF.
-            CATCH cx_root.
-          ENDTRY.
-        ENDLOOP.
-
-      CATCH cx_root.
-    ENDTRY.
-
-    CALL FUNCTION 'SWW_WI_PRIORITY_CHANGE'
-      EXPORTING  wi_id                 = iv_wi_id
-                 priority              = iv_prio
-                 do_commit             = space
-                 authorization_checked = abap_true
-                 preconditions_checked = abap_true
-      EXCEPTIONS no_authorization      = 1
-                 update_failed         = 2
-                 invalid_type          = 3
-                 invalid_status        = 4
-                 OTHERS                = 5.
-
-    IF sy-subrc <> 0.
-      /c09/cfl_cl_workflow_0101=>ignore_subrc( ).
-    ENDIF.
+    CALL FUNCTION '/C09/CFL_SET_PRIORITY_0101'
+      IN BACKGROUND TASK AS SEPARATE UNIT
+      EXPORTING
+        iv_wi_id        = iv_wi_id
+        iv_prio         = iv_prio
+        iv_prio_created = iv_prio_created.
 
   ENDMETHOD.
 

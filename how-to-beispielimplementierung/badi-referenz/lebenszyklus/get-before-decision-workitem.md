@@ -5,6 +5,10 @@
 | **Wann** | Wenn der Workitem-Exit die Entscheidungsalternativen aufbaut - also bevor die Knöpfe gezeichnet werden. |
 | **Rein und raus** | CM_WORKITEM_CONTEXT - der Workitem-Kontext. Aus ihm holt man Kopf und Alternativen, in ihn schreibt man die geänderten zurück. |
 
+**ERST DAS CUSTOMIZING**
+
+Feste Farbe je Ausgang: c09-NATURE (P/N). Kommentarpflicht: c09-COMMENT_REQ. Ausblenden: c09-NODISPLAY. Beides wirkt im SAP GUI und in Fiori, ohne Code. Dieser Hook nur für das, was vom Beleg abhängt, wie im Beispiel unten.
+
 **DREI DINGE GEHEN HIER, UND NUR HIER**
 
 1. EINEN BUTTON WEGNEHMEN (der "Guard") Wenn eine Aktion fachlich nicht erlaubt ist, verschwindet sie - statt hinterher abgelehnt zu werden. Das ist die freundlichere Bauart: der Bearbeiter sieht nur, was er darf.

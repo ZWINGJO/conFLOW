@@ -10,6 +10,12 @@
 
 /C09/CFL_C03 holds OTYPE and OBJID directly per GEN_STAT_USER - for example US/MEIER, US/WF-BATCH, US/WF_INITIATOR. Only USER_BADI = 'X' switches to this hook. For PoCs, demos and fixed assignments GET_ACTORS therefore stays EMPTY, and you need neither a role nor code.
 
+Also without code: a PFCG role (C03 with OTYPE AG and column
+
+**AGR_NAME - dialog users only, locked users are left out)**
+
+and exclusion (column EXCLUDE, special value WF_APPROVERS = whoever has already decided at another stage). Only what that does not cover needs this hook.
+
 **THE FORMAT IS THE MOST COMMON MISTAKE**
 
 An entry in CT_ACTORS is always a TYPED org object, never a bare user name:
@@ -18,14 +24,13 @@ An entry in CT_ACTORS is always a TYPED org object, never a bare user name:
 US<uname>      user
 S<position>    position
 O<orgunit>     organizational unit
-AC<role>       role
 ```
 
 'MEIER' creates no work item and no error message. The work item ends up with nobody and is only noticed when someone asks where it went.
 
 **WHEN NOBODY IS FOUND**
 
-A work item without an agent goes into error status and stays there. A defined fallback agent is better: conFLOW provides the entry 'C09_NO_USER' for this. The process keeps running and the gap is visible instead of silently standing still. See the very bottom of this method.
+Leave CT_ACTORS empty. The framework sets the fallback agent 'C09_NO_USER' itself - only after all C03 rows and after EXCLUDE. Set here, it would sit next to agents from other rows of the same key.
 
 ## The code
 
@@ -35,8 +40,10 @@ A work item without an agent goes into error status and stays there. A defined f
 *--------------------------------------------------------------------*
 * VARIANT A - role
 *
-* The most common case. The customer maintains the role, and the code
-* stays unchanged when people change.
+* For a role alone, C03 with AGR_NAME is enough (see above). This
+* variant shows the call for cases that does not cover. The customer
+* maintains the role, and the code stays unchanged when people
+* change.
 *
 * The call does NOT belong here but in a central class
 * ZCL_CFL_GET_ACTORS. Reason: the same role is needed by several
@@ -143,15 +150,5 @@ A work item without an agent goes into error status and stays there. A defined f
     IF mv_process = 'MAIL'.
       CLEAR mv_process.
       RETURN.
-    ENDIF.
-
-*--------------------------------------------------------------------*
-* FOLLOW UP 2 - fallback agent
-*
-* Only for work items, not for mails: a mail to nobody is harmless,
-* a work item to nobody stays stuck.
-*--------------------------------------------------------------------*
-    IF ct_actors IS INITIAL.
-      APPEND 'C09_NO_USER' TO ct_actors.
     ENDIF.
 ```

@@ -42,12 +42,16 @@ closed with `</>`.
 
 `GET_OBJECT_INFO` takes effect in Fiori, `GET_NEW_PREVIEW_DESCR` in
 SAP GUI. Leave one out and the other UI shows the framework class name.
+With `c06t-OBJTEXT` the framework labels both UIs itself - then leave
+both hooks empty.
 
 **7 · Cutting off the prefix without checking**
 
 `CV_DESCRIPTION` arrives with 13 technical characters in front. If the
 text is shorter, the offset runs into nothing - and the short dump
-comes at display time.
+comes at display time. And if `c06t-OBJTEXT` is maintained, the
+framework has already removed the prefix: a blind `+13` then cuts off
+real text. Hence build the prefix from the instance and compare it.
 
 **8 · Touching `DECISION_TEXT`**
 
@@ -99,5 +103,6 @@ where-used.**
 **16 · Priority 1**
 
 SAP sends work items with priority 1 as express messages. In the test
-system nobody notices; in production the agent gets a popup. 4 is the
-highest level without this effect.
+system nobody notices; in production the agent gets a popup. Only
+level 1 triggers that - 2 is the highest level without this effect. A
+fixed priority per step is `c01-PRIO`, without any code.

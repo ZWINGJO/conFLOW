@@ -12,13 +12,17 @@ WOFÜR   Alles, was EINMAL JE WORKITEM passieren soll: Priorität,
        Oberfläche anhängen.
 ```
 
+OHNE CODE: eine feste Priorität je Schritt ist c01-PRIO, die Fiori-App ist c08 VISU. Hier nur, was vom Beleg abhängt.
+
 **DER HOOK LÄUFT AUCH FÜR HINTERGRUNDSCHRITTE**
 
 Und das ist fast immer unerwünscht. Eine Priorität an einem Workitem, das kein Mensch sieht, kostet nur Laufzeit. Deshalb steht am Anfang eine Weiche auf die Dialogschritte - die Zeile sieht nach Kleinkram aus und ist keiner.
 
 **DAS WORKITEM STEHT HIER NOCH NICHT AUF DER DATENBANK**
 
-Der zentrale Punkt dieses Hooks, und die Ursache der häufigsten Enttäuschung: jede API, die SWWWIHEAD LIEST, läuft ins Leere. SAP_WAPI_CHANGE_WORKITEM_PRIO tut genau das - sie meldet keinen Fehler, sie wirkt nur nicht. Der richtige Weg geht über den Workitem-Manager der laufenden Transaktion, siehe SET_PRIORITY( ).
+Der zentrale Punkt dieses Hooks, und die Ursache der häufigsten Enttäuschung: jede API, die SWWWIHEAD LIEST, läuft ins Leere. SAP_WAPI_CHANGE_WORKITEM_PRIO tut genau das - sie meldet keinen Fehler, sie wirkt nur nicht. Der richtige Weg ist ein tRFC NACH dem COMMIT, siehe
+
+**SET_PRIORITY( ).**
 
 ## Der Code
 
@@ -50,6 +54,7 @@ Der zentrale Punkt dieses Hooks, und die Ursache der häufigsten Enttäuschung: 
       lv_prio = zcl_cfl_const_00900=>mc_prio-medium.
     ENDIF.
 
-    set_priority( iv_wi_id = is_swr_wihdr-wi_id
-                  iv_prio  = lv_prio ).
+    set_priority( iv_wi_id        = is_swr_wihdr-wi_id
+                  iv_prio         = lv_prio
+                  iv_prio_created = is_swr_wihdr-wi_prio ).
 ```

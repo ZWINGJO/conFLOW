@@ -29,29 +29,24 @@ If you want calculated or formatted values in the mail - an amount in user forma
 
 The product helper delivers both ready-made. Building them yourself is not worth it.
 
+**WHAT THE FRAMEWORK ALREADY SUPPLIES - BEFORE THIS HOOK**
+
+/C09/CFL_C06T (VTEXT, OBJTEXT, with language fallback) and, with c08 TEMPLATE, the document row as &/C09/CFL_S_TPL_`<type>`-`<field>`&, amounts formatted by currency. Here only what is missing from that.
+
+**LIMIT: ONLY THE FIRST FIVE STRUCTURES**
+
+The mail dispatch reads only five entries from
+
+**CT_APPLICATION_INPUT - the framework's ones count too.**
+
 ## The code
 
 ```abap
 *--------------------------------------------------------------------*
-* 1. The header text of the workflow from the customizing.
+* 1. The document data - here as an entire DDIC structure.
 *
-* That way the mail shows the same name as everywhere else - and it
-* is translated, because C06T is language-dependent.
-*--------------------------------------------------------------------*
-    SELECT SINGLE * FROM /c09/cfl_c06t INTO @DATA(ls_c06t)  "#EC CI_ALL_FIELDS_NEEDED
-      WHERE wf_definition = @is_data-wf_definition
-        AND lang          = @sy-langu.
-    IF sy-subrc = 0.
-      /c09/cfl_cl_helper_0101=>add_datasource_mail(
-        EXPORTING is_datastruc         = ls_c06t
-        CHANGING  ct_application_input = ct_application_input ).
-    ENDIF.
-
-*--------------------------------------------------------------------*
-* 2. The document data - here as entire DDIC structures.
-*
-* Deliberately WITHOUT preselection: passing EKKO and EKPO in full
-* costs nothing, and the customer can use any field in the standard
+* Deliberately WITHOUT preselection: passing EKKO in full costs one of
+* the five slots, and the customer can use any field in the standard
 * text without anyone touching the code.
 *--------------------------------------------------------------------*
     DATA lv_ebeln TYPE ekko-ebeln.

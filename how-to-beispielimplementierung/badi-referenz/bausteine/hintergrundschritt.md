@@ -8,6 +8,8 @@ Der Schritt, in dem die Arbeit passiert:
 
 1. Beleg lesen 2. Werte in den Container schreiben 3. Bewerten 4. über EV_DECISION_KEY sagen, wie es weitergeht
 
+Alternative zur statischen Methode: eine Klasse, die /C09/CFL_IF_BACKGROUND_0101 implementiert (CMPNAME leer) - dann prüft der Compiler die Signatur. Und wo nur eine Wertgrenze entscheidet, reicht eine Regel in c09-BEDINGUNG ganz ohne Code.
+
 **WARUM DIE WERTE IN DEN CONTAINER GEHEN UND NICHT NUR GELESEN WERDEN**
 
 Der Container ist die Entscheidungsgrundlage, und er ist eingefroren. Wenn der Bearbeiter morgen entscheidet und der Beleg heute Nacht geändert wurde, hat er trotzdem die Zahlen vor sich, über die er entscheidet - und im Audit Trail steht hinterher, welche das waren.

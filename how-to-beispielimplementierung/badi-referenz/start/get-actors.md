@@ -10,6 +10,8 @@
 
 /C09/CFL_C03 trägt je GEN_STAT_USER direkt OTYPE und OBJID - etwa US/MEIER, US/WF-BATCH, US/WF_INITIATOR. Erst USER_BADI = 'X' schaltet auf diesen Hook um. Für PoCs, Demos und feste Zuordnungen bleibt GET_ACTORS damit LEER, und es braucht weder Rolle noch Code.
 
+Ebenfalls ohne Code: eine PFCG-Rolle (C03 mit OTYPE AG und Spalte AGR_NAME - nur Dialogbenutzer, gesperrte fallen raus) und der Ausschluss (Spalte EXCLUDE, Sonderwert WF_APPROVERS = wer auf einer anderen Stufe schon entschieden hat). Erst was das nicht abdeckt, braucht diesen Hook.
+
 **DAS FORMAT IST DER HÄUFIGSTE FEHLER**
 
 Ein Eintrag in CT_ACTORS ist immer ein TYPISIERTES Org-Objekt, nie ein blanker Benutzername:
@@ -18,14 +20,13 @@ Ein Eintrag in CT_ACTORS ist immer ein TYPISIERTES Org-Objekt, nie ein blanker B
 US<uname>      Benutzer
 S<planstelle>  Planstelle
 O<orgeinheit>  Organisationseinheit
-AC<rolle>      Rolle
 ```
 
 'MEIER' erzeugt kein Workitem und keine Fehlermeldung. Das Workitem landet bei niemandem und fällt erst auf, wenn jemand fragt, wo es geblieben ist.
 
 **WENN NIEMAND GEFUNDEN WIRD**
 
-Ein Workitem ohne Bearbeiter geht in den Fehlerstatus und bleibt liegen. Besser ist ein definierter Auffangbearbeiter: conFLOW kennt dafür den Eintrag 'C09_NO_USER'. Der Prozess läuft weiter und die Lücke ist sichtbar, statt still zu stehen. Siehe ganz unten in dieser Methode.
+CT_ACTORS leer lassen. Das Framework setzt den Auffangbearbeiter 'C09_NO_USER' selbst - erst nach allen C03-Zeilen und nach EXCLUDE. Hier gesetzt, stünde er neben Bearbeitern aus anderen Zeilen desselben Schlüssels.
 
 ## Der Code
 
@@ -35,8 +36,10 @@ Ein Workitem ohne Bearbeiter geht in den Fehlerstatus und bleibt liegen. Besser 
 *--------------------------------------------------------------------*
 * VARIANTE A - Rolle
 *
-* Der haeufigste Fall. Die Rolle pflegt der Kunde selbst, der Code
-* bleibt unveraendert, wenn Personen wechseln.
+* Fuer eine Rolle allein reicht C03 mit AGR_NAME (siehe oben). Diese
+* Variante zeigt den Aufruf fuer Faelle, die das nicht abdecken. Die
+* Rolle pflegt der Kunde selbst, der Code bleibt unveraendert, wenn
+* Personen wechseln.
 *
 * Der Aufruf gehoert NICHT hierher, sondern in eine zentrale Klasse
 * ZCL_CFL_GET_ACTORS. Grund: dieselbe Rolle wird von mehreren
@@ -144,15 +147,5 @@ Ein Workitem ohne Bearbeiter geht in den Fehlerstatus und bleibt liegen. Besser 
     IF mv_process = 'MAIL'.
       CLEAR mv_process.
       RETURN.
-    ENDIF.
-
-*--------------------------------------------------------------------*
-* NACHLAUF 2 - Auffangbearbeiter
-*
-* Nur fuer Workitems, nicht fuer Mails: eine Mail an niemanden ist
-* harmlos, ein Workitem an niemanden bleibt liegen.
-*--------------------------------------------------------------------*
-    IF ct_actors IS INITIAL.
-      APPEND 'C09_NO_USER' TO ct_actors.
     ENDIF.
 ```

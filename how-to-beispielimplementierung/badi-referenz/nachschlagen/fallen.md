@@ -43,13 +43,16 @@ Meldung. Richtig ist `<H>Text</>`, geschlossen mit `</>`.
 
 `GET_OBJECT_INFO` wirkt in Fiori, `GET_NEW_PREVIEW_DESCR` im
 SAP-GUI. Wer einen weglässt, hat in der anderen Oberfläche den
-Framework-Klassennamen stehen.
+Framework-Klassennamen stehen. Mit `c06t-OBJTEXT` beschriftet das
+Framework beide Oberflächen selbst - dann beide Hooks leer lassen.
 
 **7 · Den Präfix ungeprüft abschneiden**
 
 `CV_DESCRIPTION` kommt mit 13 Zeichen Technik davor. Ist der Text
 kürzer, läuft der Offset ins Leere - und der Kurzdump kommt zur
-Anzeigezeit.
+Anzeigezeit. Und ist `c06t-OBJTEXT` gepflegt, hat das Framework den
+Präfix schon abgeschnitten: ein blindes `+13` nimmt dann echten Text
+weg. Deshalb den Präfix aus der Instanz bauen und vergleichen.
 
 **8 · `DECISION_TEXT` anfassen**
 
@@ -102,4 +105,6 @@ Where-Used glauben.**
 
 SAP verschickt Workitems der Priorität 1 als Express-Nachricht. Im
 Testsystem fällt das nicht auf; im Produktivsystem bekommt der
-Bearbeiter ein Popup. 4 ist die höchste Stufe ohne diesen Effekt.
+Bearbeiter ein Popup. Nur Stufe 1 löst das aus - 2 ist die höchste
+Stufe ohne diesen Effekt. Eine feste Priorität je Schritt ist
+`c01-PRIO`, ganz ohne Code.

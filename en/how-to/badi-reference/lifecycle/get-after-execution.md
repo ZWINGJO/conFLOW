@@ -4,17 +4,17 @@
 |---|---|
 | **When** | After the agent has decided in the SAP GUI, before the work item is completed. |
 | **In** | IV_WI_ID     the work item<br>IV_ALTKEY    the CLICKED outcome - the value that matters<br>IV_ALT_TEXT  its text<br>IV_MSELNOTE  default for the note dialog |
-| **Out** | CV_SUBRC      <> 0 aborts<br>CS_OBJECT_ID  reference to a captured note |
+| **Out** | CV_SUBRC      1 aborts (other values do not)<br>CS_OBJECT_ID  reference to a captured note |
 
 **TWO DIFFERENT TASKS THAT COINCIDE HERE**
 
 1. FOLLOW-UP PROCESSING - update the container, record who decided. This is the usual case.
 
-2. FORCING A NOTE - via SWU_INTERN_DECI_NOTE_POPUP. This is the standard way for "please justify the rejection".
+2. FORCING A NOTE - first c09-COMMENT_REQ on the outcome: works in SAP GUI and Fiori, without code. Here only if the obligation depends on the document - then via SWU_INTERN_DECI_NOTE_POPUP with MSELNOTE = '2' (IV_MSELNOTE is usually empty = optional) and only if CS_OBJECT_ID is still empty.
 
 **THE ABORT CANNOT SAY WHY**
 
-CV_SUBRC <> 0 stops the process, but there is no message parameter. The agent clicks and nothing happens - the worst feedback there is. If you need a check WITH a reason, call the same check additionally in GET_AFTER_EXECUTION_MOBILE, the only hook with CS_T100MSG.
+CV_SUBRC = 1 stops the process, but there is no message parameter. The agent clicks and nothing happens - the worst feedback there is. If you need a check WITH a reason, call the same check additionally in GET_AFTER_EXECUTION_MOBILE, the only hook with CS_T100MSG.
 
 **FIRST LINE: CHECK IV_ALTKEY**
 
@@ -51,19 +51,24 @@ The hook also runs for actions that are not a decision (forward, postpone). Then
 * The popup belongs to the workflow standard, not to conFLOW. If the
 * agent cancels it (RETURNCODE 'A'), the FM raises an exception -
 * and then the decision does not take effect either.
+*
+* MSELNOTE = '2' makes the note mandatory. If CS_OBJECT_ID is already
+* filled, c09-COMMENT_REQ has already required the note - no second
+* popup.
 *--------------------------------------------------------------------*
-    IF iv_altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok.
+    IF iv_altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok AND
+       cs_object_id IS INITIAL.
 
       CALL FUNCTION 'SWU_INTERN_DECI_NOTE_POPUP'
         EXPORTING  wi_id          = iv_wi_id
                    alt_text       = iv_alt_text
-                   mselnote       = iv_mselnote
+                   mselnote       = '2'
         IMPORTING  ex_object_id   = cs_object_id
         EXCEPTIONS user_cancelled = 1
                    OTHERS         = 2.
 
       IF sy-subrc <> 0.
-        cv_subrc = sy-subrc.
+        cv_subrc = 1.
         RETURN.
       ENDIF.
 

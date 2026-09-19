@@ -6,6 +6,10 @@
 | **Rein** | IV_INSTANCE_ID  die WI_ID |
 | **Raus** | CT_DEC_OPT      die Optionen der Inbox |
 
+FESTE FARBE UND KOMMENTARPFLICHT: c09-NATURE / c09-COMMENT_REQ,
+
+ohne Code. Das Framework setzt sie direkt nach diesem Hook und nur dort, wo der Hook nichts gesetzt hat.
+
 **DIESER HOOK SIEHT IM AUFRUFNACHWEIS TOT AUS - UND LÄUFT**
 
 /C09/CL_TGW_RFC_HANDLER ist keine eigene Klasse, sondern eine conFLOW-ENHANCEMENT auf den Task-Gateway-Handler. Where-Used findet dadurch nichts. Der Hook läuft trotzdem, und er ist dieselbe Stelle, an der auch die Buttontexte aus /C09/CFL_C09T gesetzt werden.

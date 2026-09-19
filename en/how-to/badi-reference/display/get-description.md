@@ -29,11 +29,11 @@
 
    CAREFUL WHEN COMPARING WITH OLDER CODE: in practice you often find `+12`. That is not wrong, just imprecise - it leaves a leading space that nobody notices on screen. Take 13 and you can skip the CONDENSE.
 
-   DO NOT CUT WITHOUT CHECKING: if the text is shorter than the prefix, the offset runs past the end and the short dump comes at display time - exactly when someone is watching.
+   DO NOT CUT BLINDLY: the prefix is built from the instance and compared. If it does not match, the text stays as it is. If c06t-OBJTEXT is maintained, the framework already removes the prefix BEFORE this hook - a blind +13 would then cut off the first 13 characters of the real text.
 
 **2. THE PLACEHOLDERS**
 
-   The text after the prefix comes from /C09/CFL_C01T and can contain placeholders of the form §{name}. The customer maintains them in Customizing, this hook replaces them. That way the line changes without a transport.
+   The text after the prefix comes from /C09/CFL_C01T and can contain placeholders of the form §{name}. The customer maintains them in Customizing, this hook replaces them. That way the line changes without a transport. With c06t-OBJTEXT and c08 TEMPLATE the framework resolves §{field} from the template itself - only replace your own placeholders here.
 
 **WHAT BELONGS AT THE FRONT**
 
@@ -42,13 +42,16 @@ The first screen column is the most expensive one. It is where the FINDING goes,
 ## The code
 
 ```abap
-    CONSTANTS lc_prefix_len TYPE i VALUE 13.
-    CONSTANTS lc_max_len    TYPE i VALUE 100.
+    CONSTANTS lc_max_len TYPE i VALUE 100.
 
     DATA lv_text TYPE string.
 
-    IF strlen( cv_description ) > lc_prefix_len.
-      lv_text = cv_description+lc_prefix_len.
+    DATA(lv_prefix) = |{ is_data-wf_definition } \| { is_data-gen_stat } - |.
+    DATA(lv_plen)   = strlen( lv_prefix ).
+
+    IF strlen( cv_description ) > lv_plen AND
+       cv_description(lv_plen) = lv_prefix.
+      lv_text = cv_description+lv_plen.
     ELSE.
       lv_text = cv_description.
     ENDIF.

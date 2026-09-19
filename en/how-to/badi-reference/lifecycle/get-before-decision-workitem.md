@@ -5,6 +5,10 @@
 | **When** | The work item exit builds the decision options - i.e. before the buttons are drawn. |
 | **In and out** | CM_WORKITEM_CONTEXT - the work item context. You get the header and the options from it, and write the changed ones back into it. |
 
+**CUSTOMIZING FIRST**
+
+Fixed colour per outcome: c09-NATURE (P/N). Mandatory comment: c09-COMMENT_REQ. Hide: c09-NODISPLAY. All of it works in SAP GUI and Fiori, without code. This hook only for what depends on the document, as in the example below.
+
 **THREE THINGS WORK HERE, AND ONLY HERE**
 
 1. REMOVE A BUTTON (the "guard") If an action is not allowed from a business point of view, it disappears - instead of being rejected afterwards. That is the friendlier design: the agent only sees what they may do.

@@ -17,13 +17,13 @@ keys as literals twenty times.
 | Table | What |
 |---|---|
 | `C06` / `C06T` | the workflow definition and its text |
-| `C01` / `C01T` | the steps - one each for `X0`, `B1`, `01`, `02`, `B2`, `B3`, `X1`, `X2`, `X3` |
+| `C01` / `C01T` | the steps - one each for `X0`, `B1`, `01`, `02`, `B2`, `B3`, `X1`, `X2`, `X3`; if needed priority (`PRIO`) and decision rule (`DECI_RULE`) |
 | `C02` | the transitions: step + decision → next step |
 | `C05` | the agent groups per step |
-| `C03` | who the group is - or `USER_BADI = 'X'` for determination in code |
+| `C03` | who the group is - users, PFCG role (`AGR_NAME`), exclusion (`EXCLUDE`) - or `USER_BADI = 'X'` for determination in code |
 | `C07` | email notification: who receives which mail at which step |
-| `C09` / `C09T` | the texts of the decisions `UC1`–`UC5` |
-| `C08` | object and subobject for the application log |
+| `C09` / `C09T` | the decisions `UC1`–`UC5` with colour, mandatory comment and rule; the texts in `C09T` |
+| `C08` | object and subobject for the application log, if needed `TEMPLATE` and `VISU` |
 | `C10` | the type linkage, if the start runs via an event |
 
 For the background step `B1`, class name and method name go into
@@ -47,7 +47,8 @@ For the definition `/C09/CFL_BADI_0101`, filter `WF_DEFINITION = '00900'`.
 
 **5 · Agent determination**
 
-`ZCL_CFL_GET_ACTORS` and the roles for it. Only then does a test make
+For a PFCG role, `C03` with `AGR_NAME` is enough; `ZCL_CFL_GET_ACTORS`
+only for special cases. Only then does a test make
 sense - a work item without an agent goes into error status.
 
 **6 · SLG0**

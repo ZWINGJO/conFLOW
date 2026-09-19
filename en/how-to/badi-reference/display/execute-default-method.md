@@ -6,10 +6,14 @@
 | **In** | nothing - the instance is in /C09/CFL_CL_WORKFLOW_0101=>MS_INSTANCES-INSTANCE->MS_DATA |
 
 ```
-PURPOSE   "Show me the document". Without this hook, nothing happens
-       on double-click, and the agent has to copy down the document
-       number and call the transaction themselves.
+PURPOSE   "Show me the document". With c06t-OBJTEXT and c08
+       TEMPLATE the framework opens the document itself (default
+       method of the template's object type) - leave it empty then,
+       otherwise it opens twice. Without both, nothing happens on
+       double-click, and the agent has to copy down the number.
 ```
+
+MS_INSTANCES is class-wide - with several work items in one session not necessarily your own instance.
 
 **WITH THE DISPLAY TRANSACTION, NOT THE CHANGE TRANSACTION**
 
