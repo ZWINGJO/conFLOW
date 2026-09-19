@@ -10,7 +10,7 @@ Diese Seite beschreibt conFLOW vollständig: das Customizing-Modell, die Laufzei
 
 ## 1 Überblick
 
-conFLOW ist ein Framework auf dem SAP Business Workflow. Ein Genehmigungsprozess entsteht nicht im Workflow Builder, sondern in Customizing-Tabellen; die fachliche Logik hängt an einer BAdI-Schnittstelle. SAP-Workflow-Kenntnisse sind dafür nicht nötig.
+conFLOW ist ein Framework auf dem SAP Business Workflow. Ein Genehmigungsprozess entsteht nicht im Workflow Builder, sondern in Customizing-Tabellen: Schritte, Bearbeiter, Regeln, Belegdaten, Knöpfe und Mails sind Einstellungen. Für echte Ausnahmen gibt es eine BAdI-Schnittstelle. SAP-Workflow-Kenntnisse sind dafür nicht nötig.
 
 Für **alle** conFLOW-Workflows liegt genau **ein** Workflow-Muster im System. Was ein einzelner Prozess tut, steht nicht in einem eigenen Muster, sondern in seinen Customizing-Zeilen. Deshalb gibt es keine Workflow-Entwicklung im klassischen Sinn: kein SWDD, keine Transportabhängigkeit zwischen Prozessänderung und Workflow-Definition.
 
@@ -20,7 +20,7 @@ Customizing  /C09/CFL_C*          wie der Prozess aussieht
       ▼
 conFLOW-Framework                 erzeugt Workitems, findet Bearbeiter,
       │                           überwacht Fristen, versendet Mail, protokolliert
-      ├──▶ BAdI-Klasse ZCL_CFL_WORKFLOW_<nnnnn>   fachliche Logik, eine Klasse je Workflow
+      ├──▶ BAdI-Klasse ZCL_CFL_WORKFLOW_<nnnnn>   optional: Sonderlogik, eine Klasse je Workflow
       ▼
 SAP Business Workflow             generische conFLOW-Aufgaben, SBWP, Fiori My Inbox
       │
@@ -28,7 +28,7 @@ SAP Business Workflow             generische conFLOW-Aufgaben, SBWP, Fiori My In
 Laufzeitdaten  /C09/CFL_S*        Instanz · Workitem-Historie · Container
 ```
 
-Jeder Workflow hat eine fünfstellige Nummer, zum Beispiel `00208`. Diese Nummer ist der rote Faden: sie steht in der Workflow-Definition, sie ist der Filter der BAdI-Implementierung, und sie steht in jeder Laufzeitzeile.
+Jeder Workflow hat eine fünfstellige Nummer, zum Beispiel `00900`. Diese Nummer ist der rote Faden: sie steht in der Workflow-Definition, sie ist der Filter der BAdI-Implementierung, und sie steht in jeder Laufzeitzeile.
 
 ## 2 Das Customizing-Modell
 
@@ -36,12 +36,12 @@ Einstieg ist die Transaktion `/C09/CONFLOW_C`, ein View-Cluster über alle Knote
 
 | Knoten im Pflegebaum | Tabelle | Inhalt |
 | --- | --- | --- |
-| Workflow Definition | `/C09/CFL_C06` | eine Zeile je Workflow-Nummer |
-| Genehmigungsschritte | `/C09/CFL_C01` | Schritte mit Status-Code `gen_stat`, Attribut, Texten, Klasse/Methode, Entscheidungsregel bei mehreren Bearbeitern |
+| Workflow Definition | `/C09/CFL_C06` | eine Zeile je Workflow-Nummer; Beschriftung des Objekts in `C06T-OBJTEXT` |
+| Genehmigungsschritte | `/C09/CFL_C01` | Schritte mit Status-Code `gen_stat`, Attribut, Texten, Klasse/Methode, Priorität (`PRIO`), Entscheidungsregel bei mehreren Bearbeitern |
 | Genehmigungsstatus - Steuerung | `/C09/CFL_C02` | Übergänge (OK / NOK / Frist), Fristen |
-| Steuerung zusätzlicher Status | `/C09/CFL_C09` | Entscheidungsalternativen `UC1`–`UC5` je Schritt |
+| Steuerung zusätzlicher Status | `/C09/CFL_C09` | Entscheidungsalternativen `UC1`–`UC5` je Schritt; Farbe und Kommentarpflicht der Knöpfe (auch für OK/NOK); Regeln |
 | User Status Definition | `/C09/CFL_C04` | Rollen, also die Bearbeiter-Keys `gen_stat_user` |
-| User Status Zuordnung (lfd. Einstellungen) | `/C09/CFL_C03` | wer hinter einer Rolle steht |
+| User Status Zuordnung (lfd. Einstellungen) | `/C09/CFL_C03` | wer hinter einer Rolle steht: Benutzer, Organisation, PFCG-Rolle, Ausschlüsse |
 | User Status Zuordnung (Voreinstellung für Transp.) | `/C09/CFL_C12` | transportfähige Voreinstellung dazu |
 | Zuordnung Userstatus | `/C09/CFL_C05` | welche Rolle welchen Schritt bearbeitet |
 | Steuerung Mailversand | `/C09/CFL_C07` | wer bei welcher Entscheidung welche Mail bekommt |
@@ -52,7 +52,7 @@ Einstieg ist die Transaktion `/C09/CONFLOW_C`, ein View-Cluster über alle Knote
 **Texte gehören nie in `C01`, `C06` oder `C09` selbst, sondern immer in die zugehörige `*t`-Tabelle.** Wer den Text in der Stammtabelle sucht, findet ihn nicht — und wer ihn dort pflegen will, verliert ihn bei der nächsten Sprache.
 {% endhint %}
 
-Zu jeder Workflow-Definition lassen sich außerdem über die GOS-Anbindung eine Dokumentation erfassen und Dokumente hochladen. Markieren Sie dazu im Pflegebaum den Knoten *Allgemeine Parameter*.
+Jede Sicht des Pflegedialogs hat den Knopf *Dokumentation*: rechts erscheint eine Erklärung dieser Sicht. Über *Eigene Doku ändern/erweitern* lässt sich zu jeder Workflow-Definition eine eigene, versionierte Dokumentation anlegen; sie steht über der Standard-Doku, sobald sie vorhanden ist. Dokumente lassen sich außerdem über die GOS-Anbindung hochladen, im Pflegebaum am Knoten *Allgemeine Parameter*.
 
 ## 3 Den Workflow starten
 
@@ -63,7 +63,7 @@ Es gibt drei Wege. Der erste ist der empfohlene.
 | Einstellung | Wert |
 | --- | --- |
 | Aufruf des Verbrauchers | Funktionsbaustein |
-| Verbraucher-Funktionsbaustein | **`/C09/CFL_WI_CREATE_0101`** |
+| Verbraucher-Funktionsbaustein | **`/C09/CFL_WI_CREATE_0101`** (bei klassenbasierten Ereignissen `/C09/CFL_WI_CREATE_IBF_0101`) |
 | Ereigniszustellung | über tRFC (Standard) |
 | Kopplung aktiviert | gesetzt |
 
@@ -125,7 +125,7 @@ Jeder Schritt hat einen zweistelligen Status-Code `gen_stat`. Der erste Buchstab
 
 | Code | Bedeutung |
 | --- | --- |
-| `01`–`14` | Prozess-Schritte, fachliche Bedeutung je Workflow aus `C01` |
+| `01`, `02`, … | Prozess-Schritte, fachliche Bedeutung je Workflow aus `C01` |
 | `X0` | Workflow-Start |
 | `X1` | Ende — genehmigt |
 | `X2` | Ende — zurückgenommen |
@@ -145,7 +145,7 @@ In der Spalte *Attribut* (`ATTRIBUT`) der Genehmigungsschritte steuern fünf Fes
 | `BACK` | Hintergrundaufgabe im **Verbucher** — führt die hinterlegte Methode aus, kein Workitem |
 | `BACK_BATCH` | Hintergrundaufgabe im **Batch** |
 | `WAIT` | Warteschritt bei Parallelverarbeitung: der Workflow wartet, bis alle angestoßenen Subworkflows erledigt sind |
-| `BADI` | der Folgeschritt wird dynamisch über die BAdI ermittelt, wie bei einem `Y`-Schritt |
+| `BADI` | der Folgeschritt wird dynamisch über das BAdI ermittelt, wie bei einem `Y`-Schritt |
 
 Klasse und Methode eines Schritts stehen in `CLSNAME` und `CMPNAME`, der SO10-Text für den Workitem-Text in `TDNAME`.
 
@@ -157,7 +157,7 @@ Ein Schritt, dessen Code mit `Y` beginnt, ist ein Entscheidungspunkt ohne Bearbe
 **`GET_STATUS_DYNAMIC` läuft nicht bei jedem Statuswechsel.** Der Hook wird im Framework an genau einer Stelle gerufen, und nur unter dieser Bedingung: Zielschritt beginnt mit `Y`, oder Zielschritt trägt das Attribut `BADI`. Wer den Hook implementiert und den Schritt nicht entsprechend anlegt, wartet vergeblich auf seinen Aufruf.
 {% endhint %}
 
-Der Preis einer Weiche: der Laufweg steht an dieser Stelle nicht mehr im Customizing, sondern im Coding. Prüfen Sie deshalb der Reihe nach, ob nicht schon ein zusätzlicher Status in `C09` oder ein Hintergrundschritt mit `EV_DECISION_KEY` reicht — bei beiden bleibt der Verzweigungspunkt in `C02` sichtbar.
+Der Preis einer Weiche: der Laufweg steht an dieser Stelle nicht mehr im Customizing, sondern im Coding. Prüfen Sie deshalb der Reihe nach, ob nicht schon ein zusätzlicher Status in `C09`, eine Regel an einem Hintergrundschritt (Abschnitt 7) oder ein Hintergrundschritt mit `EV_DECISION_KEY` reicht — bei allen dreien bleibt der Verzweigungspunkt in `C02` sichtbar.
 
 ## 5 Ausgänge und Entscheidungswege
 
@@ -178,7 +178,7 @@ Damit bietet jeder Schritt bis zu sieben Ausgänge. Der Schlüssel von `C09` ist
 
 Über die Checkbox *keine Anzeige* (`NODISPLAY`) lässt sich eine Entscheidungsalternative verstecken. Der Ausgang existiert dann weiterhin und kann aus dem Coding gesetzt werden, dem Bearbeiter wird aber kein Knopf angeboten. Das ist der Weg für technische Ausgänge, die niemand von Hand wählen soll.
 
-`C09` trägt drei weitere Spalten, die im Pflegebild sichtbar sind: `NATURE` färbt den Knopf in der Fiori-Inbox, `COMMENT_REQ` macht dort einen Kommentar zur Pflicht, und `BEDINGUNG` hinterlegt eine Bedingung für den Ausgang.
+`C09` trägt drei weitere Spalten: `NATURE` färbt den Knopf grün (`P`) oder rot (`N`), `COMMENT_REQ` macht einen Kommentar zur Pflicht — beides im SAP GUI und in der Fiori My Inbox, auch für OK und NOK. `BEDINGUNG` hinterlegt eine Regel für den Ausgang, siehe Abschnitt 7.
 
 ### Schleife statt Neustart
 
@@ -206,9 +206,15 @@ In `C04` werden die Rollen definiert, in `C05` wird festgelegt, welche Rolle wel
 | SAP-Benutzer (`US`) | ein fester Benutzer |
 | Organisationseinheit / Planstelle | Auflösung über die Aufbauorganisation |
 | E-Mail-Adresse | nur für den Mailversand, kein Workitem |
+| PFCG-Rolle (`AG` mit `AGR_NAME`) | alle Dialogbenutzer der Rolle; vom Administrator gesperrte Benutzer fallen heraus |
+| Ausschließen (`EXCLUDE`) | was die Zeile auflöst, wird vom selben Bearbeiter-Key abgezogen — z. B. `WF_INITIATOR` für das Vier-Augen-Prinzip. Sonderwert `WF_APPROVERS`: wer auf einer anderen Stufe dieser Instanz schon entschieden hat |
 | BAdI | die Ermittlung übernimmt `GET_ACTORS` — der Weg für BRFplus, Z-Tabellen oder Regelwerke |
 
 Drei Bearbeiter-Keys haben eine feste Bedeutung: `BU` für Hintergrundschritte, `WI` für den Initiator und `$$` intern für Fristen-Schritte.
+
+{% hint style="warning" %}
+**`EXCLUDE` steuert die Bearbeiterfindung, nicht die Berechtigung.** Wer über die Workflow-Administration (`SWIA`) entscheidet, wird davon nicht aufgehalten.
+{% endhint %}
 
 `C12` enthält dieselbe Zuordnung wie `C03`, aber transportfähig. `C03` ist laufende Einstellung und wird im Zielsystem gepflegt; `C12` liefert die Voreinstellung mit.
 
@@ -216,7 +222,7 @@ Drei Bearbeiter-Keys haben eine feste Bedeutung: `BU` für Hintergrundschritte, 
 
 Mehrere Bearbeiter-Keys an einem Schritt ergeben mehrere Bearbeiter. Das Framework stellt die zutreffenden Rollen als Liste in das Container-Element `RT_NUMBER_ACTORS` — daraus entsteht **je Zeile ein Workitem**, alle gleichzeitig.
 
-Was aus den einzelnen Entscheidungen wird, stellen Sie am Schritt ein: in den **Genehmigungsschritten** (`C01`) mit der Spalte **Entscheidungsregel**.
+Was aus den einzelnen Entscheidungen wird, stellen Sie am Schritt ein: in den **Genehmigungsschritten** (`C01`) mit der Spalte **Entscheidungsregel** (kurz *Regel*).
 
 <figure><img src="../.gitbook/assets/c01-entscheidungsregel.png" alt="Spalte Entscheidungsregel in den Genehmigungsschritten"><figcaption><p>Vier Schritte, vier Regeln (Pflegedialog mit englischer Anmeldung)</p></figcaption></figure>
 
@@ -275,6 +281,10 @@ Ein Hintergrundschritt führt eine statische Methode aus, ohne Workitem und ohne
 
 Ist zu einem Schritt mit Attribut `BACK` gar keine Methode hinterlegt, läuft er ohne Wirkung positiv durch.
 
+Statt einer statischen Methode kann `CLSNAME` auch eine Klasse tragen, die das Interface `/C09/CFL_IF_BACKGROUND_0101` implementiert; `CMPNAME` bleibt dann leer. Die Signatur prüft in diesem Fall der Compiler.
+
+**Regeln statt Methode.** Ist an einem `BACK_BATCH`-Schritt keine Klasse gepflegt, prüft conFLOW die Bedingungen in `C09-BEDINGUNG` der Ausgänge `UC1`–`UC5`, in dieser Reihenfolge. Der erste Treffer gewinnt; ohne Treffer geht es über OK weiter, bei einem Fehler über NOK. Die Felder stammen aus dem Template (`TEMPLATE` in `C08`). Dezimalzahlen stehen in Hochkommata und mit Punkt: `GESAMTWERT_RW <= '1000.20'`.
+
 Die Meldungen aus einem Hintergrundschritt landen im Anwendungslog (SLG1). **Das geschieht nur, wenn in den allgemeinen Parametern ein `OBJECT` gepflegt ist** — ohne diesen Eintrag läuft der Schritt, aber es wird nichts protokolliert.
 
 Umgekehrt gilt: Ist ein Schritt *nicht* als Hintergrundschritt gekennzeichnet und auch keine Klasse/Methode gepflegt, erzeugt conFLOW eine Standard-Entscheidungsaufgabe. Wer stattdessen ein eigenes Dynpro zeigen will, hinterlegt auch hier eine Klasse/Methode; deren `EV_DECISION_KEY` steuert dann den Ausgang.
@@ -306,11 +316,13 @@ conFLOW versendet HTML-Mails, gesteuert über `C07`. Der Schlüssel ist vierteil
 **Die drei Schablonen sind Web-Objekte aus `SMW0`, keine SO10-Texte.** Betreff und Inhalt sind SO10-Texte, die Schablonen nicht — wer sie im SO10 sucht, findet sie nicht.
 {% endhint %}
 
-In den Texten und Schablonen stehen Platzhalter, die beim Aufbau der Mail ersetzt werden. Die Werte dafür liefert die BAdI-Methode `GET_DATASOURCE_MAIL`.
+In den Texten und Schablonen stehen Platzhalter der Form `&STRUKTUR-FELD&`, die beim Aufbau der Mail ersetzt werden. Ist in den allgemeinen Parametern ein `TEMPLATE` gepflegt, stehen dessen Felder ohne Code bereit, z. B. `&/C09/CFL_S_TPL_BUS2012-GESAMTWERT_RW&`; Beträge und Mengen werden passend zu Währung und Einheit formatiert. Weitere Werte, etwa Protokoll (`&WF_PROT&`) oder Notizen (`&NOTE&`), liefert das BAdI über `GET_DATASOURCE_MAIL`.
+
+**Sprache je Empfänger:** Mit der BAdI-Methode `GET_MAIL_LANGUAGE` lässt sich die Sprache für jeden Empfänger einzeln festlegen. Umgeschaltet wird nur, wenn die Sprache installiert ist und Betreff und Texte in ihr gepflegt sind; sonst geht die Mail in der Ausgangssprache hinaus.
 
 **Dynamische Empfänger:** Beginnt der Bearbeiter-Key in `C07` mit `Y`, ruft das Framework die BAdI-Methode `GET_STATUS_MAIL_DYNAMIC`. Diese darf den Empfänger nicht nur ändern, sondern eine ganze Tabelle von Empfängern zurückgeben — der Weg für Verteiler, die erst zur Laufzeit feststehen. Gibt die Methode nichts zurück, bleibt es beim gepflegten Empfänger.
 
-`Y` bedeutet an beiden Stellen dasselbe: *frag die BAdI*. Im Schritt-Code führt es zu `GET_STATUS_DYNAMIC`, im Empfänger-Key des Mailversands zu `GET_STATUS_MAIL_DYNAMIC`.
+`Y` bedeutet an beiden Stellen dasselbe: *frag das BAdI*. Im Schritt-Code führt es zu `GET_STATUS_DYNAMIC`, im Empfänger-Key des Mailversands zu `GET_STATUS_MAIL_DYNAMIC`.
 
 ## 10 Allgemeine Parameter und Vererbung
 
@@ -324,16 +336,17 @@ In den Texten und Schablonen stehen Platzhalter, die beim Aufbau der Mail ersetz
 | `LICENSE` | Lizenzangaben |
 | `REPPR` | Vertreterprofil |
 | `TCLASS` | Klassifikation von Aufgaben für die Vertretungsregelung |
-| `TEMPLATE` | Template-Klasse für Regeln |
+| `TEMPLATE` | Template-Klasse: liest den Beleg und liefert die Felder für Regeln, Workitem-Titel und Mail. Mitgeliefert für `BUS2012`, `BUS2032`, `BUS2105`, `BUS2081`, `BKPF`, `LFA1`, `KNA1`, `BUS1006`; eigene per Vererbung oder Append |
 | `RULE_CURR` | Regelwährung |
 | `RATE_TYPE` | Kursart für Regeln |
+| `VISU` | Semantic Object der Fiori-App, die das Workitem in der My Inbox öffnet (Action fest `openInInbox`). Leer = Standardanzeige. Bestehende Workitems zieht der Report `/C09/CFL_MIGRATE_VISU` nach |
 
 ### Was `WF_DEF` vererbt — und was nicht
 
 Ein Workflow mit gepflegtem `WF_DEF` übernimmt das Customizing der Eltern-Definition. Übernommen werden `C01`, `C02`, `C03`, `C04`, `C05`, `C07` und `C09` samt ihren Texttabellen.
 
 {% hint style="warning" %}
-**Nicht vererbt werden die allgemeinen Parameter selbst (`C08`) und der Definitionstext (`C06T`).** Ein erbender Workflow hat also die Schritte und Ausgänge des Elternteils, aber nicht dessen Anwendungslog-Objekt. Wer sich darauf verlässt, bekommt einen Workflow, der läuft, aber nichts protokolliert.
+**Nicht vererbt werden die allgemeinen Parameter selbst (`C08`) und der Definitionstext (`C06T`).** Ein erbender Workflow hat also die Schritte und Ausgänge des Elternteils, aber nicht dessen Anwendungslog-Objekt, `TEMPLATE`, `VISU` oder `GEN_TASK` — diese Werte werden in jeder Definition eigens gepflegt. Wer sich darauf verlässt, bekommt einen Workflow, der läuft, aber nichts protokolliert.
 {% endhint %}
 
 Die eigenen Zeilen gewinnen: geerbte Zeilen werden hinten angehängt, auch wenn die eigene Definition denselben Schlüssel schon hat. Ein Zugriff trifft deshalb immer zuerst die eigene Zeile.
@@ -350,13 +363,14 @@ Zum Schlüssel von `C05` gehört das Sortierfeld `SORTF`. Je Genehmigungsschritt
 
 ## 12 Laufzeit-Datenmodell
 
-Drei Tabellen, verbunden über die Instanz-`id`:
+Vier Tabellen, verbunden über die Instanz-`id`:
 
 | Tabelle | Eine Zeile je | Wichtige Felder |
 | --- | --- | --- |
 | `/C09/CFL_S01` | Workflow-Instanz | `id`, `wf_definition`, `instid` (Objektschlüssel), `gen_stat` (aktueller Schritt), `wf_end` |
 | `/C09/CFL_S03` | Workitem, chronologisch | `id`, `wi_id`, `gen_stat`, `gen_stat_user`, Anleger und Zeit |
 | `/C09/CFL_S04` | Container-Element | `id`, `element`, `tab_index`, `value` |
+| `/C09/CFL_S05` | Wertänderung am Container | `id`, `element`, `tstmp`, `wert_alt`, `wert_neu`, `aenam`, `kanal` — nur bei echter Änderung |
 
 Der Schlüssel von `S04` enthält `TAB_INDEX` — ein Element kann also **mehrere Werte** tragen, nicht nur einen.
 
@@ -374,9 +388,9 @@ Der Container ist zugleich die natürliche Quelle für Platzhalter in Workitem-T
 
 ## 14 Die BAdI-Schnittstelle
 
-Das Interface `/C09/CFL_IF_BADI_0101` definiert die Stellen, an denen fachliche Logik einhängt. Je Workflow implementiert eine eigene Klasse `ZCL_CFL_WORKFLOW_<nnnnn>` dieses Interface; der Filter der Implementierung ist die Workflow-Nummer. Hooks, die Sie nicht brauchen, bleiben leer.
+Das Interface `/C09/CFL_IF_BADI_0101` definiert die Stellen, an denen Sonderlogik einhängt. Braucht ein Workflow sie, implementiert eine eigene Klasse `ZCL_CFL_WORKFLOW_<nnnnn>` dieses Interface; der Filter der Implementierung ist die Workflow-Nummer. Hooks, die Sie nicht brauchen, bleiben leer.
 
-Die wichtigsten:
+Für die Standardfälle braucht es keinen dieser Hooks: Bearbeiter (`C03`), Titel und Platzhalter (`C01T`, `C06T-OBJTEXT`), Knopffarbe und Kommentarpflicht (`C09`) sowie Belegdaten für Mail und Regeln (`TEMPLATE`) sind Einstellungen. Die Hooks sind für das, was darüber hinausgeht. Die wichtigsten:
 
 | Hook | Aufgabe |
 | --- | --- |
@@ -395,7 +409,7 @@ Die wichtigsten:
 
 ## 15 Oberflächen
 
-Workitems erscheinen im SAP Business Workplace (`SBWP`) und in der SAP Fiori My Inbox. conFLOW steuert in beiden die Beschriftung der Knöpfe, den Kontextblock und den Absprung ins Belegobjekt über dieselben BAdI-Hooks.
+Workitems erscheinen im SAP Business Workplace (`SBWP`) und in der SAP Fiori My Inbox. conFLOW steuert in beiden Beschriftung, Farbe und Kommentarpflicht der Knöpfe (`C09`/`C09T`), den Titel und den Absprung ins Belegobjekt aus demselben Customizing. Welche Fiori-App ein Schritt in der My Inbox öffnet, legt der Parameter `VISU` fest. Das BAdI bleibt für Abweichungen.
 
 Zusätzlich lässt sich jeder Schritt mobil darstellen: eine conMOBILE-App liest denselben Container und verwendet dieselben Entscheidungsschlüssel. Eine Datenquelle, ein Entscheidungsmodell — unabhängig davon, wo entschieden wird.
 
@@ -419,11 +433,11 @@ Die Konsole beantwortet die Fragen, die im Betrieb täglich anfallen: Was läuft
 
 **Eingeschränkt wird** nach Workflow-Definition, Instanz und Objekttyp, nach Anlagedatum und -zeit des Workitems, nach Bearbeiter, Schritt-Code und Workitem-Status sowie nach dem Workitem-Text. Zwei Schalter entscheiden, ob laufende, abgeschlossene oder beide Workflows gezeigt werden. Umschalten lässt sich zwischen einer **Kopfsicht** je Workflow-Instanz und einer **Positionssicht** je Workitem.
 
-**Die Liste** zeigt zu jedem Eintrag Workitem-Nummer, -Text und -Status, Anlage- und Änderungsdatum, den Bearbeiter im Klartext, von wem weitergeleitet wurde, die getroffene Entscheidung, die Angaben zur versendeten Mail sowie die Liegedauer. Eine Ampel markiert Workitems, die länger als die eingestellte Zahl von Tagen offen sind — voreingestellt sind drei.
+**Die Liste** zeigt zu jedem Eintrag Workitem-Nummer, -Text und -Status, Anlage- und Änderungsdatum, den Bearbeiter im Klartext, von wem weitergeleitet wurde, die getroffene Entscheidung, die Angaben zur versendeten Mail sowie Priorität und Liegedauer. Eine Ampel bewertet offene Workitems gegen eine Schwelle in Tagen (voreingestellt drei): grün darunter, gelb ab 80 %, rot ab der Schwelle; ein eigenes Symbol markiert verwaiste Workitems ohne Bearbeiter. Schwelle 0 schaltet die Bewertung ab.
 
 **Aus der Liste heraus** lassen sich das Workitem anzeigen und ausführen, die tatsächlichen Bearbeiter einblenden, die versendete Mail öffnen, ein Workitem weiterleiten und ein Workflow abbrechen. Der Abbruch wird protokolliert.
 
-**Statt der Einzelliste** lässt sich eine **Auswertung** anzeigen: je Workflow-Definition und Schritt die Zahl der Vorgänge gesamt, offen und erledigt, die längste und die durchschnittliche Liegedauer der offenen, die längste und die durchschnittliche Durchlaufzeit der erledigten sowie die Verteilung der Entscheidungen samt Ablehnungsquote. Das ist der schnellste Weg zu der Frage, an welchem Schritt ein Prozess wirklich hängt.
+**Statt der Einzelliste** lässt sich eine **Auswertung** anzeigen: je Workflow-Definition und Schritt die Zahl der Vorgänge gesamt, offen und erledigt, die längste und die durchschnittliche Liegedauer der offenen, die längste und die durchschnittliche Durchlaufzeit der erledigten sowie die Verteilung der Entscheidungen samt Ablehnungsquote, mit derselben Ampel je Zeile. Das ist der schnellste Weg zu der Frage, an welchem Schritt ein Prozess wirklich hängt.
 
 ## 17 Objekte im System
 
@@ -437,7 +451,7 @@ Die Erweiterungsschnittstelle:
 | Filter | `WF_DEFINITION` — die Workflow-Nummer |
 
 {% hint style="warning" %}
-**`/C09/CFL_CL_BADI_0101` ist die mitgelieferte Beispielimplementierung, nicht die BAdI-Definition und nicht Ihre Implementierung.** Sie ist im Spot als Musterklasse registriert und dient als Kopiervorlage. Ihre eigene Logik gehört in eine eigene Klasse `ZCL_CFL_WORKFLOW_<nnnnn>` mit dem Filter auf Ihre Workflow-Nummer.
+**`/C09/CFL_CL_BADI_0101` ist die mitgelieferte Beispielimplementierung, nicht die BAdI-Definition und nicht Ihre Implementierung.** Sie ist im Spot als Musterklasse registriert und zeigt Fragmente aus echten Projekten. Als Vorlage für eine eigene Implementierung dient die [Referenz aller 26 BAdI-Methoden](../how-to-beispielimplementierung/badi-referenz/README.md). Ihre eigene Logik gehört in eine eigene Klasse `ZCL_CFL_WORKFLOW_<nnnnn>` mit dem Filter auf Ihre Workflow-Nummer.
 {% endhint %}
 
 Die Klassen, die beim Lesen von Fehlern und beim Erweitern am häufigsten auftauchen:
@@ -449,6 +463,6 @@ Die Klassen, die beim Lesen von Fehlern und beim Erweitern am häufigsten auftau
 | Mail und Texte | `/C09/CFL_CL_MAIL_0101`, `/C09/CFL_CL_MAIL_LANG_0101`, `/C09/CFL_CL_TEXTPARSER_0101`, `/C09/CFL_CL_OBJTEXT_0101` |
 | Erweiterung | `/C09/CFL_IF_BADI_0101`, `/C09/CFL_IF_BACKGROUND_0101`, `/C09/CFL_IF_TEMPLATE_0101` |
 
-Für gängige Geschäftsobjekte liegen **Templates** bei, die als Muster für die Anbindung dienen — unter anderem für Bestellung, Bestellanforderung, Kundenauftrag, Eingangsrechnung, Geschäftspartner, FI-Belegkopf, Kunde und Lieferant.
+Für gängige Geschäftsobjekte liefert conFLOW fertige **Templates** mit, die über den Parameter `TEMPLATE` direkt einsetzbar sind: Bestellung, Bestellanforderung, Kundenauftrag, Eingangsrechnung, Geschäftspartner, FI-Belegkopf, Kunde und Lieferant. Eigene Felder kommen per Vererbung oder Append dazu.
 
 Für die langfristige Ablage gibt es ein eigenes **Archivierungsobjekt** samt Schreib- und Löschprogramm, mit dem abgeschlossene Workflows aus den Laufzeittabellen ausgelagert werden.
