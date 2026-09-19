@@ -1450,6 +1450,12 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        finds all open work items of the same top-level workflow
 *        and sets them to obsolete - except its own.
 *
+* FIRST CHECK WHETHER YOU NEED THIS HOOK AT ALL
+*        Veto, "first decision counts" and "majority decides" are a
+*        setting on the step: column Decision rule in Approval steps
+*        (C01). Then this hook stays empty. The example here is for
+*        rules that none of the settings cover.
+*
 * WHY THE COMMIT IS HERE
 *        SET_WORKITEM_OBSOLET calls SAP_WAPI_WORKITEM_COMPLETE with
 *        DO_COMMIT = FALSE, so that not every work item is committed
