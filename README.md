@@ -1,5 +1,9 @@
 # conFLOW - SAP Workflows Made Easy
 
+{% hint style="info" %}
+**English:** this documentation is also available [in English](en/README.md).
+{% endhint %}
+
 ## conFLOW in Aktion
 
 Ein echter Genehmigungsprozess von Anfang bis Ende: wie er eingerichtet wird, wie er läuft und wie leicht er sich ändern lässt. Mit Screenshots aus einem SAP-System, zum Durchklicken (auf Englisch).
@@ -7,11 +11,6 @@ Ein echter Genehmigungsprozess von Anfang bis Ende: wie er eingerichtet wird, wi
 <a href="https://story.conflow-help.com" class="button primary">conFLOW in Aktion ansehen →</a>
 
 <figure><img src=".gitbook/assets/story-cover.png" alt="conFLOW in action: Folien aus der Produktgeschichte"><figcaption><p><a href="https://story.conflow-help.com">story.conflow-help.com</a></p></figcaption></figure>
-
-
-{% hint style="info" %}
-**English:** this documentation is also available [in English](en/README.md).
-{% endhint %}
 
 {% hint style="success" %}
 **conFLOW** bildet Genehmigungs- und Freigabe-Workflows im SAP-System ab -- ohne SAP-Workflow-Know-how, ohne Workflow Builder, ohne WF-Customizing im SPRO.
