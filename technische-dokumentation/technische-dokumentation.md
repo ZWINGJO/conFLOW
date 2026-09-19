@@ -458,9 +458,11 @@ Die Klassen, die beim Lesen von Fehlern und beim Erweitern am häufigsten auftau
 
 | Bereich | Klassen |
 | --- | --- |
-| Ablauf | `/C09/CFL_CL_WORKFLOW_0101` (Start, Steuerung, Abbruch), `/C09/CFL_CL_WORKFLOW_EXIT_0101` (Workitem-Exit) |
-| Bearbeiter und Regeln | `/C09/CFL_CL_ACTORS_0101`, `/C09/CFL_CL_RULE_0101`, `/C09/CFL_CL_DECIKEY_0101` |
-| Mail und Texte | `/C09/CFL_CL_MAIL_0101`, `/C09/CFL_CL_MAIL_LANG_0101`, `/C09/CFL_CL_TEXTPARSER_0101`, `/C09/CFL_CL_OBJTEXT_0101` |
+| Ablauf | `/C09/CFL_CL_WORKFLOW_0101` (Start, Steuerung, Abbruch), `/C09/CFL_CL_WORKFLOW_EXIT_0101` (Workitem-Exit), `/C09/CFL_CL_PRIORITY_0101` (Priorität je Schritt) |
+| Bearbeiter und Regeln | `/C09/CFL_CL_ACTORS_0101`, `/C09/CFL_CL_RULE_0101`, `/C09/CFL_CL_DECIKEY_0101`, `/C09/CFL_CL_PARALLEL_0101` (Entscheidungsregel bei mehreren Bearbeitern) |
+| Knöpfe und Oberfläche | `/C09/CFL_CL_BUTTONS_0101` (Farbe, Kommentarpflicht), `/C09/CFL_CL_VISU_0101` (Fiori-App je Workflow) |
+| Mail und Texte | `/C09/CFL_CL_MAIL_0101`, `/C09/CFL_CL_MAIL_LANG_0101`, `/C09/CFL_CL_TEXTPARSER_0101`, `/C09/CFL_CL_OBJTEXT_0101`, `/C09/CFL_CL_FORMAT_0101` (Zahlen, Mengen, Datum) |
+| Templates | `/C09/CFL_CL_TPL_BASE_0101` (Basis) und je Objekttyp `/C09/CFL_CL_TPL_<typ>_0101`, z. B. `…_TPL_BUS2012_0101`; `/C09/CFL_CL_TPL_MAIL_0101` (Template als Mail-Datenquelle) |
 | Erweiterung | `/C09/CFL_IF_BADI_0101`, `/C09/CFL_IF_BACKGROUND_0101`, `/C09/CFL_IF_TEMPLATE_0101` |
 
 Für gängige Geschäftsobjekte liefert conFLOW fertige **Templates** mit, die über den Parameter `TEMPLATE` direkt einsetzbar sind: Bestellung, Bestellanforderung, Kundenauftrag, Eingangsrechnung, Geschäftspartner, FI-Belegkopf, Kunde und Lieferant. Eigene Felder kommen per Vererbung oder Append dazu.
