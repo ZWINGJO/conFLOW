@@ -37,7 +37,7 @@ Einstieg ist die Transaktion `/C09/CONFLOW_C`, ein View-Cluster über alle Knote
 | Knoten im Pflegebaum | Tabelle | Inhalt |
 | --- | --- | --- |
 | Workflow Definition | `/C09/CFL_C06` | eine Zeile je Workflow-Nummer |
-| Genehmigungsschritte | `/C09/CFL_C01` | Schritte mit Status-Code `gen_stat`, Attribut, Texten, Klasse/Methode |
+| Genehmigungsschritte | `/C09/CFL_C01` | Schritte mit Status-Code `gen_stat`, Attribut, Texten, Klasse/Methode, Entscheidungsregel bei mehreren Bearbeitern |
 | Genehmigungsstatus - Steuerung | `/C09/CFL_C02` | Übergänge (OK / NOK / Frist), Fristen |
 | Steuerung zusätzlicher Status | `/C09/CFL_C09` | Entscheidungsalternativen `UC1`–`UC5` je Schritt |
 | User Status Definition | `/C09/CFL_C04` | Rollen, also die Bearbeiter-Keys `gen_stat_user` |
@@ -216,14 +216,35 @@ Drei Bearbeiter-Keys haben eine feste Bedeutung: `BU` für Hintergrundschritte, 
 
 Mehrere Bearbeiter-Keys an einem Schritt ergeben mehrere Bearbeiter. Das Framework stellt die zutreffenden Rollen als Liste in das Container-Element `RT_NUMBER_ACTORS` — daraus entsteht **je Zeile ein Workitem**, alle gleichzeitig.
 
-Damit sind zwei Prozesse möglich, und es lohnt sich, vorher zu entscheiden, welcher gemeint ist:
+Was aus den einzelnen Entscheidungen wird, stellen Sie am Schritt ein: in den **Genehmigungsschritten** (`C01`) mit der Spalte **Entscheidungsregel**.
 
-| | |
-| --- | --- |
-| **Alle müssen entscheiden** | jeder Bearbeiter arbeitet sein Workitem ab, der Vorgang läuft danach weiter |
-| **Einer entscheidet für alle** | die erste Entscheidung zählt, die übrigen Workitems sollen verschwinden |
+<figure><img src="../.gitbook/assets/c01-entscheidungsregel.png" alt="Spalte Entscheidungsregel in den Genehmigungsschritten"><figcaption><p>Vier Schritte, vier Regeln (Pflegedialog mit englischer Anmeldung)</p></figcaption></figure>
 
-Der zweite Fall ist der häufigere — und er passiert **nicht von selbst.** Ohne Zutun bleiben die anderen Workitems offen in den Eingängen stehen, und jemand arbeitet an einem Vorgang, der längst entschieden ist. Dafür gibt es einen Helfer:
+| Wert | Regel | Was passiert |
+| --- | --- | --- |
+| *(leer)* | **Alle entscheiden** | Jeder Bearbeiter entscheidet sein Workitem. Danach geht es weiter, eine Ablehnung ergibt NOK. Das ist das bisherige Verhalten, bestehende Schritte bleiben unverändert |
+| `V` | **Veto** | Die erste Ablehnung beendet den Schritt mit NOK. Die übrigen Workitems werden geschlossen. Lehnt niemand ab, gilt dasselbe wie bei „Alle entscheiden“ |
+| `E` | **Erste Entscheidung gilt** | Wer zuerst entscheidet, entscheidet für alle — OK, NOK oder ein zusätzlicher Ausgang `UC1`–`UC5`. Die übrigen Workitems werden geschlossen |
+| `M` | **Mehrheit entscheidet** | Alle entscheiden, es gilt die häufigste Entscheidung. Gezählt werden OK, NOK und `UC1`–`UC5`. Bei Gleichstand gilt NOK |
+
+Folgeschritt **und** Mail richten sich nach dem Ergebnis der Regel. Bei „Mehrheit“ mit zwei Zustimmungen und einer Ablehnung geht der Workflow also den OK-Weg, und es geht die Mail für OK hinaus, nicht die Ablehnungsmail.
+
+Einige Dinge, die man wissen sollte:
+
+- **Geschlossen heißt obsolet.** Die geschlossenen Workitems verschwinden wenige Sekunden nach der entscheidenden Stimme aus den Eingängen. Im Workflow-Protokoll stehen sie als *obsolet*.
+- **Wer ein geschlossenes Workitem hatte, bekommt keine eigene Nachricht.** Soll das anders sein, richten Sie eine Mailregel auf das Ergebnis des Schritts ein.
+- **Läuft ein Schritt erneut**, etwa nach einer Rückfrage, zählen nur die Entscheidungen des neuen Durchlaufs.
+- **Entscheiden bei „Erste Entscheidung gilt“ zwei Personen im selben Augenblick**, zählt unter diesen beiden die Mehrheit, bei Gleichstand NOK.
+
+{% hint style="info" %}
+**Bleiben die Workitems bei Veto oder „Erste Entscheidung gilt“ stehen?** Das Schließen läuft nach dem Sichern der Entscheidung in einem eigenen Schritt (tRFC). Wo es hängt, zeigt die Transaktion `SM58`.
+{% endhint %}
+
+### Eigene Logik im BAdI
+
+Für Regeln, die keine der vier Einstellungen abdeckt — etwa eine gewichtete Stimme oder „zwei von drei aus verschiedenen Abteilungen“ —, bleibt das BAdI. Lassen Sie dann die Entscheidungsregel leer.
+
+Einzelne Workitems schließen können Sie mit einem Helfer:
 
 ```abap
 " im Hook GET_AFTER_EXECUTION_WORKITEM, der nach dem Abschluss eines Workitems laeuft
@@ -231,15 +252,13 @@ Der zweite Fall ist der häufigere — und er passiert **nicht von selbst.** Ohn
 COMMIT WORK AND WAIT.
 ```
 
-`SET_WORKITEM_OBSOLET` sucht alle offenen Dialog-Workitems desselben Top-Workflows und setzt sie auf *obsolet* — das eigene ausgenommen. Soll das nur bei einer bestimmten Entscheidung geschehen, etwa nur bei Ablehnung, fragen Sie vorher `IV_KEY` ab.
+`SET_WORKITEM_OBSOLET` sucht alle offenen Dialog-Workitems desselben Top-Workflows und setzt sie auf *obsolet* — das eigene ausgenommen. Soll das nur bei einer bestimmten Entscheidung geschehen, fragen Sie vorher `IV_KEY` ab.
 
 {% hint style="warning" %}
 **Achten Sie auf die Reichweite.** Der Helfer räumt den **ganzen Workflow** ab. Laufen parallele Workitems in mehreren Schritten gleichzeitig, trifft er auch die, die Sie behalten wollten. In dem Fall selbst selektieren und auf `GEN_STAT` einschränken — das Muster steht im [How-To](../how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-4-workflow-starten.md).
 {% endhint %}
 
-### Wenn die Mehrheit entscheiden soll
-
-Dann zählt nicht die erste Stimme, sondern das Ergebnis aller. Dafür setzen Sie hinter den Parallelschritt einen **Sammelschritt** — einen `Y`-Schritt, auf den alle Ausgänge zeigen. Dort wird in `GET_STATUS_DYNAMIC` das Workflow-Protokoll ausgezählt und der Folgestatus danach gesetzt. Den fertigen Baustein dazu zeigt das [How-To](../how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-4-workflow-starten.md).
+Eine eigene Auszählung setzen Sie in einen **Sammelschritt** hinter den Parallelschritt — einen `Y`-Schritt, auf den alle Ausgänge zeigen. Dort wird in `GET_STATUS_DYNAMIC` das Workflow-Protokoll ausgezählt und der Folgestatus gesetzt. Den Baustein dazu zeigt das [How-To](../how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-4-workflow-starten.md).
 
 {% hint style="warning" %}
 **Das `COMMIT` muss der Aufrufer schreiben.** Der Helfer ruft `SAP_WAPI_WORKITEM_COMPLETE` bewusst mit `DO_COMMIT = FALSE`, damit nicht je Workitem einzeln festgeschrieben wird. Fehlt die Zeile, bleiben die Workitems offen — **ohne Fehlermeldung**.
