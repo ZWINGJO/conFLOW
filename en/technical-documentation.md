@@ -458,9 +458,11 @@ The classes you meet most often when tracing errors and when extending:
 
 | Area | Classes |
 | --- | --- |
-| Process | `/C09/CFL_CL_WORKFLOW_0101` (start, control, cancel), `/C09/CFL_CL_WORKFLOW_EXIT_0101` (work item exit) |
-| Agents and rules | `/C09/CFL_CL_ACTORS_0101`, `/C09/CFL_CL_RULE_0101`, `/C09/CFL_CL_DECIKEY_0101` |
-| Mail and texts | `/C09/CFL_CL_MAIL_0101`, `/C09/CFL_CL_MAIL_LANG_0101`, `/C09/CFL_CL_TEXTPARSER_0101`, `/C09/CFL_CL_OBJTEXT_0101` |
+| Process | `/C09/CFL_CL_WORKFLOW_0101` (start, control, cancel), `/C09/CFL_CL_WORKFLOW_EXIT_0101` (work item exit), `/C09/CFL_CL_PRIORITY_0101` (priority per step) |
+| Agents and rules | `/C09/CFL_CL_ACTORS_0101`, `/C09/CFL_CL_RULE_0101`, `/C09/CFL_CL_DECIKEY_0101`, `/C09/CFL_CL_PARALLEL_0101` (decision rule for several agents) |
+| Buttons and UI | `/C09/CFL_CL_BUTTONS_0101` (colour, mandatory comment), `/C09/CFL_CL_VISU_0101` (Fiori app per workflow) |
+| Mail and texts | `/C09/CFL_CL_MAIL_0101`, `/C09/CFL_CL_MAIL_LANG_0101`, `/C09/CFL_CL_TEXTPARSER_0101`, `/C09/CFL_CL_OBJTEXT_0101`, `/C09/CFL_CL_FORMAT_0101` (numbers, quantities, dates) |
+| Templates | `/C09/CFL_CL_TPL_BASE_0101` (base) and per object type `/C09/CFL_CL_TPL_<type>_0101`, e.g. `…_TPL_BUS2012_0101`; `/C09/CFL_CL_TPL_MAIL_0101` (template as mail data source) |
 | Extension | `/C09/CFL_IF_BADI_0101`, `/C09/CFL_IF_BACKGROUND_0101`, `/C09/CFL_IF_TEMPLATE_0101` |
 
 For common business objects, conFLOW ships ready-made **templates** that can be used directly through the parameter `TEMPLATE`: purchase order, purchase requisition, sales order, incoming invoice, business partner, FI document header, customer and vendor. Your own fields are added via inheritance or append.
