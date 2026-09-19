@@ -227,7 +227,7 @@ Set the priority - via tRFC AFTER the COMMIT.
 
 **ONLY NEEDED IF THE PRIORITY DEPENDS ON THE DOCUMENT**
 
-A fixed priority per step is c01-PRIO, without any code. Maintaining both on the same step: then only one of them.
+A fixed priority per step is c01-PRIO, without any code. Do not maintain both on the same step - only one takes effect, and not reliably the BAdI.
 
 **THE OBVIOUS APPROACH DOES NOT WORK**
 

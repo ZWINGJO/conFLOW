@@ -346,7 +346,7 @@ In den Texten und Schablonen stehen Platzhalter der Form `&STRUKTUR-FELD&`, die 
 Ein Workflow mit gepflegtem `WF_DEF` übernimmt das Customizing der Eltern-Definition. Übernommen werden `C01`, `C02`, `C03`, `C04`, `C05`, `C07` und `C09` samt ihren Texttabellen.
 
 {% hint style="warning" %}
-**Nicht vererbt werden die allgemeinen Parameter selbst (`C08`) und der Definitionstext (`C06T`).** Ein erbender Workflow hat also die Schritte und Ausgänge des Elternteils, aber nicht dessen Anwendungslog-Objekt, `TEMPLATE`, `VISU` oder `GEN_TASK` — diese Werte werden in jeder Definition eigens gepflegt. Wer sich darauf verlässt, bekommt einen Workflow, der läuft, aber nichts protokolliert.
+**Nicht vererbt werden die allgemeinen Parameter selbst (`C08`) und der Definitionstext (`C06T`).** Ein erbender Workflow hat also die Schritte und Ausgänge des Elternteils, aber nicht dessen Anwendungslog-Objekt, `TEMPLATE`, `VISU` oder `GEN_TASK` — diese Werte werden in jeder Definition eigens gepflegt. Wer sich darauf verlässt, bekommt einen Workflow, der läuft, aber ohne eigenes `OBJECT` nichts protokolliert und ohne eigenes `TEMPLATE` keine Regeln auswertet.
 {% endhint %}
 
 Die eigenen Zeilen gewinnen: geerbte Zeilen werden hinten angehängt, auch wenn die eigene Definition denselben Schlüssel schon hat. Ein Zugriff trifft deshalb immer zuerst die eigene Zeile.

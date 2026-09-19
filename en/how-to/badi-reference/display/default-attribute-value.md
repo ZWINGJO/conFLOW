@@ -9,9 +9,9 @@
 
 Of all 26 hooks, this is the only one that was filled in every production implementation examined - and every time with exactly the same line.
 
-WITH c06t-OBJTEXT: LEAVE IT EMPTY
+**WITH OBJTEXT: LEAVE IT EMPTY**
 
-The framework then supplies the document key itself, from the right instance, BEFORE this hook. That is why the line below only sets RESULT if it is still empty.
+If c06t-OBJTEXT is maintained, the framework supplies the document key itself, from the right instance, BEFORE this hook. That is why the line below only sets RESULT if it is still empty.
 
 **WHY GET REFERENCE OF AND NOT AN ASSIGNMENT**
 
@@ -22,9 +22,7 @@ The framework then supplies the document key itself, from the right instance, BE
        the whole time.
 ```
 
-**PITFALL** If you return a reference to a METHOD-LOCAL variable, you get no error, but garbled data later. Hence the reference to
-
-**MS_INSTANCES.**
+**PITFALL** If you return a reference to a METHOD-LOCAL variable, you get no error, but garbled data later. Hence the reference to the class-wide MS_INSTANCES.
 
 **CAUTION MS_INSTANCES**
 

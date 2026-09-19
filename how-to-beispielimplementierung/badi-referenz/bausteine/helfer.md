@@ -227,7 +227,7 @@ Priorität setzen - per tRFC NACH dem COMMIT.
 
 **NUR NÖTIG, WENN DIE PRIORITÄT VOM BELEG ABHÄNGT**
 
-Eine feste Priorität je Schritt ist c01-PRIO, ganz ohne Code. Beides am selben Schritt pflegen: dann nur eines von beiden.
+Eine feste Priorität je Schritt ist c01-PRIO, ganz ohne Code. Nicht beides am selben Schritt pflegen - es wirkt nur eines, und zwar nicht zuverlässig das BAdI.
 
 **DER NAHELIEGENDE WEG FUNKTIONIERT NICHT**
 
@@ -235,7 +235,7 @@ SAP_WAPI_CHANGE_WORKITEM_PRIO liest SWWWIHEAD von der Datenbank. Im After-Create
 
 **UND DER DIREKTE AUCH NICHT**
 
-SWW_WI_PRIORITY_CHANGE bringt einen eigenen Transaktions- manager mit, sichert und entsperrt - mitten in der Anlage des Workitems. Für ein Darstellungsdetail zu viel Risiko.
+SWW_WI_PRIORITY_CHANGE bringt einen eigenen Transaktionsmanager mit, sichert und entsperrt - mitten in der Anlage des Workitems. Für ein Darstellungsdetail zu viel Risiko.
 
 **DESHALB DER PRODUKT-BAUSTEIN IN EINER EIGENEN EINHEIT**
 

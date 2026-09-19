@@ -30,10 +30,12 @@ Spart den Einstiegsbildschirm. Bei den Enjoy-Transaktionen (ME23N, VA03) ist der
 ## Der Code
 
 ```abap
-DATA lv_ebeln TYPE ekko-ebeln.
+* Nur noetig ohne c06t-OBJTEXT und c08 TEMPLATE - sonst oeffnet das
+* Framework den Beleg schon, und diese Methode bleibt leer.
+    DATA lv_ebeln TYPE ekko-ebeln.
 
-lv_ebeln = /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid.
+    lv_ebeln = /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid.
 
-SET PARAMETER ID 'BES' FIELD lv_ebeln.
-CALL TRANSACTION 'ME23N'.
+    SET PARAMETER ID 'BES' FIELD lv_ebeln.
+    CALL TRANSACTION 'ME23N'.
 ```

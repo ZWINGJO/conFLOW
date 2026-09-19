@@ -22,7 +22,7 @@ Die Methode muss eine feste Signatur haben:
 | `ET_BAPIRET2` | Exporting | `BAPIRET2_T` | Meldungen (bei E/A-Meldung: Ausgang wird NOK) |
 | `EV_DECISION_KEY` | Exporting | `SWR_DECIKEY` | Entscheidung (bestimmt den nächsten Schritt) |
 
-Alternativ trägt `clsname` eine Klasse mit dem Interface `/C09/CFL_IF_BACKGROUND_0101` (`cmpname` bleibt leer). Ein Hintergrundschritt ganz ohne Methode kann über eine Bedingung in `/C09/CFL_C09` entscheiden, siehe [Technische Dokumentation, Abschnitt 7](../../technische-dokumentation/technische-dokumentation.md#7-hintergrundschritte).
+Alternativ trägt `clsname` eine Klasse mit dem Interface `/C09/CFL_IF_BACKGROUND_0101` (`cmpname` bleibt leer). Ein Hintergrundschritt ganz ohne Methode (Attribut `BACK_BATCH`, Template in `/C09/CFL_C08` erforderlich) kann über eine Bedingung in `/C09/CFL_C09` entscheiden, siehe [Technische Dokumentation, Abschnitt 7](../../technische-dokumentation/technische-dokumentation.md#7-hintergrundschritte).
 
 {% hint style="warning" %}
 **Immer `EV_DECISION_KEY` setzen.** Ohne Rückgabe setzt das Framework den Ausgang auf `OK` -- bei einer Fehlermeldung in `ET_BAPIRET2` aber auf `NOK`. Damit ist `NOK` am Hintergrundschritt für den Fehlerfall reserviert; fachliche Ergebnisse gehören auf `UC1`-`UC5`.

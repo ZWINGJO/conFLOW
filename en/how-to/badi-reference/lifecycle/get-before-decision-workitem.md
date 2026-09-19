@@ -7,7 +7,7 @@
 
 **CUSTOMIZING FIRST**
 
-Fixed colour per outcome: c09-NATURE (P/N). Mandatory comment: c09-COMMENT_REQ. Hide: c09-NODISPLAY. All of it works in SAP GUI and Fiori, without code. This hook only for what depends on the document, as in the example below.
+Fixed color per outcome: c09-NATURE (P/N). Mandatory comment: c09-COMMENT_REQ. Hide: c09-NODISPLAY. All of it works in SAP GUI and Fiori, without code. This hook only for what depends on the document, as in the example below.
 
 **THREE THINGS WORK HERE, AND ONLY HERE**
 

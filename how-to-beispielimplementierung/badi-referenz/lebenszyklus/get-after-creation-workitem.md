@@ -20,9 +20,7 @@ Und das ist fast immer unerwünscht. Eine Priorität an einem Workitem, das kein
 
 **DAS WORKITEM STEHT HIER NOCH NICHT AUF DER DATENBANK**
 
-Der zentrale Punkt dieses Hooks, und die Ursache der häufigsten Enttäuschung: jede API, die SWWWIHEAD LIEST, läuft ins Leere. SAP_WAPI_CHANGE_WORKITEM_PRIO tut genau das - sie meldet keinen Fehler, sie wirkt nur nicht. Der richtige Weg ist ein tRFC NACH dem COMMIT, siehe
-
-**SET_PRIORITY( ).**
+Der zentrale Punkt dieses Hooks, und die Ursache der häufigsten Enttäuschung: jede API, die SWWWIHEAD LIEST, läuft ins Leere. SAP_WAPI_CHANGE_WORKITEM_PRIO tut genau das - sie meldet keinen Fehler, sie wirkt nur nicht. Der richtige Weg ist ein tRFC NACH dem COMMIT, siehe die Methode set_priority( ) weiter unten.
 
 ## Der Code
 

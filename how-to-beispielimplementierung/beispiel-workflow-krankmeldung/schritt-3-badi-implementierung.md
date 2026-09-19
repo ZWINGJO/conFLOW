@@ -29,7 +29,7 @@ Braucht ein Workflow Logik, die das Customizing nicht abdeckt, bekommt er **höc
 Soll der nächste Schritt nicht aus dem Customizing (`/C09/CFL_C02`) kommen, sondern zur Laufzeit berechnet werden, setzen Sie im Genehmigungsschritt den Typ auf **"BADI"**. conFLOW ruft dann die BAdI-Methode `GET_STATUS_DYNAMIC` und erwartet den nächsten `gen_stat` als Rückgabe.
 
 {% hint style="warning" %}
-**Vorsicht:** Wenn `GET_STATUS_DYNAMIC` aktiv ist, werden die Übergänge in `/C09/CFL_C02` für diesen Schritt **ignoriert**. Die gesamte Routing-Logik liegt dann im ABAP-Code. Verwenden Sie diesen Modus nur, wenn die Entscheidung tatsächlich dynamisch sein muss. Verzweigt der Prozess nach Belegwerten (z.B. Betrag über einer Grenze), nehmen Sie stattdessen einen Hintergrundschritt ohne Methode mit Bedingung in `/C09/CFL_C09` (Spalte `BEDINGUNG`) -- dann bleibt die Weiche im Customizing sichtbar.
+**Vorsicht:** Wenn `GET_STATUS_DYNAMIC` aktiv ist, werden die Übergänge in `/C09/CFL_C02` für diesen Schritt **ignoriert**. Die gesamte Routing-Logik liegt dann im ABAP-Code. Verwenden Sie diesen Modus nur, wenn die Entscheidung tatsächlich dynamisch sein muss. Verzweigt der Prozess nach Belegwerten (z.B. Betrag über einer Grenze), nehmen Sie stattdessen einen Hintergrundschritt ohne Methode (Attribut `BACK_BATCH`, Template in `/C09/CFL_C08` erforderlich) mit Bedingung in `/C09/CFL_C09` (Spalte `BEDINGUNG`) -- dann bleibt die Weiche im Customizing sichtbar.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/Folie21 (1).png" alt="Dynamische Schrittermittlung"><figcaption><p>Typ "BADI": dynamische Schrittermittlung zur Laufzeit</p></figcaption></figure>

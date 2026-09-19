@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Wann** | Je Empfänger, direkt vor dem Versand. Ältere conFLOW- Stände rufen den Hook nicht - dort geht jede Mail in der Sprache des Versenders. |
+| **Wann** | Je Empfänger, direkt vor dem Versand. In älteren conFLOW-Ständen ruft das Framework den Hook nicht - dort geht jede Mail in der Sprache des Versenders. |
 | **Rein** | IT_USER / IT_MAIL  der eine Empfänger dieses Versands |
 | **Raus** | CS_DATA-WI_LANG    die Sprache für diesen Empfänger |
 

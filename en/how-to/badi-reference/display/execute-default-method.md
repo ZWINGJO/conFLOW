@@ -30,10 +30,12 @@ Branch on IS_DATA-TYPEID. With a separate BOR type per workflow (the normal case
 ## The code
 
 ```abap
-DATA lv_ebeln TYPE ekko-ebeln.
+* Only needed without c06t-OBJTEXT and c08 TEMPLATE - otherwise the
+* framework already opens the document, and this method stays empty.
+    DATA lv_ebeln TYPE ekko-ebeln.
 
-lv_ebeln = /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid.
+    lv_ebeln = /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid.
 
-SET PARAMETER ID 'BES' FIELD lv_ebeln.
-CALL TRANSACTION 'ME23N'.
+    SET PARAMETER ID 'BES' FIELD lv_ebeln.
+    CALL TRANSACTION 'ME23N'.
 ```

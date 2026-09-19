@@ -16,7 +16,7 @@ WOFÜR   Dokumente ans Mail hängen, die der Empfänger sonst erst im
 
 Eine .SAP-Datei im Anhang öffnet beim Empfänger direkt das richtige System, den richtigen Mandanten, die richtige Transaktion - mit einem Doppelklick aus dem Mail heraus. Für Genehmiger, die selten im System sind, ist das der Unterschied zwischen "wird erledigt" und "liegt liegen".
 
-WICHTIG: im Shortcut steht ein Benutzername. Eine Mail an mehrere Empfänger bekommt deshalb nur EINEN Shortcut, den des ersten Empfängers - sonst sähe jeder die Kennungen der anderen. Wer einen je Empfänger will, braucht Einzelversand.
+WICHTIG: im Shortcut steht ein Benutzername. Im Standard versendet conFLOW je Empfänger einzeln, dann passt das. Stehen doch mehrere in IT_SMTP, bekommt nur der erste einen Shortcut - sonst sähe jeder die Kennungen der anderen.
 
 **DREI QUELLEN, DREI PRODUKT-METHODEN**
 

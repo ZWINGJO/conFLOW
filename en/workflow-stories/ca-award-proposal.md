@@ -8,7 +8,7 @@ An award proposal in purchasing goes through several approval levels before it b
 
 The workflow models a **multi-level approval**: the award proposal first goes to the business department, then to the head of purchasing, and if a value limit is exceeded, to management. Each level has its own agents and can offer its own decision options — besides approve and reject also query or forward.
 
-The value limit is a rule in Customizing. Agent determination can use a PFCG role or be dynamic: the BAdI method `GET_ACTORS` determines the right approver at runtime, depending on document data such as purchasing organization, material group or order value.
+Today the value limit can be set up as a rule in Customizing, with a template for the document. Agent determination can use a PFCG role or be dynamic: the BAdI method `GET_ACTORS` determines the right approver at runtime, depending on document data such as purchasing organization, material group or order value.
 
 conFLOW offers up to **seven decision options** per step (`OK`, `NOK`, `UC1` to `UC5`). This allows differentiated decisions — such as "approve", "reject", "approve with conditions", "back to creator" or "forward to next level".
 

@@ -809,8 +809,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 * DIESER HOOK SIEHT IM AUFRUFNACHWEIS TOT AUS
 *        Where-Used findet ihn nicht, weil er ueber eine Enhancement
-*        gerufen wird. Er laeuft trotzdem. Merksatz fuer conFLOW-BAdI-
-*        Hooks allgemein: AUSPROBIEREN STATT WHERE-USED GLAUBEN.
+*        gerufen wird. Er laeuft trotzdem. Merksatz fuer
+*        conFLOW-BAdI-Hooks allgemein: AUSPROBIEREN STATT WHERE-USED GLAUBEN.
 *--------------------------------------------------------------------*
 
     cv_return = text-001.
@@ -832,8 +832,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        leer lassen.
 *
 * DER CHECK AUF DEN OBJTYP IST NICHT OPTIONAL
-*        In der Liste stehen mehrere Eintraege: das conFLOW-
-*        Instanzobjekt, Notizen (SOFM), Anlagen. Wer ohne CHECK durch
+*        In der Liste stehen mehrere Eintraege: das
+*        conFLOW-Instanzobjekt, Notizen (SOFM), Anlagen. Wer ohne CHECK durch
 *        die Tabelle laeuft, beschriftet alles gleich - auch die
 *        Notizen, die dann ihren eigenen Namen verlieren.
 *
@@ -897,8 +897,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        untersuchten Produktivimplementierung gefuellt war - und
 *        zwar jedesmal mit exakt derselben Zeile.
 *
-* MIT c06t-OBJTEXT: LEER LASSEN
-*        Dann liefert das Framework den Belegschluessel selbst, aus
+* MIT OBJTEXT: LEER LASSEN
+*        Ist c06t-OBJTEXT gepflegt, liefert das Framework den Belegschluessel selbst, aus
 *        der richtigen Instanz, VOR diesem Hook. Deshalb setzt die
 *        Zeile unten RESULT nur, wenn es noch leer ist.
 *
@@ -958,6 +958,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        je Workflow (der Normalfall) entfaellt das.
 *--------------------------------------------------------------------*
 
+* Nur noetig ohne c06t-OBJTEXT und c08 TEMPLATE - sonst oeffnet das
+* Framework den Beleg schon, und diese Methode bleibt leer.
     DATA lv_ebeln TYPE ekko-ebeln.
 
     lv_ebeln = /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid.
@@ -1022,8 +1024,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        haeufigsten Enttaeuschung: jede API, die SWWWIHEAD LIEST,
 *        laeuft ins Leere. SAP_WAPI_CHANGE_WORKITEM_PRIO tut genau
 *        das - sie meldet keinen Fehler, sie wirkt nur nicht. Der
-*        richtige Weg ist ein tRFC NACH dem COMMIT, siehe
-*        SET_PRIORITY( ).
+*        richtige Weg ist ein tRFC NACH dem COMMIT, siehe die
+*        Methode set_priority( ) weiter unten.
 *--------------------------------------------------------------------*
 
     IF is_data_step-gen_stat <> zcl_cfl_const_00900=>mc_stat-approve AND
@@ -1097,7 +1099,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 * ERST DAS CUSTOMIZING
 *        Feste Farbe je Ausgang: c09-NATURE (P/N). Kommentarpflicht:
-*        c09-COMMENT_REQ. Ausblenden: c09-NODISPLAY. Beides wirkt im
+*        c09-COMMENT_REQ. Ausblenden: c09-NODISPLAY. Alle drei wirken im
 *        SAP GUI und in Fiori, ohne Code. Dieser Hook nur fuer das,
 *        was vom Beleg abhaengt, wie im Beispiel unten.
 *
@@ -1250,9 +1252,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * REIN   IV_INSTANCE_ID  die WI_ID
 * RAUS   CT_DEC_OPT      die Optionen der Inbox
 *
-* FESTE FARBE UND KOMMENTARPFLICHT: c09-NATURE / c09-COMMENT_REQ,
-*        ohne Code. Das Framework setzt sie direkt nach diesem Hook
-*        und nur dort, wo der Hook nichts gesetzt hat.
+* FESTE FARBE UND KOMMENTARPFLICHT
+*        Kommen aus c09-NATURE und c09-COMMENT_REQ, ohne Code. Das
+*        Framework setzt sie direkt nach diesem Hook und nur dort, wo
+*        der Hook nichts gesetzt hat.
 *
 * DIESER HOOK SIEHT IM AUFRUFNACHWEIS TOT AUS - UND LAEUFT
 *        /C09/CL_TGW_RFC_HANDLER ist keine eigene Klasse, sondern
@@ -1688,9 +1691,9 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
   METHOD /c09/cfl_if_badi_0101~get_mail_language.
 *--------------------------------------------------------------------*
-* WANN   Je Empfaenger, direkt vor dem Versand. Aeltere conFLOW-
-*        Staende rufen den Hook nicht - dort geht jede Mail in der
-*        Sprache des Versenders.
+* WANN   Je Empfaenger, direkt vor dem Versand. In aelteren
+*        conFLOW-Staenden ruft das Framework den Hook nicht - dort
+*        geht jede Mail in der Sprache des Versenders.
 *
 * REIN   IT_USER / IT_MAIL  der eine Empfaenger dieses Versands
 * RAUS   CS_DATA-WI_LANG    die Sprache fuer diesen Empfaenger
@@ -1842,7 +1845,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
     ENDIF.
 
 *--------------------------------------------------------------------*
-* 3. Die Notizen der bisherigen Bearbeiter.
+* 2. Die Notizen der bisherigen Bearbeiter.
 *
 * Der Einstieg geht ueber das Workitem, nicht ueber die Instanz -
 * deshalb erst /C09/CFL_S03 lesen. GET_PROT_WORKITEM_MAIL sammelt
@@ -1871,7 +1874,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
     ENDIF.
 
 *--------------------------------------------------------------------*
-* 4. Das Workflow-Protokoll als HTML-Tabelle.
+* 3. Das Workflow-Protokoll als HTML-Tabelle.
 *
 * Anders als der Workitem-Text ist das MAIL echtes HTML - hier sind
 * <b> und <table> richtig. Die Verwechslungsgefahr mit dem ITF-Format
@@ -1906,11 +1909,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        Fuer Genehmiger, die selten im System sind, ist das der
 *        Unterschied zwischen "wird erledigt" und "liegt liegen".
 *
-*        WICHTIG: im Shortcut steht ein Benutzername. Eine Mail an
-*        mehrere Empfaenger bekommt deshalb nur EINEN Shortcut, den
-*        des ersten Empfaengers - sonst saehe jeder die Kennungen
-*        der anderen. Wer einen je Empfaenger will, braucht
-*        Einzelversand.
+*        WICHTIG: im Shortcut steht ein Benutzername. Im Standard
+*        versendet conFLOW je Empfaenger einzeln, dann passt das.
+*        Stehen doch mehrere in IT_SMTP, bekommt nur der erste einen
+*        Shortcut - sonst saehe jeder die Kennungen der anderen.
 *
 * DREI QUELLEN, DREI PRODUKT-METHODEN
 *        GET_SHORTCUT   der SAP-Shortcut
@@ -2491,7 +2493,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 * NUR NOETIG, WENN DIE PRIORITAET VOM BELEG ABHAENGT
 *     Eine feste Prioritaet je Schritt ist c01-PRIO, ganz ohne Code.
-*     Beides am selben Schritt pflegen: dann nur eines von beiden.
+*     Nicht beides am selben Schritt pflegen - es wirkt nur eines,
+*     und zwar nicht zuverlaessig das BAdI.
 *
 * DER NAHELIEGENDE WEG FUNKTIONIERT NICHT
 *     SAP_WAPI_CHANGE_WORKITEM_PRIO liest SWWWIHEAD von der
@@ -2500,9 +2503,9 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *     Prioritaet bleibt auf dem Vorgabewert.
 *
 * UND DER DIREKTE AUCH NICHT
-*     SWW_WI_PRIORITY_CHANGE bringt einen eigenen Transaktions-
-*     manager mit, sichert und entsperrt - mitten in der Anlage des
-*     Workitems. Fuer ein Darstellungsdetail zu viel Risiko.
+*     SWW_WI_PRIORITY_CHANGE bringt einen eigenen
+*     Transaktionsmanager mit, sichert und entsperrt - mitten in der
+*     Anlage des Workitems. Fuer ein Darstellungsdetail zu viel Risiko.
 *
 * DESHALB DER PRODUKT-BAUSTEIN IN EINER EIGENEN EINHEIT
 *     /C09/CFL_SET_PRIORITY_0101 laeuft nach dem COMMIT der Laufzeit,

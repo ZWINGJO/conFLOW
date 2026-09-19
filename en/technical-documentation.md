@@ -39,7 +39,7 @@ The entry point is transaction `/C09/CONFLOW_C`, a view cluster covering all nod
 | Workflow definition | `/C09/CFL_C06` | one row per workflow number; object label in `C06T-OBJTEXT` |
 | Approval steps | `/C09/CFL_C01` | steps with status code `gen_stat`, attribute, texts, class/method, priority (`PRIO`), decision rule for several agents |
 | Approval status - control | `/C09/CFL_C02` | transitions (OK / NOK / deadline), deadlines |
-| Control additional status | `/C09/CFL_C09` | decision options `UC1`–`UC5` per step; button colour and mandatory comment (also for OK/NOK); rules |
+| Control additional status | `/C09/CFL_C09` | decision options `UC1`–`UC5` per step; button color and mandatory comment (also for OK/NOK); rules |
 | User status definition | `/C09/CFL_C04` | roles, that is the agent keys `gen_stat_user` |
 | User status assignment (current settings) | `/C09/CFL_C03` | who is behind a role: users, organization, PFCG role, exclusions |
 | User status assignment (default - transport) | `/C09/CFL_C12` | the transportable default for that assignment |
@@ -346,7 +346,7 @@ The texts and templates contain placeholders of the form `&STRUCTURE-FIELD&` tha
 A workflow with `WF_DEF` maintained takes over the Customizing of the parent definition. Inherited are `C01`, `C02`, `C03`, `C04`, `C05`, `C07` and `C09` together with their text tables.
 
 {% hint style="warning" %}
-**The general parameters themselves (`C08`) and the definition text (`C06T`) are not inherited.** An inheriting workflow therefore has the steps and outcomes of its parent, but not its application log object, `TEMPLATE`, `VISU` or `GEN_TASK` — these values are maintained in each definition. If you rely on it, you get a workflow that runs but logs nothing.
+**The general parameters themselves (`C08`) and the definition text (`C06T`) are not inherited.** An inheriting workflow therefore has the steps and outcomes of its parent, but not its application log object, `TEMPLATE`, `VISU` or `GEN_TASK` — these values are maintained in each definition. If you rely on it, you get a workflow that runs but, without its own `OBJECT`, logs nothing and, without its own `TEMPLATE`, evaluates no rules.
 {% endhint %}
 
 Your own rows win: inherited rows are appended at the end, even when your own definition already has the same key. An access therefore always hits your own row first.
@@ -390,7 +390,7 @@ The container is also the natural source for placeholders in work item texts and
 
 The interface `/C09/CFL_IF_BADI_0101` defines the places where special logic plugs in. If a workflow needs it, its own class `ZCL_CFL_WORKFLOW_<nnnnn>` implements this interface; the filter of the implementation is the workflow number. Hooks you do not need stay empty.
 
-The standard cases need none of these hooks: agents (`C03`), title and placeholders (`C01T`, `C06T-OBJTEXT`), button colour and mandatory comment (`C09`) and document data for email and rules (`TEMPLATE`) are settings. The hooks are for whatever goes beyond that. The most important ones:
+The standard cases need none of these hooks: agents (`C03`), title and placeholders (`C01T`, `C06T-OBJTEXT`), button color and mandatory comment (`C09`) and document data for email and rules (`TEMPLATE`) are settings. The hooks are for whatever goes beyond that. The most important ones:
 
 | Hook | Purpose |
 | --- | --- |
@@ -409,7 +409,7 @@ The standard cases need none of these hooks: agents (`C03`), title and placehold
 
 ## 15 User interfaces
 
-Work items appear in the SAP Business Workplace (`SBWP`) and in SAP Fiori My Inbox. conFLOW controls label, colour and mandatory comment of the buttons (`C09`/`C09T`), the title and navigation to the business object in both from the same Customizing. Which Fiori app a step opens in My Inbox is set by the parameter `VISU`. The BAdI remains for deviations.
+Work items appear in the SAP Business Workplace (`SBWP`) and in SAP Fiori My Inbox. conFLOW controls label, color and mandatory comment of the buttons (`C09`/`C09T`), the title and navigation to the business object in both from the same Customizing. Which Fiori app a step opens in My Inbox is set by the parameter `VISU`. The BAdI remains for deviations.
 
 On top of that, every step can be displayed on a mobile device: a conMOBILE app reads the same container and uses the same decision keys. One data source, one decision model — no matter where the decision is made.
 
@@ -460,7 +460,7 @@ The classes you meet most often when tracing errors and when extending:
 | --- | --- |
 | Process | `/C09/CFL_CL_WORKFLOW_0101` (start, control, cancel), `/C09/CFL_CL_WORKFLOW_EXIT_0101` (work item exit), `/C09/CFL_CL_PRIORITY_0101` (priority per step) |
 | Agents and rules | `/C09/CFL_CL_ACTORS_0101`, `/C09/CFL_CL_RULE_0101`, `/C09/CFL_CL_DECIKEY_0101`, `/C09/CFL_CL_PARALLEL_0101` (decision rule for several agents) |
-| Buttons and UI | `/C09/CFL_CL_BUTTONS_0101` (colour, mandatory comment), `/C09/CFL_CL_VISU_0101` (Fiori app per workflow) |
+| Buttons and UI | `/C09/CFL_CL_BUTTONS_0101` (color, mandatory comment), `/C09/CFL_CL_VISU_0101` (Fiori app per workflow) |
 | Mail and texts | `/C09/CFL_CL_MAIL_0101`, `/C09/CFL_CL_MAIL_LANG_0101`, `/C09/CFL_CL_TEXTPARSER_0101`, `/C09/CFL_CL_OBJTEXT_0101`, `/C09/CFL_CL_FORMAT_0101` (numbers, quantities, dates) |
 | Templates | `/C09/CFL_CL_TPL_BASE_0101` (base) and per object type `/C09/CFL_CL_TPL_<type>_0101`, e.g. `…_TPL_BUS2012_0101`; `/C09/CFL_CL_TPL_MAIL_0101` (template as mail data source) |
 | Extension | `/C09/CFL_IF_BADI_0101`, `/C09/CFL_IF_BACKGROUND_0101`, `/C09/CFL_IF_TEMPLATE_0101` |
