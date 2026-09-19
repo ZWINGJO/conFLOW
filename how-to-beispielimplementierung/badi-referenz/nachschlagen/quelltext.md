@@ -1464,6 +1464,13 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        es sucht alle offenen Workitems desselben Top-Workflows und
 *        setzt sie auf obsolet - das eigene ausgenommen.
 *
+* ERST PRUEFEN, OB ES DIESEN HOOK UEBERHAUPT BRAUCHT
+*        Veto, "Erste Entscheidung gilt" und "Mehrheit entscheidet"
+*        sind eine Einstellung am Schritt: Spalte Entscheidungsregel
+*        in den Genehmigungsschritten (C01). Dann bleibt dieser Hook
+*        leer. Das Beispiel hier ist fuer Regeln, die keine der
+*        Einstellungen abdeckt.
+*
 * WARUM DAS COMMIT HIER STEHT
 *        SET_WORKITEM_OBSOLET ruft SAP_WAPI_WORKITEM_COMPLETE mit
 *        DO_COMMIT = FALSE, damit nicht je Workitem einzeln

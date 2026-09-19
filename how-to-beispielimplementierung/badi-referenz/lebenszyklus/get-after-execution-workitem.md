@@ -12,6 +12,10 @@ Wenn ein Schritt mehrere Bearbeiter parallel hat und einer ablehnt, sollen die a
 
 /C09/CFL_CL_HELPER_0101=>SET_WORKITEM_OBSOLET erledigt das: es sucht alle offenen Workitems desselben Top-Workflows und setzt sie auf obsolet - das eigene ausgenommen.
 
+**ERST PRÜFEN, OB ES DIESEN HOOK ÜBERHAUPT BRAUCHT**
+
+Veto, "Erste Entscheidung gilt" und "Mehrheit entscheidet" sind eine Einstellung am Schritt: Spalte Entscheidungsregel in den Genehmigungsschritten (C01). Dann bleibt dieser Hook leer. Das Beispiel hier ist für Regeln, die keine der Einstellungen abdeckt.
+
 **WARUM DAS COMMIT HIER STEHT**
 
 SET_WORKITEM_OBSOLET ruft SAP_WAPI_WORKITEM_COMPLETE mit DO_COMMIT = FALSE, damit nicht je Workitem einzeln festgeschrieben wird. Das COMMIT muss also der Aufrufer machen. Ohne die Zeile bleiben die Workitems offen - ohne Fehlermeldung.

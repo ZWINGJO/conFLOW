@@ -12,6 +12,10 @@ When a step has several agents in parallel and one of them rejects, the other wo
 
 /C09/CFL_CL_HELPER_0101=>SET_WORKITEM_OBSOLET does that: it finds all open work items of the same top-level workflow and sets them to obsolete - except its own.
 
+**FIRST CHECK WHETHER YOU NEED THIS HOOK AT ALL**
+
+Veto, "first decision counts" and "majority decides" are a setting on the step: column Decision rule in Approval steps (C01). Then this hook stays empty. The example here is for rules that none of the settings cover.
+
 **WHY THE COMMIT IS HERE**
 
 SET_WORKITEM_OBSOLET calls SAP_WAPI_WORKITEM_COMPLETE with DO_COMMIT = FALSE, so that not every work item is committed separately. The COMMIT therefore has to come from the caller. Without this line the work items stay open - with no error message.
