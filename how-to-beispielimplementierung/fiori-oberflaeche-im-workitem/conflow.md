@@ -84,7 +84,7 @@ Die Werte wandern in den Workitem-Container und bleiben dort. Daraus folgt:
 
 ## Der einfache Weg: Parameter `VISU` im Customizing
 
-Seit dem Produktstand 16.09.2026 muss man `set_inbox_ui` **nicht mehr selbst** rufen. conFLOW setzt die drei Container-Elemente von sich aus, sobald am Workflow der Parameter `VISU` gepflegt ist.
+`set_inbox_ui` muss man **nicht selbst** rufen. conFLOW setzt die drei Container-Elemente von sich aus, sobald am Workflow der Parameter `VISU` gepflegt ist.
 
 Pflege in **c08 (Allgemeine Parameter)** je Workflow-Definition:
 

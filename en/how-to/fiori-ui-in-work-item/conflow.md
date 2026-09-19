@@ -84,7 +84,7 @@ The values are stored in the work item container and stay there. As a consequenc
 
 ## The simple way: parameter `VISU` in Customizing
 
-As of the product level of 16.09.2026 you no longer have to call `set_inbox_ui` yourself. conFLOW sets the three container elements on its own as soon as the parameter `VISU` is maintained on the workflow.
+You do not have to call `set_inbox_ui` yourself. conFLOW sets the three container elements on its own as soon as the parameter `VISU` is maintained on the workflow.
 
 Maintain it in **c08 (general parameters)** per workflow definition:
 
