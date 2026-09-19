@@ -2,6 +2,10 @@
 
 Bearbeiterfindung - zentral, nicht in der Workflow-Klasse.
 
+**ZUERST DAS CUSTOMIZING**
+
+Eine PFCG-Rolle löst conFLOW selbst auf: C03 mit OTYPE AG und Spalte AGR_NAME - nur Dialogbenutzer, gesperrte fallen heraus. Diese Klasse nur für Fälle, die das nicht abdeckt. TWP_GET_ROLE_USER_ASSIGNMENT filtert weder Gültigkeit noch Sperre noch Benutzertyp.
+
 **WARUM EINE EIGENE KLASSE**
 
 Die Rollenauflösung ist immer derselbe Block: Funktionsbaustein rufen, sortieren, entdoppeln, Präfix davor. Sechs Zeilen, die nichts mit dem einzelnen Workflow zu tun haben.
@@ -35,6 +39,14 @@ CLASS zcl_cfl_get_actors DEFINITION
 
 *----------------------------------------------------------------------*
 * Bearbeiterfindung - zentral, nicht in der Workflow-Klasse.
+*
+* ZUERST DAS CUSTOMIZING
+*
+* Eine PFCG-Rolle loest conFLOW selbst auf: C03 mit OTYPE AG und
+* Spalte AGR_NAME - nur Dialogbenutzer, gesperrte fallen heraus. Diese
+* Klasse nur fuer Faelle, die das nicht abdeckt.
+* TWP_GET_ROLE_USER_ASSIGNMENT filtert weder Gueltigkeit noch Sperre
+* noch Benutzertyp.
 *
 * WARUM EINE EIGENE KLASSE
 *

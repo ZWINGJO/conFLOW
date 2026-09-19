@@ -6,6 +6,10 @@
 | **In** | IV_INSTANCE_ID  the WI_ID |
 | **Out** | CT_DEC_OPT      the options of the inbox |
 
+FIXED COLOUR AND MANDATORY COMMENT: c09-NATURE / c09-COMMENT_REQ,
+
+without code. The framework sets them right after this hook and only where the hook has set nothing.
+
 **THIS HOOK LOOKS DEAD IN THE WHERE-USED LIST - AND STILL RUNS**
 
 /C09/CL_TGW_RFC_HANDLER is not a class of its own, but a conFLOW ENHANCEMENT on the task gateway handler. That is why where-used finds nothing. The hook runs anyway, and it is the same place where the button texts from /C09/CFL_C09T are set.

@@ -4,17 +4,17 @@
 |---|---|
 | **Wann** | Nachdem der Bearbeiter im SAP-GUI entschieden hat, bevor das Workitem abgeschlossen wird. |
 | **Rein** | IV_WI_ID     das Workitem<br>IV_ALTKEY    der GEKLICKTE Ausgang - der eigentliche Wert<br>IV_ALT_TEXT  dessen Text<br>IV_MSELNOTE  Vorgabe für den Notiz-Dialog |
-| **Raus** | CV_SUBRC      <> 0 bricht ab<br>CS_OBJECT_ID  Referenz auf eine erfasste Notiz |
+| **Raus** | CV_SUBRC      1 bricht ab (andere Werte nicht)<br>CS_OBJECT_ID  Referenz auf eine erfasste Notiz |
 
 **ZWEI VERSCHIEDENE AUFGABEN, DIE HIER ZUSAMMENFALLEN**
 
 1. NACHLAUFLOGIK - den Container fortschreiben, festhalten wer entschieden hat. Das ist der übliche Fall.
 
-2. EINE NOTIZ ERZWINGEN - über SWU_INTERN_DECI_NOTE_POPUP. Das ist der Standardweg für "Ablehnung bitte begründen".
+2. EINE NOTIZ ERZWINGEN - zuerst c09-COMMENT_REQ am Ausgang: wirkt im SAP GUI und in Fiori, ohne Code. Hier nur, wenn die Pflicht vom Beleg abhängt - dann über SWU_INTERN_DECI_NOTE_POPUP mit MSELNOTE = '2' (IV_MSELNOTE ist meist leer = optional) und nur, wenn CS_OBJECT_ID noch leer ist.
 
 **DER ABBRUCH KANN NICHT SAGEN WARUM**
 
-CV_SUBRC <> 0 hält den Prozess an, aber es gibt keinen Meldungsparameter. Der Bearbeiter klickt und es passiert nichts - die schlechteste aller Rückmeldungen. Wer eine Prüfung MIT Begründung braucht, ruft dieselbe Prüfung zusätzlich in GET_AFTER_EXECUTION_MOBILE, dem einzigen Hook mit CS_T100MSG.
+CV_SUBRC = 1 hält den Prozess an, aber es gibt keinen Meldungsparameter. Der Bearbeiter klickt und es passiert nichts - die schlechteste aller Rückmeldungen. Wer eine Prüfung MIT Begründung braucht, ruft dieselbe Prüfung zusätzlich in GET_AFTER_EXECUTION_MOBILE, dem einzigen Hook mit CS_T100MSG.
 
 **ERSTE ZEILE: AUF IV_ALTKEY PRÜFEN**
 
@@ -52,19 +52,24 @@ Der Hook läuft auch bei Aktionen, die keine Entscheidung sind (Weiterleiten, Zu
 * Der Popup gehoert dem Workflow-Standard, nicht conFLOW. Bricht der
 * Bearbeiter ihn ab (RETURNCODE 'A'), liefert die FM eine Exception -
 * dann wird auch die Entscheidung nicht wirksam.
+*
+* MSELNOTE = '2' macht die Notiz zur Pflicht. Ist CS_OBJECT_ID schon
+* gefuellt, hat c09-COMMENT_REQ die Notiz bereits verlangt - kein
+* zweiter Popup.
 *--------------------------------------------------------------------*
-    IF iv_altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok.
+    IF iv_altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok AND
+       cs_object_id IS INITIAL.
 
       CALL FUNCTION 'SWU_INTERN_DECI_NOTE_POPUP'
         EXPORTING  wi_id          = iv_wi_id
                    alt_text       = iv_alt_text
-                   mselnote       = iv_mselnote
+                   mselnote       = '2'
         IMPORTING  ex_object_id   = cs_object_id
         EXCEPTIONS user_cancelled = 1
                    OTHERS         = 2.
 
       IF sy-subrc <> 0.
-        cv_subrc = sy-subrc.
+        cv_subrc = 1.
         RETURN.
       ENDIF.
 

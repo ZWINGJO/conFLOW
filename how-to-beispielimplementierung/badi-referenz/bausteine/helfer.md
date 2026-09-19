@@ -100,7 +100,7 @@ Die fachliche Regel, an genau einer Stelle.
 
 Sie steht bewusst NICHT im Hook, obwohl sie dort nur drei Zeilen wäre. Der Grund ist nicht Ästhetik: sobald die Regel an zwei Stellen steht - einmal für die Anzeige, einmal für die Entscheidung - laufen die beiden irgendwann auseinander, und dann zeigt das Workitem etwas anderes an, als der Workflow tut.
 
-In einer echten Installation gehört diese Methode in eine EIGENE REGELKLASSE, die auch die Wertehilfe der Oberfläche bedient. Dann kommen Anzeige, Vorschlag und Prüfung nachweislich aus derselben Quelle.
+In einer echten Installation gehört diese Methode in eine EIGENE REGELKLASSE, die auch die Wertehilfe der Oberfläche bedient. Dann kommen Anzeige, Vorschlag und Prüfung nachweislich aus derselben Quelle. Geht es nur um eine Wertgrenze, reicht eine Regel in c09-BEDINGUNG mit einem Feld aus dem c08 TEMPLATE.
 
 ```abap
 IF iv_net_value > zcl_cfl_const_00900=>mc_limit_value * 5.
@@ -118,7 +118,7 @@ ENDIF.
 
 Welchen Ausgang das System empfiehlt - für die grüne Markierung in beiden Oberflächen.
 
-Die Methode gibt einen SCHLÜSSEL zurück, keinen Text. Das ist Absicht: die Buttontexte kommen aus /C09/CFL_C02T und /C09/CFL_C09T und sind übersetzt. Wer hier auf Text vergliche, hätte eine Empfehlung, die in Englisch funktioniert und in Deutsch nicht.
+Die Methode gibt einen SCHLÜSSEL zurück, keinen Text. Das ist Absicht: die Buttontexte kommen aus /C09/CFL_C09T (sonst aus der Aufgabe) und sind übersetzt. Wer hier auf Text vergliche, hätte eine Empfehlung, die in Englisch funktioniert und in Deutsch nicht.
 
 ```abap
 IF is_true( get_val( iv_element = zcl_cfl_const_00900=>mc_prop-limit_hit
@@ -223,63 +223,31 @@ APPEND ls_return TO ct_bapiret2.
 
 ## `set_priority`
 
-Priorität setzen - zweistufig, und beide Stufen werden gebraucht.
+Priorität setzen - per tRFC NACH dem COMMIT.
+
+**NUR NÖTIG, WENN DIE PRIORITÄT VOM BELEG ABHÄNGT**
+
+Eine feste Priorität je Schritt ist c01-PRIO, ganz ohne Code. Beides am selben Schritt pflegen: dann nur eines von beiden.
 
 **DER NAHELIEGENDE WEG FUNKTIONIERT NICHT**
 
-SAP_WAPI_CHANGE_WORKITEM_PRIO liest SWWWIHEAD von der Datenbank. Im After-Create-Hook steht das Workitem dort noch nicht. Der Aufruf läuft still ins Leere - kein Fehler, die Priorität bleibt auf dem Vorgabewert. Nachgemessen.
+SAP_WAPI_CHANGE_WORKITEM_PRIO liest SWWWIHEAD von der Datenbank. Im After-Create-Hook steht das Workitem dort noch nicht. Der Aufruf läuft still ins Leere - kein Fehler, die Priorität bleibt auf dem Vorgabewert.
 
-**STUFE 1 - der Workitem-Manager der laufenden Transaktion**
+**UND DER DIREKTE AUCH NICHT**
 
-CL_SWF_RUN_WIM_FACTORY kennt die Workitems, die GERADE entstehen. Gesucht wird über die WI_ID, nicht über den Typ: der Hook meint ein bestimmtes Workitem, nicht irgendeins.
+SWW_WI_PRIORITY_CHANGE bringt einen eigenen Transaktions- manager mit, sichert und entsperrt - mitten in der Anlage des Workitems. Für ein Darstellungsdetail zu viel Risiko.
 
-**STUFE 2 - SWW_WI_PRIORITY_CHANGE mit abgeschalteten Prüfungen**
+**DESHALB DER PRODUKT-BAUSTEIN IN EINER EIGENEN EINHEIT**
 
-Dieselbe Funktion, die unter der WAPI liegt - aber AUTHORIZATION_CHECKED und PRECONDITIONS_CHECKED auf 'X'. Genau diese Prüfungen sind die Blockade, denn das Workitem hat noch keinen Status, den sie akzeptieren würden.
-
-DO_COMMIT BLEIBT LEER. Das COMMIT gehört dem Framework - wer hier selbst festschreibt, schneidet die laufende Transaktion mitten durch.
-
-**DIE TRY-BLÖCKE SIND ABSICHT**
-
-Der Hook läuft mitten im Anlegen eines Workitems. Eine ungefangene Ausnahme wegen einer PRIORITÄT wäre ein ausgesprochen teurer Preis für ein Darstellungsdetail.
+/C09/CFL_SET_PRIORITY_0101 läuft nach dem COMMIT der Laufzeit, wenn das Workitem fertig auf der Datenbank steht. Er setzt nur, wenn die Priorität noch die vom Anlegen ist. Fällt er aus, bleibt die Priorität der Aufgabe und ein Eintrag in SM58.
 
 ```abap
-DATA lt_instances TYPE swwtwihndl.
-DATA ls_instances LIKE LINE OF lt_instances.
-DATA lo_flow      TYPE REF TO if_swf_run_wim_internal.
-
-TRY.
-    DATA(lo_factory) = cl_swf_run_wim_factory=>get_instance( ).
-    lt_instances = lo_factory->get_registered_workitems( ).
-
-    LOOP AT lt_instances INTO ls_instances.
-      TRY.
-          lo_flow ?= ls_instances.
-          IF lo_flow->m_sww_wihead-wi_id = iv_wi_id.
-            lo_flow->if_swf_run_wim~change_priority( iv_prio ).
-          ENDIF.
-        CATCH cx_root.
-      ENDTRY.
-    ENDLOOP.
-
-  CATCH cx_root.
-ENDTRY.
-
-CALL FUNCTION 'SWW_WI_PRIORITY_CHANGE'
-  EXPORTING  wi_id                 = iv_wi_id
-             priority              = iv_prio
-             do_commit             = space
-             authorization_checked = abap_true
-             preconditions_checked = abap_true
-  EXCEPTIONS no_authorization      = 1
-             update_failed         = 2
-             invalid_type          = 3
-             invalid_status        = 4
-             OTHERS                = 5.
-
-IF sy-subrc <> 0.
-  /c09/cfl_cl_workflow_0101=>ignore_subrc( ).
-ENDIF.
+CALL FUNCTION '/C09/CFL_SET_PRIORITY_0101'
+  IN BACKGROUND TASK AS SEPARATE UNIT
+  EXPORTING
+    iv_wi_id        = iv_wi_id
+    iv_prio         = iv_prio
+    iv_prio_created = iv_prio_created.
 ```
 
 ## `update_witext`

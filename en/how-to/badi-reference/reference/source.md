@@ -208,8 +208,9 @@ CLASS zcl_cfl_workflow_00900 DEFINITION
 * just seeing it.
 *--------------------------------------------------------------------*
     CLASS-METHODS set_priority
-      IMPORTING iv_wi_id TYPE sww_wiid
-                iv_prio  TYPE sww_prio.
+      IMPORTING iv_wi_id        TYPE sww_wiid
+                iv_prio         TYPE sww_prio
+                iv_prio_created TYPE sww_prio.
 
 *--------------------------------------------------------------------*
 * The decision key that the system recommends.
@@ -344,6 +345,12 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        fixed assignments GET_ACTORS therefore stays EMPTY, and you
 *        need neither a role nor code.
 *
+*        Also without code: a PFCG role (C03 with OTYPE AG and column
+*        AGR_NAME - dialog users only, locked users are left out)
+*        and exclusion (column EXCLUDE, special value WF_APPROVERS =
+*        whoever has already decided at another stage). Only what
+*        that does not cover needs this hook.
+*
 * THE FORMAT IS THE MOST COMMON MISTAKE
 *        An entry in CT_ACTORS is always a TYPED org object, never a
 *        bare user name:
@@ -351,18 +358,16 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *          US<uname>      user
 *          S<position>    position
 *          O<orgunit>     organizational unit
-*          AC<role>       role
 *
 *        'MEIER' creates no work item and no error message. The work
 *        item ends up with nobody and is only noticed when someone
 *        asks where it went.
 *
 * WHEN NOBODY IS FOUND
-*        A work item without an agent goes into error status and
-*        stays there. A defined fallback agent is better: conFLOW
-*        provides the entry 'C09_NO_USER' for this. The process keeps
-*        running and the gap is visible instead of silently standing
-*        still. See the very bottom of this method.
+*        Leave CT_ACTORS empty. The framework sets the fallback agent
+*        'C09_NO_USER' itself - only after all C03 rows and after
+*        EXCLUDE. Set here, it would sit next to agents from other
+*        rows of the same key.
 *--------------------------------------------------------------------*
 
     CASE is_cfl_c05-gen_stat_user.
@@ -370,8 +375,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *--------------------------------------------------------------------*
 * VARIANT A - role
 *
-* The most common case. The customer maintains the role, and the code
-* stays unchanged when people change.
+* For a role alone, C03 with AGR_NAME is enough (see above). This
+* variant shows the call for cases that does not cover. The customer
+* maintains the role, and the code stays unchanged when people
+* change.
 *
 * The call does NOT belong here but in a central class
 * ZCL_CFL_GET_ACTORS. Reason: the same role is needed by several
@@ -478,16 +485,6 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
     IF mv_process = 'MAIL'.
       CLEAR mv_process.
       RETURN.
-    ENDIF.
-
-*--------------------------------------------------------------------*
-* FOLLOW UP 2 - fallback agent
-*
-* Only for work items, not for mails: a mail to nobody is harmless,
-* a work item to nobody stays stuck.
-*--------------------------------------------------------------------*
-    IF ct_actors IS INITIAL.
-      APPEND 'C09_NO_USER' TO ct_actors.
     ENDIF.
 
   ENDMETHOD.
@@ -609,15 +606,19 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *    leading space that nobody notices on screen. Take 13 and you
 *    can skip the CONDENSE.
 *
-*    DO NOT CUT WITHOUT CHECKING: if the text is shorter than the
-*    prefix, the offset runs past the end and the short dump comes
-*    at display time - exactly when someone is watching.
+*    DO NOT CUT BLINDLY: the prefix is built from the instance and
+*    compared. If it does not match, the text stays as it is. If
+*    c06t-OBJTEXT is maintained, the framework already removes the
+*    prefix BEFORE this hook - a blind +13 would then cut off the
+*    first 13 characters of the real text.
 *
 * 2. THE PLACEHOLDERS
 *    The text after the prefix comes from /C09/CFL_C01T and can
 *    contain placeholders of the form §{name}. The customer maintains
 *    them in Customizing, this hook replaces them. That way the line
-*    changes without a transport.
+*    changes without a transport. With c06t-OBJTEXT and c08 TEMPLATE
+*    the framework resolves §{field} from the template itself - only
+*    replace your own placeholders here.
 *
 * WHAT BELONGS AT THE FRONT
 *    The first screen column is the most expensive one. It is where
@@ -626,13 +627,16 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *    turns the list into a work list you can scan at a glance.
 *--------------------------------------------------------------------*
 
-    CONSTANTS lc_prefix_len TYPE i VALUE 13.
-    CONSTANTS lc_max_len    TYPE i VALUE 100.
+    CONSTANTS lc_max_len TYPE i VALUE 100.
 
     DATA lv_text TYPE string.
 
-    IF strlen( cv_description ) > lc_prefix_len.
-      lv_text = cv_description+lc_prefix_len.
+    DATA(lv_prefix) = |{ is_data-wf_definition } \| { is_data-gen_stat } - |.
+    DATA(lv_plen)   = strlen( lv_prefix ).
+
+    IF strlen( cv_description ) > lv_plen AND
+       cv_description(lv_plen) = lv_prefix.
+      lv_text = cv_description+lv_plen.
     ELSE.
       lv_text = cv_description.
     ENDIF.
@@ -784,6 +788,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        The framework appends the instance ID itself - CV_RETURN only
 *        replaces the part in front of it.
 *
+*        With c06t-OBJTEXT the framework sets the label itself, BEFORE
+*        this hook. Leave it empty then - otherwise the hook overwrites
+*        the Customizing text.
+*
 * THE TEXT BELONGS IN A TEXT SYMBOL, NOT IN THE CODE
 *        TEXT-001 belongs to the text pool of the class. That makes it
 *        translatable, and the same label for both user interfaces
@@ -815,6 +823,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 * PURPOSE   Same as GET_OBJECT_INFO, just for the other user interface.
 *        Maintain both, otherwise one of the two looks ugly.
+*        With c06t-OBJTEXT the framework does both itself - leave it
+*        empty then.
 *
 * THE CHECK ON OBJTYPE IS NOT OPTIONAL
 *        The list has several entries: the conFLOW instance object,
@@ -880,7 +890,12 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 *        Of all 26 hooks, this is the only one that was filled in
 *        every production implementation examined - and every time
-*        with exactly the same line. Copy it and you have it right.
+*        with exactly the same line.
+*
+* WITH c06t-OBJTEXT: LEAVE IT EMPTY
+*        The framework then supplies the document key itself, from
+*        the right instance, BEFORE this hook. That is why the line
+*        below only sets RESULT if it is still empty.
 *
 * WHY GET REFERENCE OF AND NOT AN ASSIGNMENT
 *        RESULT is REF TO DATA. The framework dereferences it later.
@@ -889,11 +904,19 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        the whole time.
 *
 * PITFALL  If you return a reference to a METHOD-LOCAL variable, you
-*        get no error, but garbled data later. Always reference
-*        MS_INSTANCES-INSTANCE->MS_DATA.
+*        get no error, but garbled data later. Hence the reference to
+*        MS_INSTANCES.
+*
+* CAUTION MS_INSTANCES
+*        MS_INSTANCES is class-wide and overwritten by every
+*        FIND_BY_LPOR. With several work items in one session it
+*        returns the key of the object created last - one more
+*        reason for c06t-OBJTEXT.
 *--------------------------------------------------------------------*
 
-    GET REFERENCE OF /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid INTO result.
+    IF result IS INITIAL.
+      GET REFERENCE OF /c09/cfl_cl_workflow_0101=>ms_instances-instance->ms_data-instid INTO result.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -905,9 +928,14 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * IN     nothing - the instance is in
 *        /C09/CFL_CL_WORKFLOW_0101=>MS_INSTANCES-INSTANCE->MS_DATA
 *
-* PURPOSE   "Show me the document". Without this hook, nothing happens
-*        on double-click, and the agent has to copy down the document
-*        number and call the transaction themselves.
+* PURPOSE   "Show me the document". With c06t-OBJTEXT and c08
+*        TEMPLATE the framework opens the document itself (default
+*        method of the template's object type) - leave it empty then,
+*        otherwise it opens twice. Without both, nothing happens on
+*        double-click, and the agent has to copy down the number.
+*
+*        MS_INSTANCES is class-wide - with several work items in one
+*        session not necessarily your own instance.
 *
 * WITH THE DISPLAY TRANSACTION, NOT THE CHANGE TRANSACTION
 *        ME23N, not ME22N. The agent should SEE the document while
@@ -975,6 +1003,9 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        attachments, notes, preparing the container, attaching a
 *        custom user interface.
 *
+*        WITHOUT CODE: a fixed priority per step is c01-PRIO, the
+*        Fiori app is c08 VISU. Here only what depends on the document.
+*
 * THE HOOK ALSO RUNS FOR BACKGROUND STEPS
 *        And that is almost always unwanted. A priority on a work item
 *        that nobody sees only costs runtime. That is why the method
@@ -985,9 +1016,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        The central point of this hook, and the cause of the most
 *        common disappointment: every API that READS SWWWIHEAD comes
 *        back empty. SAP_WAPI_CHANGE_WORKITEM_PRIO does exactly that -
-*        it reports no error, it just has no effect. The right way
-*        goes through the work item manager of the running
-*        transaction, see SET_PRIORITY( ).
+*        it reports no error, it just has no effect. The right way is
+*        a tRFC AFTER the COMMIT, see SET_PRIORITY( ).
 *--------------------------------------------------------------------*
 
     IF is_data_step-gen_stat <> zcl_cfl_const_00900=>mc_stat-approve AND
@@ -1017,8 +1047,9 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
       lv_prio = zcl_cfl_const_00900=>mc_prio-medium.
     ENDIF.
 
-    set_priority( iv_wi_id = is_swr_wihdr-wi_id
-                  iv_prio  = lv_prio ).
+    set_priority( iv_wi_id        = is_swr_wihdr-wi_id
+                  iv_prio         = lv_prio
+                  iv_prio_created = is_swr_wihdr-wi_prio ).
 
   ENDMETHOD.
 
@@ -1056,6 +1087,12 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * IN/OUT     CM_WORKITEM_CONTEXT - the work item context. You get the
 *            header and the options from it, and write the changed
 *            ones back into it.
+*
+* CUSTOMIZING FIRST
+*        Fixed colour per outcome: c09-NATURE (P/N). Mandatory
+*        comment: c09-COMMENT_REQ. Hide: c09-NODISPLAY. All of it
+*        works in SAP GUI and Fiori, without code. This hook only for
+*        what depends on the document, as in the example below.
 *
 * THREE THINGS WORK HERE, AND ONLY HERE
 *
@@ -1203,6 +1240,10 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * IN     IV_INSTANCE_ID  the WI_ID
 * OUT    CT_DEC_OPT      the options of the inbox
 *
+* FIXED COLOUR AND MANDATORY COMMENT: c09-NATURE / c09-COMMENT_REQ,
+*        without code. The framework sets them right after this hook
+*        and only where the hook has set nothing.
+*
 * THIS HOOK LOOKS DEAD IN THE WHERE-USED LIST - AND STILL RUNS
 *        /C09/CL_TGW_RFC_HANDLER is not a class of its own, but a
 *        conFLOW ENHANCEMENT on the task gateway handler. That is why
@@ -1262,7 +1303,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        IV_ALT_TEXT  its text
 *        IV_MSELNOTE  default for the note dialog
 *
-* OUT    CV_SUBRC      <> 0 aborts
+* OUT    CV_SUBRC      1 aborts (other values do not)
 *        CS_OBJECT_ID  reference to a captured note
 *
 * TWO DIFFERENT TASKS THAT COINCIDE HERE
@@ -1270,11 +1311,14 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * 1. FOLLOW-UP PROCESSING - update the container, record who
 *    decided. This is the usual case.
 *
-* 2. FORCING A NOTE - via SWU_INTERN_DECI_NOTE_POPUP. This is the
-*    standard way for "please justify the rejection".
+* 2. FORCING A NOTE - first c09-COMMENT_REQ on the outcome: works in
+*    SAP GUI and Fiori, without code. Here only if the obligation
+*    depends on the document - then via SWU_INTERN_DECI_NOTE_POPUP
+*    with MSELNOTE = '2' (IV_MSELNOTE is usually empty = optional)
+*    and only if CS_OBJECT_ID is still empty.
 *
 * THE ABORT CANNOT SAY WHY
-*        CV_SUBRC <> 0 stops the process, but there is no message
+*        CV_SUBRC = 1 stops the process, but there is no message
 *        parameter. The agent clicks and nothing happens - the worst
 *        feedback there is. If you need a check WITH a reason, call
 *        the same check additionally in GET_AFTER_EXECUTION_MOBILE,
@@ -1314,19 +1358,24 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * The popup belongs to the workflow standard, not to conFLOW. If the
 * agent cancels it (RETURNCODE 'A'), the FM raises an exception -
 * and then the decision does not take effect either.
+*
+* MSELNOTE = '2' makes the note mandatory. If CS_OBJECT_ID is already
+* filled, c09-COMMENT_REQ has already required the note - no second
+* popup.
 *--------------------------------------------------------------------*
-    IF iv_altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok.
+    IF iv_altkey = /c09/cfl_cl_workflow_0101=>mc_decision-nok AND
+       cs_object_id IS INITIAL.
 
       CALL FUNCTION 'SWU_INTERN_DECI_NOTE_POPUP'
         EXPORTING  wi_id          = iv_wi_id
                    alt_text       = iv_alt_text
-                   mselnote       = iv_mselnote
+                   mselnote       = '2'
         IMPORTING  ex_object_id   = cs_object_id
         EXCEPTIONS user_cancelled = 1
                    OTHERS         = 2.
 
       IF sy-subrc <> 0.
-        cv_subrc = sy-subrc.
+        cv_subrc = 1.
         RETURN.
       ENDIF.
 
@@ -1537,12 +1586,17 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 *        HENCE THE ORDER OF QUESTIONS:
 *        1. Does an additional status in C02 do the job?
-*        2. Does a background step that branches via
-*           EV_DECISION_KEY do the job? (That is the clean way - the
-*           branch stays visible in C02.)
-*        3. Only then this hook.
+*        2. Is a rule enough? c09-BEDINGUNG on a background step
+*           without a method, fields from the c08 TEMPLATE, decimal
+*           number in quotes: GESAMTWERT_RW > '10000.00'.
+*        3. Several agents on one step: c01-DECI_RULE (veto, first
+*           decision, majority).
+*        4. Does a background step that branches via
+*           EV_DECISION_KEY do the job? (The branch stays visible
+*           in C02.)
+*        5. Only then this hook.
 *
-*        The sample process gets by with 2 - see
+*        The sample process gets by with 4 - see
 *        BACKGROUND_CLASSIFY( ) at the very bottom, which does exactly
 *        that.
 *
@@ -1617,33 +1671,32 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
   METHOD /c09/cfl_if_badi_0101~get_mail_language.
 *--------------------------------------------------------------------*
-* WHEN   Without wave 1: never. The hook is in the interface, but the
-*        framework does not call it (checked 2026-09-11). With wave
-*        1: per recipient, right before dispatch.
+* WHEN   Per recipient, right before dispatch. Older conFLOW
+*        releases do not call the hook - there every mail goes out in
+*        the sender's language.
 *
 * IN     IT_USER / IT_MAIL  the one recipient of this dispatch
 * OUT    CS_DATA-WI_LANG    the language for this recipient
 *
-* WITHOUT WAVE 1 EVERY MAIL GOES OUT IN THE SENDER'S LANGUAGE
+* WITHOUT THIS HOOK EVERY MAIL GOES OUT IN THE SENDER'S LANGUAGE
 *        That is, in the logon language of whoever triggers the
 *        dispatch - dialog user or WF-BATCH -, not in the language of
-*        the instance (S01-WI_LANG). That is why the hook is not
-*        filled in any of the production implementations examined: it
-*        had no effect.
+*        the instance (S01-WI_LANG).
 *
-* WITH WAVE 1 WI_LANG ARRIVES WITH THE SENDER'S LANGUAGE
+* WI_LANG ARRIVES WITH THE SENDER'S LANGUAGE
 *        Not with that of the instance - if you want that one, read
 *        it via CS_DATA-ID from /C09/CFL_S01. If the hook leaves
 *        WI_LANG as it is, nothing changes. The language is only
-*        switched if it is installed and the subject (SO10) exists
-*        in it.
+*        switched if it is installed and the subject and texts (SO10)
+*        exist in it.
 *
 * WHEN YOU NEED IT
 *        When recipients should be addressed in their own language,
 *        typically the one from the user master (USR01-LANGU for
 *        IT_USER).
 *
-*        STAYS EMPTY HERE: the reference does not require wave 1.
+*        STAYS EMPTY HERE: the sender's language is enough for the
+*        sample process.
 *--------------------------------------------------------------------*
   ENDMETHOD.
 
@@ -1740,28 +1793,23 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *
 *        The product helper delivers both ready-made. Building them
 *        yourself is not worth it.
+*
+* WHAT THE FRAMEWORK ALREADY SUPPLIES - BEFORE THIS HOOK
+*        /C09/CFL_C06T (VTEXT, OBJTEXT, with language fallback) and,
+*        with c08 TEMPLATE, the document row as
+*        &/C09/CFL_S_TPL_<type>-<field>&, amounts formatted by
+*        currency. Here only what is missing from that.
+*
+* LIMIT: ONLY THE FIRST FIVE STRUCTURES
+*        The mail dispatch reads only five entries from
+*        CT_APPLICATION_INPUT - the framework's ones count too.
 *--------------------------------------------------------------------*
 
 *--------------------------------------------------------------------*
-* 1. The header text of the workflow from the customizing.
+* 1. The document data - here as an entire DDIC structure.
 *
-* That way the mail shows the same name as everywhere else - and it
-* is translated, because C06T is language-dependent.
-*--------------------------------------------------------------------*
-    SELECT SINGLE * FROM /c09/cfl_c06t INTO @DATA(ls_c06t)  "#EC CI_ALL_FIELDS_NEEDED
-      WHERE wf_definition = @is_data-wf_definition
-        AND lang          = @sy-langu.
-    IF sy-subrc = 0.
-      /c09/cfl_cl_helper_0101=>add_datasource_mail(
-        EXPORTING is_datastruc         = ls_c06t
-        CHANGING  ct_application_input = ct_application_input ).
-    ENDIF.
-
-*--------------------------------------------------------------------*
-* 2. The document data - here as entire DDIC structures.
-*
-* Deliberately WITHOUT preselection: passing EKKO and EKPO in full
-* costs nothing, and the customer can use any field in the standard
+* Deliberately WITHOUT preselection: passing EKKO in full costs one of
+* the five slots, and the customer can use any field in the standard
 * text without anyone touching the code.
 *--------------------------------------------------------------------*
     DATA lv_ebeln TYPE ekko-ebeln.
@@ -1840,9 +1888,11 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        For approvers who rarely use the system, that is the
 *        difference between "gets done" and "sits there".
 *
-*        IMPORTANT: the shortcut is generated PER RECIPIENT, because
-*        it contains the user name. Hence the loop over IT_SMTP - and
-*        hence it is wrong to build it once and send it to everyone.
+*        IMPORTANT: the shortcut contains a user name. A mail to
+*        several recipients therefore gets only ONE shortcut, that of
+*        the first recipient - otherwise everyone would see the IDs of
+*        the others. If you want one per recipient, you need
+*        individual dispatch.
 *
 * THREE SOURCES, THREE PRODUCT METHODS
 *        GET_SHORTCUT   the SAP shortcut
@@ -1971,6 +2021,11 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *   2. Write the values to the container
 *   3. Classify
 *   4. Use EV_DECISION_KEY to say how the process continues
+*
+* Alternative to the static method: a class implementing
+* /C09/CFL_IF_BACKGROUND_0101 (CMPNAME empty) - then the compiler
+* checks the signature. And where only a value limit decides, a rule
+* in c09-BEDINGUNG is enough, without any code.
 *
 * WHY THE VALUES GO INTO THE CONTAINER INSTEAD OF JUST BEING READ
 *
@@ -2259,7 +2314,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * In a real installation this method belongs in a SEPARATE RULES
 * CLASS that also serves the value help of the UI. Then display,
 * recommendation and validation demonstrably come from the same
-* source.
+* source. If it is only about a value limit, a rule in c09-BEDINGUNG
+* with a field from the c08 TEMPLATE is enough.
 *--------------------------------------------------------------------*
 
     IF iv_net_value > zcl_cfl_const_00900=>mc_limit_value * 5.
@@ -2281,8 +2337,8 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 * both UIs.
 *
 * The method returns a KEY, not a text. That is intentional: the
-* button texts come from /C09/CFL_C02T and /C09/CFL_C09T and are
-* translated. Comparing texts here would give you a recommendation
+* button texts come from /C09/CFL_C09T (otherwise from the task) and
+* are translated. Comparing texts here would give you a recommendation
 * that works in English and not in German.
 *--------------------------------------------------------------------*
 
@@ -2409,71 +2465,36 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
   METHOD set_priority.
 *--------------------------------------------------------------------*
-* Set the priority - in two stages, and both stages are needed.
+* Set the priority - via tRFC AFTER the COMMIT.
+*
+* ONLY NEEDED IF THE PRIORITY DEPENDS ON THE DOCUMENT
+*     A fixed priority per step is c01-PRIO, without any code.
+*     Maintaining both on the same step: then only one of them.
 *
 * THE OBVIOUS APPROACH DOES NOT WORK
 *     SAP_WAPI_CHANGE_WORKITEM_PRIO reads SWWWIHEAD from the database.
 *     In the after-create hook the work item is not there yet. The
 *     call silently does nothing - no error, the priority stays at
-*     the default value. Measured.
+*     the default value.
 *
-* STAGE 1 - the work item manager of the running transaction
-*     CL_SWF_RUN_WIM_FACTORY knows the work items that are being
-*     created RIGHT NOW. The search goes by WI_ID, not by type: the
-*     hook means one specific work item, not just any.
+* AND NEITHER DOES THE DIRECT ONE
+*     SWW_WI_PRIORITY_CHANGE brings its own transaction manager,
+*     saves and dequeues - in the middle of creating the work item.
+*     Too much risk for a display detail.
 *
-* STAGE 2 - SWW_WI_PRIORITY_CHANGE with checks switched off
-*     The same function that sits under the WAPI - but with
-*     AUTHORIZATION_CHECKED and PRECONDITIONS_CHECKED set to 'X'.
-*     Exactly these checks are the blocker, because the work item
-*     does not yet have a status they would accept.
-*
-*     DO_COMMIT STAYS EMPTY. The COMMIT belongs to the framework - if
-*     you commit here yourself, you cut the running transaction in
-*     half.
-*
-* THE TRY BLOCKS ARE INTENTIONAL
-*     The hook runs in the middle of creating a work item. An uncaught
-*     exception because of a PRIORITY would be a remarkably high price
-*     to pay for a display detail.
+* HENCE THE PRODUCT FUNCTION MODULE IN A SEPARATE UNIT
+*     /C09/CFL_SET_PRIORITY_0101 runs after the COMMIT of the runtime,
+*     when the work item is complete on the database. It only sets the
+*     priority if it is still the one from creation. If it fails, the
+*     task's priority remains and an entry appears in SM58.
 *--------------------------------------------------------------------*
 
-    DATA lt_instances TYPE swwtwihndl.
-    DATA ls_instances LIKE LINE OF lt_instances.
-    DATA lo_flow      TYPE REF TO if_swf_run_wim_internal.
-
-    TRY.
-        DATA(lo_factory) = cl_swf_run_wim_factory=>get_instance( ).
-        lt_instances = lo_factory->get_registered_workitems( ).
-
-        LOOP AT lt_instances INTO ls_instances.
-          TRY.
-              lo_flow ?= ls_instances.
-              IF lo_flow->m_sww_wihead-wi_id = iv_wi_id.
-                lo_flow->if_swf_run_wim~change_priority( iv_prio ).
-              ENDIF.
-            CATCH cx_root.
-          ENDTRY.
-        ENDLOOP.
-
-      CATCH cx_root.
-    ENDTRY.
-
-    CALL FUNCTION 'SWW_WI_PRIORITY_CHANGE'
-      EXPORTING  wi_id                 = iv_wi_id
-                 priority              = iv_prio
-                 do_commit             = space
-                 authorization_checked = abap_true
-                 preconditions_checked = abap_true
-      EXCEPTIONS no_authorization      = 1
-                 update_failed         = 2
-                 invalid_type          = 3
-                 invalid_status        = 4
-                 OTHERS                = 5.
-
-    IF sy-subrc <> 0.
-      /c09/cfl_cl_workflow_0101=>ignore_subrc( ).
-    ENDIF.
+    CALL FUNCTION '/C09/CFL_SET_PRIORITY_0101'
+      IN BACKGROUND TASK AS SEPARATE UNIT
+      EXPORTING
+        iv_wi_id        = iv_wi_id
+        iv_prio         = iv_prio
+        iv_prio_created = iv_prio_created.
 
   ENDMETHOD.
 

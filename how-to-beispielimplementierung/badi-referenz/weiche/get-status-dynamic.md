@@ -22,11 +22,15 @@ C02 sagt "nach Schritt 01 mit Ausgang OK kommt Schritt B2". Dieser Hook sagt "au
 
 1. Geht es mit einem zusätzlichen Status in C02?
 
-2. Geht es mit einem Hintergrundschritt, der über EV_DECISION_KEY verzweigt? (Das ist der saubere Weg - die Verzweigung bleibt in C02 sichtbar.)
+2. Reicht eine Regel? c09-BEDINGUNG am Hintergrundschritt ohne Methode, Felder aus dem c08 TEMPLATE, Dezimalzahl in Hochkommata: GESAMTWERT_RW > '10000.00'.
 
-3. Erst dann dieser Hook.
+3. Mehrere Bearbeiter an einem Schritt: c01-DECI_RULE (Veto, erste Entscheidung, Mehrheit).
 
-Der Beispielprozess kommt mit 2 aus - siehe BACKGROUND_CLASSIFY( ) ganz unten, die genau das tut.
+4. Geht es mit einem Hintergrundschritt, der über EV_DECISION_KEY verzweigt? (Die Verzweigung bleibt in C02 sichtbar.)
+
+5. Erst dann dieser Hook.
+
+Der Beispielprozess kommt mit 4 aus - siehe BACKGROUND_CLASSIFY( ) ganz unten, die genau das tut.
 
 **WORAN MAN DENKEN MUSS**
 

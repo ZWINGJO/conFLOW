@@ -18,13 +18,13 @@ Customizing-Schlüssel zwanzigmal als Literal.
 | Tabelle | Was |
 |---|---|
 | `C06` / `C06T` | die Workflow-Definition und ihr Text |
-| `C01` / `C01T` | die Schritte - je einer für `X0`, `B1`, `01`, `02`, `B2`, `B3`, `X1`, `X2`, `X3` |
+| `C01` / `C01T` | die Schritte - je einer für `X0`, `B1`, `01`, `02`, `B2`, `B3`, `X1`, `X2`, `X3`; bei Bedarf Priorität (`PRIO`) und Entscheidungsregel (`DECI_RULE`) |
 | `C02` | die Übergänge: Schritt + Entscheidung → Folgeschritt |
 | `C05` | die Bearbeiterkreise je Schritt |
-| `C03` | wer der Kreis ist - oder `USER_BADI = 'X'` für die Findung im Code |
+| `C03` | wer der Kreis ist - Benutzer, PFCG-Rolle (`AGR_NAME`), Ausschluss (`EXCLUDE`) - oder `USER_BADI = 'X'` für die Findung im Code |
 | `C07` | der Mailversand: wer bei welchem Schritt welches Mail bekommt |
-| `C09` / `C09T` | die Texte der Entscheidungen `UC1`–`UC5` |
-| `C08` | Objekt und Subobjekt fürs Anwendungsprotokoll |
+| `C09` / `C09T` | die Entscheidungen `UC1`–`UC5` samt Farbe, Kommentarpflicht und Regel; die Texte in `C09T` |
+| `C08` | Objekt und Subobjekt fürs Anwendungsprotokoll, bei Bedarf `TEMPLATE` und `VISU` |
 | `C10` | die Typkopplung, wenn der Start über ein Ereignis läuft |
 
 Beim Hintergrundschritt `B1` gehören Klassenname und Methodenname in
@@ -49,7 +49,8 @@ Zur Definition `/C09/CFL_BADI_0101`, Filter `WF_DEFINITION = '00900'`.
 
 **5 · Die Bearbeiterfindung**
 
-`ZCL_CFL_GET_ACTORS` und die Rollen dazu. Erst danach ist ein Test
+Für eine PFCG-Rolle reicht `C03` mit `AGR_NAME`; `ZCL_CFL_GET_ACTORS`
+nur für Sonderfälle. Erst danach ist ein Test
 sinnvoll - ein Workitem ohne Bearbeiter geht in den Fehlerstatus.
 
 **6 · SLG0**

@@ -9,6 +9,8 @@
 ```
 WOFÜR   Dasselbe wie GET_OBJECT_INFO, nur für die andere
        Oberfläche. Beide pflegen, sonst ist eine von beiden hässlich.
+       Mit c06t-OBJTEXT macht das Framework beides selbst - dann
+       leer lassen.
 ```
 
 **DER CHECK AUF DEN OBJTYP IST NICHT OPTIONAL**

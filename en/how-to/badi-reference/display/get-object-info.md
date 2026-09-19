@@ -22,6 +22,8 @@ With the hook:
 
 The framework appends the instance ID itself - CV_RETURN only replaces the part in front of it.
 
+With c06t-OBJTEXT the framework sets the label itself, BEFORE this hook. Leave it empty then - otherwise the hook overwrites the Customizing text.
+
 **THE TEXT BELONGS IN A TEXT SYMBOL, NOT IN THE CODE**
 
 TEXT-001 belongs to the text pool of the class. That makes it translatable, and the same label for both user interfaces lives in exactly one place.

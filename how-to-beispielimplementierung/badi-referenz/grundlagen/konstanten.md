@@ -143,19 +143,19 @@ CLASS zcl_cfl_const_00900 DEFINITION
 *
 * Sie steht hier als Konstante, weil sie in einem Referenzbeispiel
 * nachvollziehbar sein soll. In einer echten Installation gehoert so
-* ein Wert in eine Customizing-Tabelle oder nach BRFplus - sonst
-* braucht jede Aenderung einen Transport.
+* ein Wert in eine Regel: c09-BEDINGUNG am Hintergrundschritt, z.B.
+* GESAMTWERT_RW > '10000.00' mit c08 TEMPLATE = die Template-Klasse
+* fuer BUS2012 - aenderbar ohne Entwicklung.
 *--------------------------------------------------------------------*
     CONSTANTS mc_limit_value TYPE p LENGTH 8 DECIMALS 2 VALUE '10000.00'.
 
 *--------------------------------------------------------------------*
 * Workitem-Prioritaet (SWW_PRIO, 1-9, 1 = hoechste)
 *
-* Achtung bei 1: SAP verschickt Workitems der Prioritaet 1 als
-* Express-Nachricht. Im Testsystem faellt das nicht auf, im
-* Produktivsystem bekommt der Bearbeiter ein Popup. 4 ist die
-* hoechste Stufe, die My Inbox noch als "High" anzeigt, ohne das
-* auszuloesen.
+* Achtung bei 1: SAP schickt jedem Bearbeiter eine Express-
+* Nachricht, im SAP GUI ein Popup. Nur Stufe 1 loest das aus - 2 ist
+* die hoechste Stufe ohne diesen Effekt. Eine feste Prioritaet je
+* Schritt ist c01-PRIO, ganz ohne Code.
 *--------------------------------------------------------------------*
     CONSTANTS:
       BEGIN OF mc_prio,

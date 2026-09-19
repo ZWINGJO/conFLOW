@@ -22,6 +22,8 @@ Mit dem Hook:
 
 Die Instanz-ID hängt das Framework selbst an - CV_RETURN ersetzt nur den Teil davor.
 
+Mit c06t-OBJTEXT beschriftet das Framework selbst, VOR diesem Hook. Dann leer lassen - sonst überschreibt der Hook den Customizing-Text.
+
 **DER TEXT GEHÖRT IN EIN TEXTSYMBOL, NICHT IN DEN CODE**
 
 TEXT-001 hängt am Textpool der Klasse. Damit ist er übersetzbar, und dieselbe Beschriftung steht für beide Oberflächen an genau einer Stelle.

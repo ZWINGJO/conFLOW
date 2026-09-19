@@ -29,29 +29,22 @@ Wer berechnete oder formatierte Werte ins Mail bringen will - Betrag im Benutzer
 
 Beides liefert der Produkt-Helper fertig. Selbst bauen lohnt nicht.
 
+**WAS DAS FRAMEWORK SCHON LIEFERT - VOR DIESEM HOOK**
+
+/C09/CFL_C06T (VTEXT, OBJTEXT, mit Sprach-Rückfall) und mit c08 TEMPLATE die Belegzeile als &/C09/CFL_S_TPL_`<typ>`-`<feld>`&, Beträge nach Währung formatiert. Hier nur, was darin fehlt.
+
+**GRENZE: NUR DIE ERSTEN FÜNF STRUKTUREN**
+
+Der Mailversand liest aus CT_APPLICATION_INPUT nur fünf Einträge - die des Frameworks zählen mit.
+
 ## Der Code
 
 ```abap
 *--------------------------------------------------------------------*
-* 1. Der Kopftext des Workflows aus dem Customizing.
+* 1. Die Belegdaten - hier als ganze DDIC-Struktur.
 *
-* Damit steht im Mail dieselbe Bezeichnung wie ueberall sonst - und
-* sie ist uebersetzt, weil C06T sprachabhaengig ist.
-*--------------------------------------------------------------------*
-    SELECT SINGLE * FROM /c09/cfl_c06t INTO @DATA(ls_c06t)  "#EC CI_ALL_FIELDS_NEEDED
-      WHERE wf_definition = @is_data-wf_definition
-        AND lang          = @sy-langu.
-    IF sy-subrc = 0.
-      /c09/cfl_cl_helper_0101=>add_datasource_mail(
-        EXPORTING is_datastruc         = ls_c06t
-        CHANGING  ct_application_input = ct_application_input ).
-    ENDIF.
-
-*--------------------------------------------------------------------*
-* 2. Die Belegdaten - hier als ganze DDIC-Strukturen.
-*
-* Bewusst OHNE Vorauswahl: es kostet nichts, EKKO und EKPO komplett
-* zu uebergeben, und der Kunde kann jedes Feld im Textbaustein
+* Bewusst OHNE Vorauswahl: EKKO komplett zu uebergeben kostet einen
+* der fuenf Plaetze, und der Kunde kann jedes Feld im Textbaustein
 * verwenden, ohne dass jemand den Code anfasst.
 *--------------------------------------------------------------------*
     DATA lv_ebeln TYPE ekko-ebeln.

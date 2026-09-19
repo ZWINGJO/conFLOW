@@ -12,13 +12,15 @@ PURPOSE   Everything that should happen ONCE PER WORK ITEM: priority,
        custom user interface.
 ```
 
+WITHOUT CODE: a fixed priority per step is c01-PRIO, the Fiori app is c08 VISU. Here only what depends on the document.
+
 **THE HOOK ALSO RUNS FOR BACKGROUND STEPS**
 
 And that is almost always unwanted. A priority on a work item that nobody sees only costs runtime. That is why the method starts with a check that lets only the dialog steps through - the line looks like a trifle and is not.
 
 **THE WORK ITEM IS NOT YET ON THE DATABASE HERE**
 
-The central point of this hook, and the cause of the most common disappointment: every API that READS SWWWIHEAD comes back empty. SAP_WAPI_CHANGE_WORKITEM_PRIO does exactly that - it reports no error, it just has no effect. The right way goes through the work item manager of the running transaction, see SET_PRIORITY( ).
+The central point of this hook, and the cause of the most common disappointment: every API that READS SWWWIHEAD comes back empty. SAP_WAPI_CHANGE_WORKITEM_PRIO does exactly that - it reports no error, it just has no effect. The right way is a tRFC AFTER the COMMIT, see SET_PRIORITY( ).
 
 ## The code
 
@@ -50,6 +52,7 @@ The central point of this hook, and the cause of the most common disappointment:
       lv_prio = zcl_cfl_const_00900=>mc_prio-medium.
     ENDIF.
 
-    set_priority( iv_wi_id = is_swr_wihdr-wi_id
-                  iv_prio  = lv_prio ).
+    set_priority( iv_wi_id        = is_swr_wihdr-wi_id
+                  iv_prio         = lv_prio
+                  iv_prio_created = is_swr_wihdr-wi_prio ).
 ```

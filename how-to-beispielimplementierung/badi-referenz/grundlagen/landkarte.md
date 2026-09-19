@@ -2,7 +2,8 @@
 
 Alle 26 Hooks des Interface, in der Reihenfolge, in der sie im
 Ablauf vorkommen. Die Spalte **Code** sagt, ob die Referenzklasse
-sie füllt - sechs bleiben absichtlich leer.
+sie füllt. Sechs Hooks sind in jeder untersuchten Implementierung leer,
+drei weitere bleiben in diesem Beispiel leer.
 
 ## Start
 
@@ -69,8 +70,9 @@ gedacht ist und woran man merkt, dass der eigene Fall dazugehört:
 - `get_event_raised_workitem` - braucht ein "während der Workflow läuft"
 - `get_status_dynamic` - macht die Verzweigung im Customizing unsichtbar
 - `get_send_mail_user` - der Empfängerkreis gehört ins Customizing
-- `get_mail_language` - der Standard tut schon das Richtige
+- `get_mail_language` - nur nötig, wenn Empfänger ihre eigene Sprache bekommen sollen
 - `get_factory_calendar` - erst nötig, wenn Fristen in Tagen laufen
 
-Dazu `get_wf_definition_text` und `release`, die in diesem Beispiel
-leer bleiben, aber häufiger gebraucht werden als die sechs oben.
+Dazu `get_wf_definition_text`, `get_status_mail_dynamic` und `release`,
+die in diesem Beispiel leer bleiben, aber häufiger gebraucht werden
+als die sechs oben.

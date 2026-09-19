@@ -17,11 +17,15 @@ C02 says "after step 01 with outcome OK comes step B2". This hook says "unless .
 
 1. Does an additional status in C02 do the job?
 
-2. Does a background step that branches via EV_DECISION_KEY do the job? (That is the clean way - the branch stays visible in C02.)
+2. Is a rule enough? c09-BEDINGUNG on a background step without a method, fields from the c08 TEMPLATE, decimal number in quotes: GESAMTWERT_RW > '10000.00'.
 
-3. Only then this hook.
+3. Several agents on one step: c01-DECI_RULE (veto, first decision, majority).
 
-The sample process gets by with 2 - see BACKGROUND_CLASSIFY( ) at the very bottom, which does exactly that.
+4. Does a background step that branches via EV_DECISION_KEY do the job? (The branch stays visible in C02.)
+
+5. Only then this hook.
+
+The sample process gets by with 4 - see BACKGROUND_CLASSIFY( ) at the very bottom, which does exactly that.
 
 **WHAT TO KEEP IN MIND**
 

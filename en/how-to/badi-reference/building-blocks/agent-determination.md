@@ -2,6 +2,14 @@
 
 Agent determination - central, not in the workflow class.
 
+**CUSTOMIZING FIRST**
+
+conFLOW resolves a PFCG role itself: C03 with OTYPE AG and column
+
+**AGR_NAME - dialog users only, locked users are left out. Use this**
+
+class only for cases that does not cover. TWP_GET_ROLE_USER_ASSIGNMENT filters neither validity nor lock nor user type.
+
 **WHY A SEPARATE CLASS**
 
 Role resolution is always the same block: call the function module, sort, remove duplicates, add the prefix. Six lines that have nothing to do with the individual workflow.
@@ -35,6 +43,14 @@ CLASS zcl_cfl_get_actors DEFINITION
 
 *----------------------------------------------------------------------*
 * Agent determination - central, not in the workflow class.
+*
+* CUSTOMIZING FIRST
+*
+* conFLOW resolves a PFCG role itself: C03 with OTYPE AG and column
+* AGR_NAME - dialog users only, locked users are left out. Use this
+* class only for cases that does not cover.
+* TWP_GET_ROLE_USER_ASSIGNMENT filters neither validity nor lock
+* nor user type.
 *
 * WHY A SEPARATE CLASS
 *
