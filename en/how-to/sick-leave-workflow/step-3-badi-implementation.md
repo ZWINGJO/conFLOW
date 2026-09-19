@@ -44,6 +44,10 @@ If the next step should not come from Customizing (`/C09/CFL_C02`) but be calcul
 
 For a parallel step, assign **several agent keys** (`gen_stat_user`) to one approval step in Customizing. conFLOW creates a work item for each, and the workflow waits until all of them have decided.
 
+{% hint style="info" %}
+**Veto, first decision or majority** are now set on the step without code, with the column *Decision rule* in Approval steps. Details: [Technical documentation, parallel agent paths](../../technical-documentation.md#parallel-agent-paths). The BAdI is only needed for rules of your own.
+{% endhint %}
+
 <figure><img src="../../.gitbook/assets/folie24.png" alt="Parallel steps"><figcaption><p>Parallel processing: several agent keys per step</p></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/folie25.png" alt="Parallel steps detail"><figcaption><p>Parallel work items in the inbox</p></figcaption></figure>

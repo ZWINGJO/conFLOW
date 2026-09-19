@@ -44,6 +44,10 @@ Soll der nächste Schritt nicht aus dem Customizing (`/C09/CFL_C02`) kommen, son
 
 Für einen parallelen Schritt ordnen Sie im Customizing **mehrere Bearbeiter-Keys** (`gen_stat_user`) zu einem Genehmigungsschritt zu. conFLOW erzeugt für jeden ein Workitem, und der Workflow wartet, bis alle entschieden haben.
 
+{% hint style="info" %}
+**Veto, erste Entscheidung oder Mehrheit** stellen Sie heute ohne Code am Schritt ein, mit der Spalte *Entscheidungsregel* in den Genehmigungsschritten. Beschreibung: [Technische Dokumentation, Parallele Bearbeiterwege](../../technische-dokumentation/technische-dokumentation.md#parallele-bearbeiterwege). Das BAdI brauchen Sie nur noch für eigene Regeln.
+{% endhint %}
+
 <figure><img src="../../.gitbook/assets/Folie24.png" alt="Parallele Schritte"><figcaption><p>Parallele Bearbeitung: mehrere Bearbeiter-Keys je Schritt</p></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/Folie25.png" alt="Parallele Schritte Detail"><figcaption><p>Parallele Workitems in der Inbox</p></figcaption></figure>

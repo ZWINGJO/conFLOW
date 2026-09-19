@@ -37,7 +37,7 @@ The entry point is transaction `/C09/CONFLOW_C`, a view cluster covering all nod
 | Node (EN logon) | Table | Content |
 | --- | --- | --- |
 | Workflow definition | `/C09/CFL_C06` | one row per workflow number |
-| Approval steps | `/C09/CFL_C01` | steps with status code `gen_stat`, attribute, texts, class/method |
+| Approval steps | `/C09/CFL_C01` | steps with status code `gen_stat`, attribute, texts, class/method, decision rule for several agents |
 | Approval status - control | `/C09/CFL_C02` | transitions (OK / NOK / deadline), deadlines |
 | Control additional status | `/C09/CFL_C09` | decision options `UC1`–`UC5` per step |
 | User status definition | `/C09/CFL_C04` | roles, that is the agent keys `gen_stat_user` |
@@ -216,14 +216,35 @@ Three agent keys have a fixed meaning: `BU` for background steps, `WI` for the i
 
 Several agent keys on one step mean several agents. The framework puts the applicable roles into the container element `RT_NUMBER_ACTORS` as a list — **one work item per row**, all created at the same time.
 
-That allows two different processes, and it pays to decide up front which one you mean:
+What happens with the individual decisions is set on the step: in **Approval steps** (`C01`), column **Decision rule** (short label *Rule*).
 
-| | |
-| --- | --- |
-| **Everyone has to decide** | each agent works their own work item, the process continues afterwards |
-| **One decides for all** | the first decision counts, the remaining work items are meant to disappear |
+<figure><img src=".gitbook/assets/c01-decision-rule.png" alt="Column Decision rule in Approval steps"><figcaption><p>Four steps, four rules</p></figcaption></figure>
 
-The second case is the more common one — and it does **not** happen by itself. Left alone, the other work items stay open in people's inboxes, and someone works on a case that has long been decided. There is a helper for this:
+| Value | Rule | What happens |
+| --- | --- | --- |
+| *(blank)* | **All decide** | Every agent decides their own work item. Then the process continues; one rejection results in NOK. This is the previous behaviour — existing steps are unchanged |
+| `V` | **Veto** | The first rejection ends the step with NOK. The remaining work items are closed. If nobody rejects, the result is the same as with “All decide” |
+| `E` | **First decision counts** | Whoever decides first decides for everyone — OK, NOK or an additional outcome `UC1`–`UC5`. The remaining work items are closed |
+| `M` | **Majority decides** | Everyone decides, the most frequent decision wins. OK, NOK and `UC1`–`UC5` all count. A tie results in NOK |
+
+The follow-up step **and** the email follow the result of the rule. With "Majority", two approvals and one rejection take the OK path, and the OK email goes out, not the rejection email.
+
+Worth knowing:
+
+- **Closed means obsolete.** The closed work items disappear from the inboxes a few seconds after the deciding vote. The workflow log shows them as *obsolete*.
+- **Agents whose work item was closed get no separate notification.** If they should know, set up an email rule on the result of the step.
+- **If a step runs again**, for instance after a query, only the decisions of the new pass count.
+- **If two people decide at the same moment under "First decision counts"**, the majority of those two counts; a tie results in NOK.
+
+{% hint style="info" %}
+**Work items not closing under Veto or "First decision counts"?** Closing runs in a separate step (tRFC) after the decision is saved. Transaction `SM58` shows where it is stuck.
+{% endhint %}
+
+### Custom logic in the BAdI
+
+For rules none of the four settings covers — a weighted vote, say, or "two out of three from different departments" — the BAdI remains. Leave the decision rule blank in that case.
+
+To close individual work items, there is a helper:
 
 ```abap
 " in the hook GET_AFTER_EXECUTION_WORKITEM, which runs after a work item is completed
@@ -231,15 +252,13 @@ The second case is the more common one — and it does **not** happen by itself.
 COMMIT WORK AND WAIT.
 ```
 
-`SET_WORKITEM_OBSOLET` looks for all open dialog work items of the same top workflow and sets them to *obsolete* — except your own. If this should only happen on a particular outcome, rejection for instance, check `IV_KEY` first.
+`SET_WORKITEM_OBSOLET` looks for all open dialog work items of the same top workflow and sets them to *obsolete* — except your own. If this should only happen on a particular outcome, check `IV_KEY` first.
 
 {% hint style="warning" %}
 **Mind the scope.** The helper clears the **entire workflow**. If parallel work items exist in several steps at the same time, it also hits the ones you wanted to keep. In that case select the rows yourself and restrict on `GEN_STAT` — the pattern is in the [how-to](how-to/sick-leave-workflow/step-4-start-and-test.md).
 {% endhint %}
 
-### When the majority should decide
-
-Then the first vote does not count, the result of all of them does. For that, put a **collecting step** after the parallel step — a `Y` step that all outcomes point to. There, `GET_STATUS_DYNAMIC` counts the workflow log and sets the follow-up status accordingly. The [how-to](how-to/sick-leave-workflow/step-4-start-and-test.md) shows the ready-made building block.
+A custom count goes into a **collecting step** after the parallel step — a `Y` step that all outcomes point to. There, `GET_STATUS_DYNAMIC` counts the workflow log and sets the follow-up status. The [how-to](how-to/sick-leave-workflow/step-4-start-and-test.md) shows the building block.
 
 {% hint style="warning" %}
 **The `COMMIT` is up to the caller.** The helper calls `SAP_WAPI_WORKITEM_COMPLETE` with `DO_COMMIT = FALSE` on purpose, so that it does not commit once per work item. Without that line the work items stay open — **with no error message**.
