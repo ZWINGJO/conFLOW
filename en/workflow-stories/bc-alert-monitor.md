@@ -6,7 +6,7 @@ System alerts in SAP Basis operations must reliably reach the right agent and be
 
 ## What conFLOW does here
 
-The workflow receives an alert and creates a work item for the responsible Basis administrator. If the alert is not processed within a defined **deadline**, conFLOW automatically escalates to the next level. The deadline is maintained in Customizing, not in code — changing it requires no transport.
+The workflow receives an alert and creates a work item for the responsible Basis administrator. If the alert is not processed within a defined **deadline**, conFLOW automatically escalates to the next level. The deadline is maintained in Customizing, not in code — changing it is a Customizing change, not development.
 
 The result is a complete audit trail: when the alert was raised, who processed it when, and how it was decided. This matters both for regulated environments and for analyzing recurring problems.
 

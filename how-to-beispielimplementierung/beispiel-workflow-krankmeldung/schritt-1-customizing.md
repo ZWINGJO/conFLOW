@@ -60,7 +60,7 @@ Unter **"User Status Zuordnung"** ordnen Sie den Rollen die tatsächlichen Bearb
 | --- | --- | --- |
 | `US` | `MEIER` | Einzelner SAP-Benutzer |
 | `S` | `50000123` | SAP-Planstelle |
-| `AC` | `Z_HR_ADMIN` | PFCG-Rolle |
+| `AG` + Spalte `AGR_NAME` | `Z_HR_ADMIN` | PFCG-Rolle: alle Dialogbenutzer der Rolle |
 | `US` | `WF-BATCH` | Technischer Hintergrund-User |
 | `US` | `WF_INITIATOR` | Workflow-Initiator (dynamisch) |
 
@@ -96,7 +96,7 @@ Zusätzlich können bis zu fünf weitere Entscheidungsalternativen (`UC1`-`UC5`)
 Unter **"Zuordnung Userstatus"** (`/C09/CFL_C05`) verknüpfen Sie jeden Genehmigungsschritt mit der Rolle, die ihn bearbeiten soll.
 
 {% hint style="info" %}
-**Parallele Schritte:** Ordnen Sie einem Genehmigungsschritt **mehrere** Bearbeiter-Keys zu. conFLOW erzeugt dann für jeden ein eigenes Workitem, und der Workflow wartet, bis alle entschieden haben.
+**Parallele Schritte:** Ordnen Sie einem Genehmigungsschritt **mehrere** Bearbeiter-Keys zu. conFLOW erzeugt dann für jeden ein eigenes Workitem, und der Workflow wartet -- mit der Standardeinstellung -- bis alle entschieden haben. Andere Regeln (Veto, erste Entscheidung, Mehrheit) stellen Sie in den Genehmigungsschritten ein, Spalte *Entscheidungsregel*.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/Folie11.png" alt="Zuordnung Userstatus"><figcaption><p>Verknüpfung: welche Rolle bearbeitet welchen Schritt</p></figcaption></figure>

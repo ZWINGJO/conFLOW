@@ -1,6 +1,6 @@
 # conFLOW: attaching the app to the work item
 
-*One method in the BAdI and three constants. The conFLOW Customizing does not change.*
+*One parameter in Customizing. The BAdI only for special cases — the simple way is [further down](#the-simple-way-parameter-visu-in-customizing).*
 
 ## The hook
 

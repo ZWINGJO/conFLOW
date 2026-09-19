@@ -27,9 +27,9 @@
 ## The chain at a glance
 
 ```
-conFLOW BAdI
-  get_after_creation_workitem( )
-    └─ set_inbox_ui( )  sets three container elements on the work item
+conFLOW
+  parameter VISU in C08   (special case: BAdI set_inbox_ui( ))
+    └─ sets three container elements on the work item
                            │
 Customizing SWFVMD1        ▼   (once per system)
   Task TS00388601  →  Intent  #ZCFLOrderPromiseV2-openInInbox?CFLQueryObject00=<instance>
@@ -41,14 +41,14 @@ App                        ▼   (per workflow)
   UI5 freestyle  →  OData V2 (SEGW)  →  conFLOW container /C09/CFL_S04
 ```
 
-**Each work item decides which app appears**, not the task. conFLOW wires the visualization generically: at runtime the task reads the container elements set by the BAdI. If they are missing, My Inbox shows the text block as before.
+**Each work item decides which app appears**, not the task. conFLOW wires the visualization generically: at runtime the task reads the container elements set by conFLOW. If they are missing, My Inbox shows the text block as before.
 
 ## What you create
 
 | Area | What | How often | Page |
 | --- | --- | --- | --- |
-| conFLOW | one method in the hook `get_after_creation_workitem`, three constants | per workflow | [conFLOW](conflow.md) |
-| conFLOW Customizing | **nothing** — `C01` to `C10` stay as they are | — | [conFLOW](conflow.md) |
+| conFLOW Customizing | parameter `VISU` in `C08` (semantic object) | per workflow | [conFLOW](conflow.md) |
+| conFLOW BAdI | only for special cases, e.g. a different app per step | optional | [conFLOW](conflow.md) |
 | SWFVMD1 | dynamic visualization for task `TS00388601` | **once per system** | [Customizing](customizing.md) |
 | Launchpad | semantic object, target mapping, catalog, role | per workflow | [Customizing](customizing.md) |
 | Gateway | register the OData service | per workflow | [Customizing](customizing.md) |

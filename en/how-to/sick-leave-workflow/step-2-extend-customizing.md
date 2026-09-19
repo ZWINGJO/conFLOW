@@ -22,6 +22,8 @@ The method must have a fixed signature:
 | `ET_BAPIRET2` | Exporting | `BAPIRET2_T` | Messages (an E/A message makes the outcome NOK) |
 | `EV_DECISION_KEY` | Exporting | `SWR_DECIKEY` | Decision (determines the next step) |
 
+Alternatively `clsname` holds a class implementing the interface `/C09/CFL_IF_BACKGROUND_0101` (`cmpname` stays empty). A background step without any method can decide through a condition in `/C09/CFL_C09`, see [Technical documentation, section 7](../../technical-documentation.md#7-background-steps).
+
 {% hint style="warning" %}
 **Always set `EV_DECISION_KEY`.** Without a return value the framework sets the outcome to `OK` — but to `NOK` if there is an error message in `ET_BAPIRET2`. This reserves `NOK` on background steps for the error case; business results belong on `UC1`–`UC5`.
 {% endhint %}
@@ -32,7 +34,7 @@ The method must have a fixed signature:
 
 ## 2.3 Work item description with SO10 texts
 
-So that the agent understands what the work item is about, maintain **SO10 texts** in Customizing. The text names are stored in `/C09/CFL_C01`, field `tdname`. The text can contain **placeholders** in the form `§{FIELDNAME}` — conFLOW replaces them at runtime with values from the container.
+So that the agent understands what the work item is about, maintain **SO10 texts** in Customizing. The text names are stored in `/C09/CFL_C01`, field `tdname`. In the SO10 text, values appear as **placeholders** of the form `&STRUCTURE-FIELD&`. If a `TEMPLATE` is maintained in the general parameters (`/C09/CFL_C08`), its document fields are available without code. The short work item description comes from the step text (`/C09/CFL_C01T`); placeholders of the form `§{field}` are allowed there.
 
 <figure><img src="../../.gitbook/assets/folie16-1.png" alt="SO10 texts"><figcaption><p>SO10 texts: work item description with placeholders</p></figcaption></figure>
 
@@ -45,7 +47,7 @@ In addition to `OK` and `NOK` you can create up to five further decision options
 The **labels** of the buttons (including `OK` and `NOK`) are maintained in the text table `/C09/CFL_C09T`. Without an entry there, the work item shows the standard texts of the SAP task.
 
 {% hint style="info" %}
-**Button control:** Set `nodisplay = 'X'` in `/C09/CFL_C09` to hide a button for a specific step. This lets you, for example, forbid cancellation on the first step while allowing it on the escalation step.
+**Button control:** Set `nodisplay = 'X'` in `/C09/CFL_C09` to hide a button for a specific step. This lets you, for example, forbid cancellation on the first step while allowing it on the escalation step. In the same node you colour the button (`nature` = `P` green, `N` red) and make a comment mandatory (`comment_req`) — in SAP GUI and in Fiori.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/folie17-2.png" alt="Decision options"><figcaption><p>Decision options UC1–UC5 and their labels</p></figcaption></figure>
@@ -54,8 +56,8 @@ The **labels** of the buttons (including `OK` and `NOK`) are maintained in the t
 
 ## 2.5 Configure email notification
 
-In the node **Control mail setting** (`/C09/CFL_C07`) you configure who receives an email at which step. The mail contents are maintained as SO10 texts and can use the same placeholders (`§{...}`) as the work item description.
+In the node **Control mail setting** (`/C09/CFL_C07`) you configure who receives an email at which step. The mail contents are maintained as SO10 texts and use the same placeholders of the form `&STRUCTURE-FIELD&`.
 
-The placeholders are replaced dynamically in the BAdI method `GET_DATASOURCE_MAIL` (see [Step 3](step-3-badi-implementation.md)).
+With `TEMPLATE` in `/C09/CFL_C08` the document fields are available without code; additional data sources come from the BAdI method `GET_DATASOURCE_MAIL` (see [Step 3](step-3-badi-implementation.md)).
 
 <figure><img src="../../.gitbook/assets/folie18-2.png" alt="Email notification"><figcaption><p>Email notification: recipients and SO10 texts per step</p></figcaption></figure>

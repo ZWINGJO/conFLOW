@@ -1,6 +1,6 @@
 # Beispiele realisierter Workflows
 
-Die folgenden Beispiele zeigen, welche Prozesse sich mit conFLOW abbilden lassen. Gemeinsam ist ihnen: der Workflow wurde in Customizing-Tabellen definiert und in einer einzigen BAdI-Klasse implementiert -- ohne Workflow Builder und ohne SAP-Workflow-Entwicklung.
+Die folgenden Beispiele zeigen, welche Prozesse sich mit conFLOW abbilden lassen. Gemeinsam ist ihnen: der Workflow wurde in Customizing-Tabellen definiert, fachliche Sonderlogik wo nötig in einer BAdI-Klasse -- ohne Workflow Builder und ohne SAP-Workflow-Entwicklung.
 
 Die Beispiele stammen aus verschiedenen SAP-Modulen und decken unterschiedliche Muster ab: einfache Zwei-Schritt-Genehmigungen, mehrstufige Freigaben mit Eskalation, Hintergrundschritte mit automatischer Verarbeitung und parallele Bearbeiterwege.
 

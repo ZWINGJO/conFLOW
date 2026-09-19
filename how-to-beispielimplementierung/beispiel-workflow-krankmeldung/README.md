@@ -24,7 +24,7 @@ Dieses How-To zeigt Schritt für Schritt, wie ein conFLOW-Workflow aufgebaut wir
 ## Voraussetzungen
 
 - Zugriff auf die Transaktion `/C09/CONFLOW_C` (conFLOW-Customizing)
-- Entwicklungszugriff für die BAdI-Implementierung (SE80 oder ADT)
+- Entwicklungszugriff für die BAdI-Implementierung (SE80 oder ADT) -- nur, falls Sie das BAdI brauchen
 - Ein Transportauftrag
 
 ## Die vier Schritte
@@ -39,5 +39,5 @@ Dieses How-To zeigt Schritt für Schritt, wie ein conFLOW-Workflow aufgebaut wir
 | [Schritt 4: Workflow starten und testen](schritt-4-workflow-starten.md) | Trigger, Container, Test | Produktionsreifer Workflow |
 
 {% hint style="warning" %}
-**Reihenfolge beachten:** Zuerst das Customizing (Schritt 1 und 2), dann die BAdI-Implementierung (Schritt 3), zuletzt den Trigger (Schritt 4). Die BAdI-Klasse braucht die Customizing-Einträge als Grundlage, und der Trigger setzt einen funktionierenden Workflow voraus.
+**Reihenfolge beachten:** Zuerst das Customizing (Schritt 1 und 2), dann die BAdI-Implementierung (Schritt 3), zuletzt den Trigger (Schritt 4). Eine BAdI-Klasse braucht die Customizing-Einträge als Grundlage, und der Trigger setzt einen funktionierenden Workflow voraus.
 {% endhint %}

@@ -13,7 +13,7 @@
 | 5 | Service, functionally | `…/DecisionSet('<id>')?$format=json` returns the instance; a foreign GUID returns **404** |
 | 6 | Build and upload the app, caches | `/sap/bc/ui5_ui5/sap/zcfl_00500_uiv2/index.html` says "No work item key was passed". **That is the success case.** |
 | 7 | Semantic object, target mapping, role | `…/flp#ZCFLOrderPromiseV2-openInInbox?CFLQueryObject00=<id>` opens the instance |
-| 8 | BAdI: deploy `set_inbox_ui( )` | create a **new** work item; the work item container holds the three `/C09/CFL_VISU_*` values |
+| 8 | maintain `VISU` in `C08` (or BAdI `set_inbox_ui( )`) | create a **new** work item; the work item container holds the three `/C09/CFL_VISU_*` values |
 | 9 | My Inbox | app in the detail area, conFLOW buttons below, "Show Details" in the footer |
 
 `<id>` is the conFLOW instance (`/C09/CFL_S03-ID`) of an open dialog work item, as a 32-character hex string.
@@ -54,8 +54,8 @@
 | Goal | Action | Affects |
 | --- | --- | --- |
 | gone immediately, including open work items | delete the target mapping in the catalog | **all** work items, no transport |
-| new work items without the app | `mc_inbox_ui = abap_false` | only **new** work items |
-| remove completely | target mapping, semantic object, BSP application, service, SEGW project, data class, call in the BAdI | — |
+| new work items without the app | clear `VISU` in `C08` (for the BAdI route `mc_inbox_ui = abap_false`) | only **new** work items |
+| remove completely | target mapping, semantic object, BSP application, service, SEGW project, data class, parameter `VISU` or call in the BAdI | — |
 
 {% hint style="success" %}
 **The fallback is not an emergency solution but the normal case** for every work item without the three container elements. That is why it works reliably: it is in use all the time, not only when something breaks.

@@ -8,7 +8,7 @@ Before an invoice goes to the customer, it must be approved — especially for s
 
 The workflow ensures that every relevant billing request reaches the right approver. The agent sees the key document data on the work item and decides: approve or reject. On rejection, the request goes back to the creator; on approval, the billing document is created or flagged for creation.
 
-The approver can be assigned in Customizing or determined dynamically by the BAdI method `GET_ACTORS` — for example depending on sales area, document type or amount.
+The approver can be assigned in Customizing, taken from a PFCG role or determined dynamically by the BAdI method `GET_ACTORS` — for example depending on sales area, document type or amount.
 
 ### User story
 

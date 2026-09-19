@@ -1,6 +1,6 @@
 # Examples of implemented workflows
 
-The following examples show which processes can be implemented with conFLOW. What they have in common: the workflow was defined in Customizing tables and implemented in a single BAdI class — without the Workflow Builder and without SAP workflow development.
+The following examples show which processes can be implemented with conFLOW. What they have in common: the workflow was defined in Customizing tables, with special business logic in a BAdI class where needed — without the Workflow Builder and without SAP workflow development.
 
 The examples come from different SAP modules and cover different patterns: simple two-step approvals, multi-level approvals with escalation, background steps with automatic processing, and parallel agent paths.
 

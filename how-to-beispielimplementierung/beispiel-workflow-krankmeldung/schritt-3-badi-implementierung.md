@@ -6,7 +6,7 @@ Das Customizing definiert den Laufweg -- die BAdI-Klasse füllt ihn mit fachlich
 
 ## 3.1 Überblick
 
-Jeder conFLOW-Workflow hat genau eine BAdI-Klasse, die das Interface `/C09/CFL_IF_BADI_0101` implementiert. Die Klasse wird über einen **Filter** auf die Workflow-Nummer eingeschränkt -- damit greift sie nur für "ihren" Workflow.
+Braucht ein Workflow Logik, die das Customizing nicht abdeckt, bekommt er **höchstens eine** BAdI-Klasse, die das Interface `/C09/CFL_IF_BADI_0101` implementiert. Die Klasse wird über einen **Filter** auf die Workflow-Nummer eingeschränkt -- damit greift sie nur für "ihren" Workflow.
 
 {% hint style="info" %}
 **Alle Hooks existieren immer.** Das Interface definiert zahlreiche Methoden. Nicht benötigte bleiben leer -- keine leere Implementierung schreiben, einfach nichts tun. Das Framework prüft nicht, ob ein Hook Code enthält.
@@ -29,7 +29,7 @@ Jeder conFLOW-Workflow hat genau eine BAdI-Klasse, die das Interface `/C09/CFL_I
 Soll der nächste Schritt nicht aus dem Customizing (`/C09/CFL_C02`) kommen, sondern zur Laufzeit berechnet werden, setzen Sie im Genehmigungsschritt den Typ auf **"BADI"**. conFLOW ruft dann die BAdI-Methode `GET_STATUS_DYNAMIC` und erwartet den nächsten `gen_stat` als Rückgabe.
 
 {% hint style="warning" %}
-**Vorsicht:** Wenn `GET_STATUS_DYNAMIC` aktiv ist, werden die Übergänge in `/C09/CFL_C02` für diesen Schritt **ignoriert**. Die gesamte Routing-Logik liegt dann im ABAP-Code. Verwenden Sie diesen Modus nur, wenn die Entscheidung tatsächlich dynamisch sein muss.
+**Vorsicht:** Wenn `GET_STATUS_DYNAMIC` aktiv ist, werden die Übergänge in `/C09/CFL_C02` für diesen Schritt **ignoriert**. Die gesamte Routing-Logik liegt dann im ABAP-Code. Verwenden Sie diesen Modus nur, wenn die Entscheidung tatsächlich dynamisch sein muss. Verzweigt der Prozess nach Belegwerten (z.B. Betrag über einer Grenze), nehmen Sie stattdessen einen Hintergrundschritt ohne Methode mit Bedingung in `/C09/CFL_C09` (Spalte `BEDINGUNG`) -- dann bleibt die Weiche im Customizing sichtbar.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/Folie21 (1).png" alt="Dynamische Schrittermittlung"><figcaption><p>Typ "BADI": dynamische Schrittermittlung zur Laufzeit</p></figcaption></figure>
@@ -58,10 +58,10 @@ Für einen parallelen Schritt ordnen Sie im Customizing **mehrere Bearbeiter-Key
 
 ## 3.5 Dynamische Bearbeiterfindung mit GET\_ACTORS
 
-Ist im Customizing (`/C09/CFL_C03`) `user_badi = 'X'` gesetzt, ruft conFLOW die BAdI-Methode `GET_ACTORS`. Dort ermitteln Sie den Bearbeiter zur Laufzeit -- z.B. abhängig von Organisationseinheit, Belegdaten oder einer PFCG-Rolle.
+Ist im Customizing (`/C09/CFL_C03`) `user_badi = 'X'` gesetzt, ruft conFLOW die BAdI-Methode `GET_ACTORS`. Dort ermitteln Sie den Bearbeiter zur Laufzeit -- z.B. abhängig von Organisationseinheit oder Belegdaten. Für eine PFCG-Rolle brauchen Sie kein BAdI (Spalte `AGR_NAME` in `/C09/CFL_C03`), ebenso wenig für den Ausschluss von Bearbeitern (Spalte `EXCLUDE`, Sonderwert `WF_APPROVERS`).
 
 {% hint style="warning" %}
-**Format beachten:** Die Actor-Strings müssen immer mit einem Objekttyp-Präfix beginnen: `US` für Benutzer, `S` für Planstelle, `AC` für Rolle. Ein blanker Username ohne Präfix wird ignoriert.
+**Format beachten:** Die Actor-Strings müssen immer mit einem Objekttyp-Präfix beginnen: `US` für Benutzer, `S` für Planstelle. Ein blanker Username ohne Präfix wird ignoriert.
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/Folie27.png" alt="GET_ACTORS"><figcaption><p>GET_ACTORS: Bearbeiter dynamisch zur Laufzeit ermitteln</p></figcaption></figure>
@@ -78,10 +78,10 @@ Meldungen aus Hintergrundschritten (`ET_BAPIRET2`) werden automatisch im **Anwen
 
 ## 3.7 Mail-Platzhalter ersetzen mit GET\_DATASOURCE\_MAIL
 
-Die SO10-Texte für den Mailversand enthalten Platzhalter (`§{...}`). Die Methode `GET_DATASOURCE_MAIL` liefert die Ersetzungswerte -- typischerweise Belegdaten, die aus dem conFLOW-Container oder aus dem SAP-Beleg gelesen werden.
+Die SO10-Texte für den Mailversand enthalten Platzhalter der Form `&STRUKTUR-FELD&`. Belegfelder liefert mit `TEMPLATE` in `/C09/CFL_C08` bereits das Framework. Die Methode `GET_DATASOURCE_MAIL` liefert zusätzliche Datenquellen -- etwa Werte aus dem conFLOW-Container oder das Protokoll.
 
 {% hint style="info" %}
-**Referenzimplementierung:** Die Standardklasse `/C09/CFL_CL_BADI_0101` enthält ein Beispiel für `GET_DATASOURCE_MAIL`, das als Ausgangspunkt dienen kann.
+**Vorlage:** [Referenz: GET_DATASOURCE_MAIL](../badi-referenz/mail/get-datasource-mail.md).
 {% endhint %}
 
 <figure><img src="../../.gitbook/assets/Folie29.png" alt="GET_DATASOURCE_MAIL"><figcaption><p>Platzhalter in SO10-Texten dynamisch ersetzen</p></figcaption></figure>
@@ -93,9 +93,11 @@ Die SO10-Texte für den Mailversand enthalten Platzhalter (`§{...}`). Die Metho
 Wenn der Bearbeiter aus dem Workitem ins Belegobjekt springen will (Doppelklick im SAP-GUI), ruft conFLOW die Methode `EXECUTE_DEFAULT_METHOD`. Dort setzen Sie den Parameter und rufen die Transaktion auf:
 
 ```abap
-SET PARAMETER ID 'ANR' FIELD lv_belegnr.
+SET PARAMETER ID 'AUN' FIELD lv_belegnr.
 CALL TRANSACTION 'VA03' AND SKIP FIRST SCREEN.
 ```
+
+Ist in `/C09/CFL_C08` ein `TEMPLATE` und in der Workflow-Definition eine Objektbeschriftung (`OBJTEXT`) gepflegt, öffnet conFLOW den Beleg beim Doppelklick selbst. Die Methode brauchen Sie nur für ein anderes Sprungziel.
 
 <figure><img src="../../.gitbook/assets/Folie30.png" alt="EXECUTE_DEFAULT_METHOD"><figcaption><p>Absprung aus dem Workitem in die SAP-Transaktion</p></figcaption></figure>
 
@@ -103,6 +105,6 @@ CALL TRANSACTION 'VA03' AND SKIP FIRST SCREEN.
 
 ## 3.9 Weitere Möglichkeiten
 
-Das BAdI-Interface bietet zahlreiche weitere Hooks -- für die meisten Workflows reichen die oben gezeigten. Weitere Hooks wie `GET_AFTER_EXECUTION_WORKITEM`, `GET_BEFORE_DECISION_WORKITEM` oder `GET_OBJECT_INFO` ermöglichen Nachlauflogik, Button-Steuerung und die Anpassung der Fiori-Darstellung.
+Das BAdI-Interface bietet zahlreiche weitere Hooks -- für die meisten Workflows reichen die oben gezeigten. Weitere Hooks wie `GET_AFTER_EXECUTION_WORKITEM`, `GET_BEFORE_DECISION_WORKITEM` oder `GET_OBJECT_INFO` ermöglichen Nachlauflogik, Button-Steuerung und die Anpassung der Fiori-Darstellung. Vieles davon ist inzwischen Einstellung: Button-Farbe und Kommentarpflicht (`/C09/CFL_C09`, `NATURE`/`COMMENT_REQ`), Objektbeschriftung (`OBJTEXT` der Workflow-Definition), Priorität (`PRIO` im Genehmigungsschritt).
 
 <figure><img src="../../.gitbook/assets/Folie31.png" alt="Weitere Möglichkeiten"><figcaption><p>Weitere BAdI-Hooks für spezielle Anforderungen</p></figcaption></figure>
