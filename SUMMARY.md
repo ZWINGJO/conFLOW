@@ -2,6 +2,7 @@
 
 * [conFLOW - SAP Workflows Made Easy](README.md)
 * [conFLOW in Aktion ↗](https://story.conflow-help.com)
+* [Kontakt](kontakt.md)
 
 ## Workflow Stories
 
@@ -83,6 +84,8 @@
 ## English version
 
 * [Overview](en/README.md)
+* [conFLOW in action ↗](https://story.conflow-help.com)
+* [Contact](en/contact.md)
 * [Examples of implemented workflows](en/workflow-stories/README.md)
   * [HR sick leave notification](en/workflow-stories/hr-sick-leave.md)
   * [HR onboarding](en/workflow-stories/hr-onboarding.md)

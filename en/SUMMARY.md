@@ -2,6 +2,7 @@
 
 * [conFLOW - SAP Workflows Made Easy](README.md)
 * [conFLOW in action ↗](https://story.conflow-help.com)
+* [Contact](contact.md)
 
 ## Workflow Stories
 
