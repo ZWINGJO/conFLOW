@@ -52,3 +52,15 @@ Bringing a standard SAP workflow into production typically takes ten days: task 
 {% content-ref url="how-to/sick-leave-workflow/" %}
 [How-to: sick leave workflow](how-to/sick-leave-workflow/)
 {% endcontent-ref %}
+
+## Contact
+
+<figure><img src=".gitbook/assets/kontakt-johannes-zwinger.jpg" alt="Johannes Zwinger" width="200"><figcaption></figcaption></figure>
+
+**Johannes Zwinger – xsource consulting GmbH**
+
+Solution Architect conFLOW
+
+I am happy to answer any questions you may have about the solution architecture, integration into your system landscape, and test installations.
+
+[johannes.zwinger@xsource-consulting.com](mailto:johannes.zwinger@xsource-consulting.com)
