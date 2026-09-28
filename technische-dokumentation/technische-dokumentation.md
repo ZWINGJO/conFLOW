@@ -386,6 +386,8 @@ Damit entsteht ein vollständiger Audit Trail ohne eigene Z-Tabelle: wer hat wan
 
 Der Container `/C09/CFL_S04` speichert beliebige Attribut-Wert-Paare je Instanz. Geschrieben und gelesen wird über die Framework-Methoden `SET_ATTRIBUT_VALUE` und `GET_ATTRIBUT_VALUE`. Werte können beim Start mitgegeben werden (siehe Abschnitt 3) oder in jedem Schritt entstehen.
 
+Eine **Zeile** fasst 132 Zeichen. Ein längerer Wert liegt auf mehreren Zeilen, unterschieden über `TAB_INDEX`. Zum **Lesen** setzt `/C09/CFL_CL_FIELDS_0101=>READ_VALUE( iv_id, iv_element )` ihn wieder zusammen — eine Zeile Code. Wer **selbst schreibt**, verteilt selbst; die Feldgruppen (Abschnitt 14) nehmen einem beides ab.
+
 Der Container ist zugleich die natürliche Quelle für Platzhalter in Workitem-Texten und Mails — und der Grund, warum der Audit Trail ohne Zusatzaufwand entsteht: was dort steht, ist später nachvollziehbar.
 
 ## 14 Eingabefelder am Workitem
@@ -396,6 +398,8 @@ Ein Genehmiger soll oft mehr liefern als Ja oder Nein: einen bestätigten Preis,
 | --- | --- | --- |
 | Feldgruppen | `/C09/CFL_C13` | eine Zeile je Feldgruppe (`VIEW_ID`), Überschrift in `C13T` |
 | Felder der Feldgruppe | `/C09/CFL_C14` | die Felder der Gruppe: Reihenfolge, Datenelement, Modus, Pflicht; Bezeichnung in `C14T` |
+
+Schritt für Schritt steht das im How-To [Eingabefelder am Workitem einrichten](../how-to-beispielimplementierung/eingabefelder-einrichten.md).
 
 Welche Gruppe ein Schritt zeigt, steht in `C01-VIEW_ID`. **Ein Schritt ohne Eintrag zeigt kein Formular und läuft unverändert** — das Feature kostet nichts, solange es niemand einschaltet.
 
@@ -435,7 +439,11 @@ Die Prüfung sitzt im Kern, nicht in der Oberfläche: sie greift im SAP GUI, in 
 Der Parameter `VIEW_ID` in `C08` benennt eine Feldgruppe, die **vor** dem Start gefüllt wird — das Antragsformular. Die Werte gehen dem Start mit, nicht hinterher; so kann ein erster Hintergrundschritt sofort mit ihnen rechnen und seine Regel darauf anwenden.
 
 {% hint style="info" %}
-**Im SAP GUI erscheint der Bereich ohne Einrichtung.** Für die Fiori My Inbox benennt der Parameter `VISU` die App, die ein Schritt öffnet; die mitgelieferte App braucht einen registrierten OData-Service und ein Target-Mapping — **einmal je System**, danach nur noch Customizing.
+**Im SAP GUI erscheint der Bereich ohne Einrichtung.**
+
+**Für die Fiori My Inbox liefert conFLOW die App mit** — sie zeigt jede Feldgruppe, ohne dass jemand etwas programmiert (Paket `/C09/CONFLOW_FIORI`, OData-Service `/C09/CFL_INBOX_SRV`). Einzurichten ist sie **einmal je System**: Service registrieren und aktivieren, ein Semantic Object anlegen (`/UI2/SEMOBJ`) und ein Target-Mapping darauf — die Action ist fest `openInInbox`. Danach trägt man je Workflow dieses Semantic Object in `C08-VISU` ein, und das ist alles.
+
+**Das BAdI wird dafür nicht gebraucht.** `set_inbox_ui( )` bleibt für den Sonderfall, dass ein Schritt eine *andere* App öffnen soll.
 {% endhint %}
 
 ### Eine Gruppe in ein anderes System oder einen anderen Workflow

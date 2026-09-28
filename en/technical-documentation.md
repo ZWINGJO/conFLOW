@@ -386,6 +386,8 @@ This gives you a complete audit trail without a custom table: who processed whic
 
 The container `/C09/CFL_S04` stores any attribute-value pairs per instance. It is written and read with the framework methods `SET_ATTRIBUT_VALUE` and `GET_ATTRIBUT_VALUE`. Values can be passed in at start (see section 3) or created in any step.
 
+A **row** holds 132 characters. A longer value sits on several rows, told apart by `TAB_INDEX`. To **read** it, `/C09/CFL_CL_FIELDS_0101=>READ_VALUE( iv_id, iv_element )` puts it back together — one line of code. If you **write it yourself**, you split it yourself; field sets (section 14) take both off your hands.
+
 The container is also the natural source for placeholders in work item texts and emails — and the reason the audit trail comes for free: whatever is stored there can be traced later.
 
 ## 14 Input fields on the work item
@@ -396,6 +398,8 @@ An approver often has to supply more than yes or no: a confirmed price, a cost c
 | --- | --- | --- |
 | Field sets | `/C09/CFL_C13` | one row per field set (`VIEW_ID`), heading in `C13T` |
 | Fields of the field set | `/C09/CFL_C14` | the fields of the set: sequence, data element, mode, mandatory; label in `C14T` |
+
+Step by step, this is in the how-to [Setting up input fields on the work item](how-to/set-up-input-fields.md).
 
 Which set a step shows is held in `C01-VIEW_ID`. **A step without an entry shows no form and runs unchanged** — the feature costs nothing as long as nobody switches it on.
 
@@ -435,7 +439,11 @@ The check sits in the core, not in the user interface: it applies in the SAP GUI
 The parameter `VIEW_ID` in `C08` names a field set that is filled **before** the start — the request form. The values travel with the start, not after it, so a first background step can work with them right away and apply its rule to them.
 
 {% hint style="info" %}
-**In the SAP GUI the area appears with no setup.** For Fiori My Inbox the parameter `VISU` names the app a step opens; the delivered app needs a registered OData service and a target mapping — **once per system**, after that it is Customizing only.
+**In the SAP GUI the area appears with no setup.**
+
+**For Fiori My Inbox, conFLOW delivers the app** — it renders any field set with nothing programmed (package `/C09/CONFLOW_FIORI`, OData service `/C09/CFL_INBOX_SRV`). It is set up **once per system**: register and activate the service, create a semantic object (`/UI2/SEMOBJ`) and a target mapping on it — the action is fixed as `openInInbox`. After that you enter that semantic object in `C08-VISU` per workflow, and that is all.
+
+**The BAdI is not needed for this.** `set_inbox_ui( )` remains for the special case where a step is to open a *different* app.
 {% endhint %}
 
 ### Moving a set to another system or workflow

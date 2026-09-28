@@ -26,6 +26,7 @@
   * [Schritt 2: Customizing erweitern](how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-2-customizing-erweitern.md)
   * [Schritt 3: BAdI-Implementierung](how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-3-badi-implementierung.md)
   * [Schritt 4: Workflow starten und testen](how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-4-workflow-starten.md)
+* [Eingabefelder am Workitem einrichten](how-to-beispielimplementierung/eingabefelder-einrichten.md)
 <!-- BEGIN howto-fiori-workitem (erzeugt, nicht von Hand aendern) -->
 * [Eigene Fiori-Oberfläche im Workitem](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/README.md)
   * [conFLOW: die App ans Workitem hängen](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/conflow.md)
@@ -100,6 +101,7 @@
   * [Step 2: Extend the Customizing](en/how-to/sick-leave-workflow/step-2-extend-customizing.md)
   * [Step 3: BAdI implementation](en/how-to/sick-leave-workflow/step-3-badi-implementation.md)
   * [Step 4: Start and test the workflow](en/how-to/sick-leave-workflow/step-4-start-and-test.md)
+* [Setting up input fields on the work item](en/how-to/set-up-input-fields.md)
 * [Custom Fiori UI in the work item](en/how-to/fiori-ui-in-work-item/README.md)
   * [conFLOW: attaching the app to the work item](en/how-to/fiori-ui-in-work-item/conflow.md)
   * [Customizing and launchpad](en/how-to/fiori-ui-in-work-item/customizing.md)
