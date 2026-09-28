@@ -83,13 +83,73 @@ Dasselbe Element darf in mehreren Gruppen stehen — im einen Schritt als Eingab
 
 ### 4 · Fiori einschalten
 
-Im SAP GUI erscheint der Bereich ohne jede Einrichtung. Für die Fiori My Inbox liefert conFLOW die App mit (Paket `/C09/CONFLOW_FIORI`, OData-Service `/C09/CFL_INBOX_SRV`):
+**Im SAP GUI erscheint der Bereich ohne jede Einrichtung** — Schritt 4 betrifft nur die Fiori My Inbox. Dort liefert conFLOW die App mit; einzurichten ist sie **einmal je System**, danach ist jeder weitere Workflow eine Zeile Customizing.
 
-| | Wie oft |
+#### Wie es zusammenhängt
+
+```
+My Inbox, Workitem angeklickt
+     │
+     │  Task TS00388601 ist auf dynamische Visualisierung gestellt (SWFVMD1)
+     │  und liest drei Container-Elemente des Workitems
+     ▼
+  conFLOW hat sie beim Anlegen gesetzt — aus C08-VISU
+     │     /C09/CFL_CL_VISU_0101, im Workitem-Exit vor dem BAdI
+     ▼
+  Intent:  <SemanticObject>-openInInbox?CFLQueryObject00=<Vorgang>
+     │
+     │  Target Mapping im Launchpad löst ihn auf
+     ▼
+  App  c09.cfl.inbox   (BSP /C09/CFL_INBOX)
+     │  OData V2
+     ▼
+  /C09/CFL_INBOX_SRV → Datenschicht → Feldkern → Container /C09/CFL_S04
+```
+
+**Welche App erscheint, entscheidet das einzelne Workitem**, nicht der Task. Deshalb können in derselben Inbox Workflows mit Formular und ohne nebeneinander liegen. Und deshalb bekommen **nur neue Workitems** die Weiterleitung: sie wird beim Anlegen in den Container geschrieben.
+
+#### Einmal je System
+
+| # | Was | Transaktion |
+| --- | --- | --- |
+| 1 | Modell registrieren: `/C09/CFL_INBOX_MDL`, Model Provider Class `/C09/CFL_CL_INBOX_MPC` | `/IWBEP/REG_MODEL` |
+| 2 | Service registrieren: `/C09/CFL_INBOX_SRV`, Data Provider Class `/C09/CFL_CL_INBOX_DPC_EXT`, Modell zuordnen | `/IWBEP/REG_SERVICE` |
+| 3 | Service aktivieren und `$metadata` aufrufen — kommt das Modell zurück, steht die Hälfte | `/IWFND/MAINT_SERVICE` |
+| 4 | Target Mapping anlegen (**keine Kachel**) | `/UI2/FLPD_CUST` |
+| 5 | Den Katalog in die Rolle der Bearbeiter | `PFCG` |
+
+{% hint style="danger" %}
+**Schritt 1 bis 3 gehen nicht mit dem Transport.** Klassen und App kommen mit, die Registrierung ist eine Systemeinstellung und muss in jedem System nachgeholt werden. Fehlt sie, meldet die App *Service nicht gefunden* — und niemand weiß warum.
+{% endhint %}
+
+#### Die Namen, und was womit übereinstimmen muss
+
+| Wert | Wo er steht | Woher er kommt |
+| --- | --- | --- |
+| **Semantic Object** | Target Mapping **und** `C08-VISU` | **frei gewählt** — beide Stellen müssen exakt gleich lauten. Kein `/` erlaubt, einen Namensraum also als Präfix schreiben |
+| **Action** `openInInbox` | Target Mapping | **fest im Produkt** (`/C09/CFL_CL_VISU_0101`) — nicht ändern |
+| **ID** `c09.cfl.inbox` | Target Mapping | die **Component-ID** der App, nicht der BSP-Name |
+| **URL** `/sap/bc/ui5_ui5/c09/cfl_inbox` | Target Mapping | die BSP-Anwendung `/C09/CFL_INBOX` |
+| **Parameter** `openMode` | Target Mapping, als **Value**, nicht als Default Value, Pflicht angehakt | Wert `embedIntoDetailsNestedRouter`. Fehlt er, bleibt der Detailbereich **weiß** |
+| *Allow additional parameters* | Target Mapping | angehakt — die App liest die Vorgangs-ID selbst aus der URL |
+
+{% hint style="info" %}
+**Der Eintrag in `/UI2/SEMOBJ` ist Komfort, keine Voraussetzung.** Aufgelöst wird der Intent über das Target Mapping; die Tabelle liefert die Wertehilfe im Launchpad Designer. Ohne Eintrag läuft alles — nur muss der Name beim Anlegen des Target Mapping exakt getippt werden, und ein Tippfehler dort meldet sich nirgends. Eine Minute, die sich lohnt.
+{% endhint %}
+
+#### Berechtigungen
+
+| Wer | Was er braucht |
 | --- | --- |
-| Service registrieren (`/IWBEP/REG_SERVICE`) und aktivieren (`/IWFND/MAINT_SERVICE`) | **einmal je System** |
-| Semantic Object anlegen (`/UI2/SEMOBJ`) und ein Target Mapping darauf — Action ist fest `openInInbox` | **einmal je System** |
-| Dieses Semantic Object in `C08-VISU` eintragen | je Workflow |
+| Der Bearbeiter | die Fiori My Inbox wie bisher, **plus** den Katalog mit dem Target Mapping in einer seiner Rollen — sonst löst der Absprung nicht auf und das Workitem sieht aus wie vorher |
+| Der Bearbeiter | Zugriff auf den OData-Service `/C09/CFL_INBOX_SRV`, wie für jeden Gateway-Service |
+| Niemand | **eine eigene conFLOW-Berechtigung.** Wer entscheiden darf, darf eingeben |
+
+**Das letzte ist wichtiger, als es aussieht.** conFLOW prüft nicht über ein Berechtigungsobjekt, sondern über das Workitem: schreiben darf, wer **aktueller Bearbeiter des offenen Workitems** ist — oder dessen **aktive Vertretung**. Alle anderen sehen dasselbe Formular als reine Anzeige, mit dem Hinweis *Nur Anzeige — dieses Workitem ist nicht für Sie offen*. Wer also nach einer Rolle sucht, die „Eingabefelder darf schreiben" erlaubt, sucht vergeblich; es gibt sie nicht und sie wäre auch falsch.
+
+#### Und dann je Workflow
+
+Das Semantic Object in `C08-VISU` eintragen. Das ist alles.
 
 **Das BAdI wird dafür nicht gebraucht.** `set_inbox_ui( )` bleibt für den Sonderfall, dass ein Schritt eine *andere* App öffnen soll.
 
