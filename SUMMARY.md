@@ -27,9 +27,7 @@
   * [Schritt 3: BAdI-Implementierung](how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-3-badi-implementierung.md)
   * [Schritt 4: Workflow starten und testen](how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-4-workflow-starten.md)
 * [Eingabefelder am Workitem einrichten](how-to-beispielimplementierung/eingabefelder-einrichten.md)
-<!-- BEGIN howto-fiori-workitem (erzeugt, nicht von Hand aendern) -->
 * [Eigene Fiori-Oberfläche statt der mitgelieferten](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/README.md)
-<!-- END howto-fiori-workitem -->
 
 <!-- conflow-badi-referenz:anfang -->
 * [Referenz: alle 26 BAdI-Methoden](how-to-beispielimplementierung/badi-referenz/README.md)

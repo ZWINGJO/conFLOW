@@ -27,9 +27,7 @@
   * [Step 3: BAdI implementation](how-to/sick-leave-workflow/step-3-badi-implementation.md)
   * [Step 4: Start and test the workflow](how-to/sick-leave-workflow/step-4-start-and-test.md)
 * [Setting up input fields on the work item](how-to/set-up-input-fields.md)
-<!-- BEGIN howto-fiori-workitem (erzeugt, nicht von Hand aendern) -->
 * [Your own Fiori UI instead of the delivered app](how-to/fiori-ui-in-work-item/README.md)
-<!-- END howto-fiori-workitem -->
 
 <!-- conflow-badi-referenz:anfang -->
 * [Reference: all 26 BAdI methods](how-to/badi-reference/README.md)
