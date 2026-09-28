@@ -28,11 +28,7 @@
   * [Schritt 4: Workflow starten und testen](how-to-beispielimplementierung/beispiel-workflow-krankmeldung/schritt-4-workflow-starten.md)
 * [Eingabefelder am Workitem einrichten](how-to-beispielimplementierung/eingabefelder-einrichten.md)
 <!-- BEGIN howto-fiori-workitem (erzeugt, nicht von Hand aendern) -->
-* [Eigene Fiori-Oberfläche im Workitem](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/README.md)
-  * [conFLOW: die App ans Workitem hängen](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/conflow.md)
-  * [Customizing und Launchpad](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/customizing.md)
-  * [Die App: OData V2 und UI5 freestyle](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/app.md)
-  * [Einspielen, prüfen, Notaus](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/pruefen.md)
+* [Eigene Fiori-Oberfläche statt der mitgelieferten](how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/README.md)
 <!-- END howto-fiori-workitem -->
 
 <!-- conflow-badi-referenz:anfang -->
@@ -102,11 +98,7 @@
   * [Step 3: BAdI implementation](en/how-to/sick-leave-workflow/step-3-badi-implementation.md)
   * [Step 4: Start and test the workflow](en/how-to/sick-leave-workflow/step-4-start-and-test.md)
 * [Setting up input fields on the work item](en/how-to/set-up-input-fields.md)
-* [Custom Fiori UI in the work item](en/how-to/fiori-ui-in-work-item/README.md)
-  * [conFLOW: attaching the app to the work item](en/how-to/fiori-ui-in-work-item/conflow.md)
-  * [Customizing and launchpad](en/how-to/fiori-ui-in-work-item/customizing.md)
-  * [The app: OData V2 and UI5 freestyle](en/how-to/fiori-ui-in-work-item/app.md)
-  * [Deploy, check, kill switch](en/how-to/fiori-ui-in-work-item/check.md)
+* [Your own Fiori UI instead of the delivered app](en/how-to/fiori-ui-in-work-item/README.md)
 * [Reference: all 26 BAdI methods](en/how-to/badi-reference/README.md)
   * [Why this example](en/how-to/badi-reference/basics/why.md)
   * [The process](en/how-to/badi-reference/basics/process.md)

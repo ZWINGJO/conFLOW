@@ -147,11 +147,23 @@ My Inbox, work item clicked
 
 **The last point matters more than it looks.** conFLOW does not check an authorisation object but the work item: writing is allowed for whoever is the **current agent of the open work item** — or their **active substitute**. Everyone else sees the same form as display only, with the note *Display only — this work item is not open for you*. So if you are looking for a role that grants "may write input fields", you will not find one; it does not exist, and it would be the wrong place.
 
+#### Kill switch and rollback
+
+| Goal | What you do | Affects |
+| --- | --- | --- |
+| gone at once, including open work items | delete the target mapping from the catalog | **all** work items, without a transport |
+| new work items without a form | clear `VISU` in `C08` | **new** work items only |
+| switch the form off on one step | clear `VIEW_ID` in `C01` | that step, in **both** interfaces |
+
+{% hint style="success" %}
+**The fallback is not an emergency measure but the normal case** — every work item without the three container elements shows the standard text block. That is why it is reliable: it is in constant use, not only when something goes wrong.
+{% endhint %}
+
 #### And then per workflow
 
 Enter the semantic object in `C08-VISU`. That is all.
 
-**The BAdI is not needed for this.** `set_inbox_ui( )` remains for the special case where a step is to open a *different* app.
+**The BAdI is not needed for this.** It remains for the special case where every step is to open a *different* app — then you set the container elements yourself in the hook `get_after_creation_workitem`.
 
 ## A request without a document
 

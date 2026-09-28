@@ -443,7 +443,7 @@ The parameter `VIEW_ID` in `C08` names a field set that is filled **before** the
 
 **For Fiori My Inbox, conFLOW delivers the app** — it renders any field set with nothing programmed (package `/C09/CONFLOW_FIORI`, OData service `/C09/CFL_INBOX_SRV`). It is set up **once per system**: register and activate the service, create a semantic object (`/UI2/SEMOBJ`) and a target mapping on it — the action is fixed as `openInInbox`. After that you enter that semantic object in `C08-VISU` per workflow, and that is all.
 
-**The BAdI is not needed for this.** `set_inbox_ui( )` remains for the special case where a step is to open a *different* app.
+**The BAdI is not needed for this.** It remains for the special case where every step is to open a *different* app.
 {% endhint %}
 
 ### Moving a set to another system or workflow
