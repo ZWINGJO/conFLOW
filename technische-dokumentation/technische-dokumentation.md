@@ -37,7 +37,7 @@ Einstieg ist die Transaktion `/C09/CONFLOW_C`, ein View-Cluster über alle Knote
 | Knoten im Pflegebaum | Tabelle | Inhalt |
 | --- | --- | --- |
 | Workflow Definition | `/C09/CFL_C06` | eine Zeile je Workflow-Nummer; Beschriftung des Objekts in `C06T-OBJTEXT` |
-| Genehmigungsschritte | `/C09/CFL_C01` | Schritte mit Status-Code `gen_stat`, Attribut, Texten, Klasse/Methode, Priorität (`PRIO`), Entscheidungsregel bei mehreren Bearbeitern |
+| Genehmigungsschritte | `/C09/CFL_C01` | Schritte mit Status-Code `gen_stat`, Attribut, Texten, Klasse/Methode, Priorität (`PRIO`), Entscheidungsregel bei mehreren Bearbeitern, Feldgruppe (`VIEW_ID`) |
 | Genehmigungsstatus - Steuerung | `/C09/CFL_C02` | Übergänge (OK / NOK / Frist), Fristen |
 | Steuerung zusätzlicher Status | `/C09/CFL_C09` | Entscheidungsalternativen `UC1`–`UC5` je Schritt; Farbe und Kommentarpflicht der Knöpfe (auch für OK/NOK); Regeln |
 | User Status Definition | `/C09/CFL_C04` | Rollen, also die Bearbeiter-Keys `gen_stat_user` |
@@ -47,6 +47,8 @@ Einstieg ist die Transaktion `/C09/CONFLOW_C`, ein View-Cluster über alle Knote
 | Steuerung Mailversand | `/C09/CFL_C07` | wer bei welcher Entscheidung welche Mail bekommt |
 | Allgemeine Parameter | `/C09/CFL_C08` | Einstellungen je Workflow, siehe Abschnitt 10 |
 | Typkoppelung Standard | `/C09/CFL_C10` | welches Ereignis welchen Workflow startet |
+| Feldgruppen | `/C09/CFL_C13` | Eingabefelder am Workitem: eine Zeile je Gruppe, Überschrift in `C13T` — siehe Abschnitt 14 |
+| Felder der Feldgruppe | `/C09/CFL_C14` | die Felder einer Gruppe: Reihenfolge, Datenelement, Modus, Pflicht; Bezeichnung in `C14T` |
 
 {% hint style="warning" %}
 **Texte gehören nie in `C01`, `C06` oder `C09` selbst, sondern immer in die zugehörige `*t`-Tabelle.** Wer den Text in der Stammtabelle sucht, findet ihn nicht — und wer ihn dort pflegen will, verliert ihn bei der nächsten Sprache.
@@ -386,7 +388,65 @@ Der Container `/C09/CFL_S04` speichert beliebige Attribut-Wert-Paare je Instanz.
 
 Der Container ist zugleich die natürliche Quelle für Platzhalter in Workitem-Texten und Mails — und der Grund, warum der Audit Trail ohne Zusatzaufwand entsteht: was dort steht, ist später nachvollziehbar.
 
-## 14 Die BAdI-Schnittstelle
+## 14 Eingabefelder am Workitem
+
+Ein Genehmiger soll oft mehr liefern als Ja oder Nein: einen bestätigten Preis, eine Kostenstelle, ein Datum, eine Begründung. Dafür braucht es **keine eigene Oberfläche**. Eine Feldgruppe im Customizing genügt — und sie erscheint im SAP Business Workplace und in der Fiori My Inbox gleichermaßen.
+
+| Knoten im Pflegebaum | Tabelle | Inhalt |
+| --- | --- | --- |
+| Feldgruppen | `/C09/CFL_C13` | eine Zeile je Feldgruppe (`VIEW_ID`), Überschrift in `C13T` |
+| Felder der Feldgruppe | `/C09/CFL_C14` | die Felder der Gruppe: Reihenfolge, Datenelement, Modus, Pflicht; Bezeichnung in `C14T` |
+
+Welche Gruppe ein Schritt zeigt, steht in `C01-VIEW_ID`. **Ein Schritt ohne Eintrag zeigt kein Formular und läuft unverändert** — das Feature kostet nichts, solange es niemand einschaltet.
+
+Eine Gruppe gehört zu **einer** Workflow-Definition und kann darin an mehreren Schritten hängen — die Werte gehören dem Vorgang, nicht dem Schritt. Erbt eine Definition über den Parameter `WF_DEF`, findet ein geerbter Schritt seine Gruppe auch unter der Eltern-Definition.
+
+### Das Datenelement ist der Hebel
+
+Aus `C14-ROLLNAME` kommen Typ, Länge, Nachkommastellen, Konvertierungs-Exit, Festwerte, Prüftabelle und die übersetzte Bezeichnung. Das Bedienelement ergibt sich daraus von selbst:
+
+| Im Datenelement | Im Formular |
+| --- | --- |
+| Festwerte, nur `X` | Ankreuzfeld |
+| Festwerte der Domäne | Auswahlliste; ab 20 Einträgen eine Wertehilfe mit Suche |
+| Prüftabelle | Auswahlliste bei kleinen Customizing-Tabellen, sonst freie Eingabe mit Prüfung |
+| Datum, Uhrzeit | Kalender, Uhrzeitfeld |
+| Betrag (`CURR`) | Betragsfeld mit Währung |
+| Menge, Zahl | Zahlenfeld mit den Nachkommastellen des Felds |
+| Zeichenkette (`STRING`) | mehrzeiliges Textfeld |
+| DDIC-Struktur | Tabelle mit einer Spalte je Feld |
+
+Je Feld legt `C14` fest, ob es **Eingabe** oder **Anzeige** ist und ob es **Pflicht** ist. Dasselbe Containerelement kann in einem Schritt Eingabe und im nächsten Anzeige sein — so wird aus dem Antrag des einen die Entscheidungsgrundlage des anderen, ohne die Angabe zu kopieren.
+
+### Wo die Werte landen
+
+Im Container `/C09/CFL_S04` (Abschnitt 13) — also dort, wo auch die Platzhalter für Workitem-Text und Mail herkommen. Jede Änderung schreibt `/C09/CFL_S05` fort, mit Benutzer, Zeitpunkt und **Kanal**: SAP GUI, Web oder Hintergrund. Der Audit Trail entsteht dabei von selbst; wer denselben Wert erst im SAP GUI und später in Fiori ändert, sieht beide Wege getrennt.
+
+Weil die Werte im Container stehen, sind sie **zugleich Platzhalter**: im Workitem-Text und in jeder Mail steht jedes Feld als `&CFL-<ELEMENT>&` zur Verfügung, ohne dass es dafür eine Zeile Customizing braucht.
+
+### Wann die Pflicht greift
+
+**Beim Start und beim Entscheiden — nicht beim Speichern.** Wer ein Pflichtfeld leert, darf das speichern. Sonst zeigte das Bild leer, in `S04` stünde der alte Wert, und entschieden würde mit dem alten, obwohl der Bearbeiter etwas anderes gesehen hat.
+
+Die Prüfung sitzt im Kern, nicht in der Oberfläche: sie greift im SAP GUI, in der Fiori My Inbox und bei jeder Entscheidung über die Workflow-API.
+
+### Werte schon beim Start
+
+Der Parameter `VIEW_ID` in `C08` benennt eine Feldgruppe, die **vor** dem Start gefüllt wird — das Antragsformular. Die Werte gehen dem Start mit, nicht hinterher; so kann ein erster Hintergrundschritt sofort mit ihnen rechnen und seine Regel darauf anwenden.
+
+{% hint style="info" %}
+**Im SAP GUI erscheint der Bereich ohne Einrichtung.** Für die Fiori My Inbox benennt der Parameter `VISU` die App, die ein Schritt öffnet; die mitgelieferte App braucht einen registrierten OData-Service und ein Target-Mapping — **einmal je System**, danach nur noch Customizing.
+{% endhint %}
+
+### Eine Gruppe in ein anderes System oder einen anderen Workflow
+
+Feldgruppen lassen sich als JSON ausgeben und wieder einlesen — zwischen Systemen oder in eine andere Definition: Report `/C09/CFL_FIELDS_JSON`, **erst simulieren**. Das spart das Abtippen und ist der Weg, eine erprobte Gruppe zu vervielfältigen.
+
+### Die Grenze
+
+Eine Feldgruppe beschreibt Felder, keine Abhängigkeiten. Abhängige Wertelisten, kontextabhängige Pflicht oder abgeleitete Vorschläge brauchen den Feld-Exit: eine Klasse hinter dem Parameter `FIELD_EXIT` in `C08`, die die fertige Feldliste noch einmal in die Hand bekommt, bevor die Oberfläche sie zeichnet.
+
+## 15 Die BAdI-Schnittstelle
 
 Das Interface `/C09/CFL_IF_BADI_0101` definiert die Stellen, an denen Sonderlogik einhängt. Braucht ein Workflow sie, implementiert eine eigene Klasse `ZCL_CFL_WORKFLOW_<nnnnn>` dieses Interface; der Filter der Implementierung ist die Workflow-Nummer. Hooks, die Sie nicht brauchen, bleiben leer.
 
@@ -407,15 +467,15 @@ Für die Standardfälle braucht es keinen dieser Hooks: Bearbeiter (`C03`), Tite
 **Alle 26 Methoden, jede mit Zweck, Signatur, Quelltext und dem Hinweis, wann sie besser leer bleibt,** stehen in der [BAdI-Referenz](../how-to-beispielimplementierung/badi-referenz/README.md).
 {% endhint %}
 
-## 15 Oberflächen
+## 16 Oberflächen
 
 Workitems erscheinen im SAP Business Workplace (`SBWP`) und in der SAP Fiori My Inbox. conFLOW steuert in beiden Beschriftung, Farbe und Kommentarpflicht der Knöpfe (`C09`/`C09T`), den Titel und den Absprung ins Belegobjekt aus demselben Customizing. Welche Fiori-App ein Schritt in der My Inbox öffnet, legt der Parameter `VISU` fest. Das BAdI bleibt für Abweichungen.
 
 Zusätzlich lässt sich jeder Schritt mobil darstellen: eine conMOBILE-App liest denselben Container und verwendet dieselben Entscheidungsschlüssel. Eine Datenquelle, ein Entscheidungsmodell — unabhängig davon, wo entschieden wird.
 
-Wer in der Fiori My Inbox eigene Eingabefelder am Workitem braucht, findet den gebauten Weg im [How-To zur Fiori-Oberfläche](../how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/README.md).
+**Eingabefelder am Workitem sind Customizing** und erscheinen in beiden Oberflächen — siehe Abschnitt 14. Eine eigene Fiori-App braucht erst, wer mehr will als Felder: eine Belegvorschau, eine Simulation, eine Bedienung, die es so nicht gibt. Der gebaute Weg dorthin steht im [How-To zur Fiori-Oberfläche](../how-to-beispielimplementierung/fiori-oberflaeche-im-workitem/README.md).
 
-## 16 Transaktionen und die Admin-Konsole
+## 17 Transaktionen und die Admin-Konsole
 
 | Transaktion | Zweck |
 | --- | --- |
@@ -439,7 +499,7 @@ Die Konsole beantwortet die Fragen, die im Betrieb täglich anfallen: Was läuft
 
 **Statt der Einzelliste** lässt sich eine **Auswertung** anzeigen: je Workflow-Definition und Schritt die Zahl der Vorgänge gesamt, offen und erledigt, die längste und die durchschnittliche Liegedauer der offenen, die längste und die durchschnittliche Durchlaufzeit der erledigten sowie die Verteilung der Entscheidungen samt Ablehnungsquote, mit derselben Ampel je Zeile. Das ist der schnellste Weg zu der Frage, an welchem Schritt ein Prozess wirklich hängt.
 
-## 17 Objekte im System
+## 18 Objekte im System
 
 Die Erweiterungsschnittstelle:
 
