@@ -1,9 +1,9 @@
 # Kontakt
 
-{% columns %}
-{% column width="66.66666666666666%" %}
 ## Haben Sie Fragen?
 
+{% columns %}
+{% column width="66.66666666666666%" %}
 **Johannes Zwinger – xsource consulting GmbH**<br>Solution Architect conFLOW
 
 Ich beantworte gerne Ihre Fragen zur Lösungsarchitektur, zur Integration in Ihre Systemlandschaft und zu Testinstallationen.
