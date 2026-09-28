@@ -83,13 +83,73 @@ The same element may appear in several sets — input on one step, display on th
 
 ### 4 · Switch on Fiori
 
-In the SAP GUI the area appears with no setup at all. For Fiori My Inbox, conFLOW delivers the app (package `/C09/CONFLOW_FIORI`, OData service `/C09/CFL_INBOX_SRV`):
+**In the SAP GUI the area appears with no setup at all** — step 4 concerns Fiori My Inbox only. There, conFLOW delivers the app; it is set up **once per system**, after which every further workflow is one line of Customizing.
 
-| | How often |
+#### How it fits together
+
+```
+My Inbox, work item clicked
+     │
+     │  task TS00388601 is set to dynamic visualisation (SWFVMD1)
+     │  and reads three container elements of the work item
+     ▼
+  conFLOW set them when the work item was created — from C08-VISU
+     │     /C09/CFL_CL_VISU_0101, in the work item exit before the BAdI
+     ▼
+  Intent:  <SemanticObject>-openInInbox?CFLQueryObject00=<case>
+     │
+     │  the target mapping in the launchpad resolves it
+     ▼
+  App  c09.cfl.inbox   (BSP /C09/CFL_INBOX)
+     │  OData V2
+     ▼
+  /C09/CFL_INBOX_SRV → data layer → field core → container /C09/CFL_S04
+```
+
+**Which app appears is decided by the individual work item**, not by the task. That is why workflows with and without a form can sit next to each other in the same inbox. And that is why **only new work items** get the redirection: it is written into the container when they are created.
+
+#### Once per system
+
+| # | What | Transaction |
+| --- | --- | --- |
+| 1 | Register the model: `/C09/CFL_INBOX_MDL`, model provider class `/C09/CFL_CL_INBOX_MPC` | `/IWBEP/REG_MODEL` |
+| 2 | Register the service: `/C09/CFL_INBOX_SRV`, data provider class `/C09/CFL_CL_INBOX_DPC_EXT`, assign the model | `/IWBEP/REG_SERVICE` |
+| 3 | Activate the service and call `$metadata` — if the model comes back, half the job is done | `/IWFND/MAINT_SERVICE` |
+| 4 | Create the target mapping (**no tile**) | `/UI2/FLPD_CUST` |
+| 5 | Put the catalog into the agents' role | `PFCG` |
+
+{% hint style="danger" %}
+**Steps 1 to 3 do not travel with the transport.** Classes and app do, the registration is a system setting and has to be repeated in every system. Without it the app reports *service not found* — and nobody knows why.
+{% endhint %}
+
+#### The names, and what has to match what
+
+| Value | Where it is held | Where it comes from |
+| --- | --- | --- |
+| **Semantic object** | target mapping **and** `C08-VISU` | **freely chosen** — both places must read exactly the same. No `/` allowed, so write a namespace as a prefix |
+| **Action** `openInInbox` | target mapping | **fixed in the product** (`/C09/CFL_CL_VISU_0101`) — do not change |
+| **ID** `c09.cfl.inbox` | target mapping | the **component ID** of the app, not the BSP name |
+| **URL** `/sap/bc/ui5_ui5/c09/cfl_inbox` | target mapping | the BSP application `/C09/CFL_INBOX` |
+| **Parameter** `openMode` | target mapping, as **Value**, not as Default Value, mandatory ticked | value `embedIntoDetailsNestedRouter`. Without it the detail area stays **white** |
+| *Allow additional parameters* | target mapping | ticked — the app reads the case ID from the URL itself |
+
+{% hint style="info" %}
+**The entry in `/UI2/SEMOBJ` is convenience, not a prerequisite.** The intent is resolved by the target mapping; the table provides the value help in the launchpad designer. Without an entry everything works — only the name has to be typed exactly when creating the target mapping, and a typo there is reported nowhere. A minute well spent.
+{% endhint %}
+
+#### Authorisations
+
+| Who | What they need |
 | --- | --- |
-| Register the service (`/IWBEP/REG_SERVICE`) and activate it (`/IWFND/MAINT_SERVICE`) | **once per system** |
-| Create a semantic object (`/UI2/SEMOBJ`) and a target mapping on it — the action is fixed as `openInInbox` | **once per system** |
-| Enter that semantic object in `C08-VISU` | per workflow |
+| The agent | Fiori My Inbox as before, **plus** the catalog with the target mapping in one of their roles — otherwise the navigation does not resolve and the work item looks as it did before |
+| The agent | access to the OData service `/C09/CFL_INBOX_SRV`, as for any Gateway service |
+| Nobody | **a conFLOW authorisation of their own.** Whoever may decide may enter |
+
+**The last point matters more than it looks.** conFLOW does not check an authorisation object but the work item: writing is allowed for whoever is the **current agent of the open work item** — or their **active substitute**. Everyone else sees the same form as display only, with the note *Display only — this work item is not open for you*. So if you are looking for a role that grants "may write input fields", you will not find one; it does not exist, and it would be the wrong place.
+
+#### And then per workflow
+
+Enter the semantic object in `C08-VISU`. That is all.
 
 **The BAdI is not needed for this.** `set_inbox_ui( )` remains for the special case where a step is to open a *different* app.
 
