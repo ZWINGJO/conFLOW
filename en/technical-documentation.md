@@ -37,7 +37,7 @@ The entry point is transaction `/C09/CONFLOW_C`, a view cluster covering all nod
 | Node (EN logon) | Table | Content |
 | --- | --- | --- |
 | Workflow definition | `/C09/CFL_C06` | one row per workflow number; object label in `C06T-OBJTEXT` |
-| Approval steps | `/C09/CFL_C01` | steps with status code `gen_stat`, attribute, texts, class/method, priority (`PRIO`), decision rule for several agents |
+| Approval steps | `/C09/CFL_C01` | steps with status code `gen_stat`, attribute, texts, class/method, priority (`PRIO`), decision rule for several agents, field set (`VIEW_ID`) |
 | Approval status - control | `/C09/CFL_C02` | transitions (OK / NOK / deadline), deadlines |
 | Control additional status | `/C09/CFL_C09` | decision options `UC1`–`UC5` per step; button color and mandatory comment (also for OK/NOK); rules |
 | User status definition | `/C09/CFL_C04` | roles, that is the agent keys `gen_stat_user` |
@@ -47,6 +47,8 @@ The entry point is transaction `/C09/CONFLOW_C`, a view cluster covering all nod
 | Control mail setting | `/C09/CFL_C07` | who receives which email on which decision |
 | General parameters | `/C09/CFL_C08` | settings per workflow, see section 10 |
 | Type linkages standard | `/C09/CFL_C10` | which event starts which workflow |
+| Field sets | `/C09/CFL_C13` | input fields on the work item: one row per set, heading in `C13T` — see section 14 |
+| Fields of the field set | `/C09/CFL_C14` | the fields of a set: sequence, data element, mode, mandatory; label in `C14T` |
 
 {% hint style="warning" %}
 **Texts never belong in `C01`, `C06` or `C09` themselves, but always in the matching `*t` table.** If you look for the text in the main table you will not find it — and if you maintain it there, you lose it with the next language.
@@ -386,7 +388,65 @@ The container `/C09/CFL_S04` stores any attribute-value pairs per instance. It i
 
 The container is also the natural source for placeholders in work item texts and emails — and the reason the audit trail comes for free: whatever is stored there can be traced later.
 
-## 14 The BAdI interface
+## 14 Input fields on the work item
+
+An approver often has to supply more than yes or no: a confirmed price, a cost centre, a date, a reason. That needs **no user interface of your own**. A field set in Customizing is enough — and it appears in the SAP Business Workplace and in Fiori My Inbox alike.
+
+| Node (EN logon) | Table | Content |
+| --- | --- | --- |
+| Field sets | `/C09/CFL_C13` | one row per field set (`VIEW_ID`), heading in `C13T` |
+| Fields of the field set | `/C09/CFL_C14` | the fields of the set: sequence, data element, mode, mandatory; label in `C14T` |
+
+Which set a step shows is held in `C01-VIEW_ID`. **A step without an entry shows no form and runs unchanged** — the feature costs nothing as long as nobody switches it on.
+
+A set belongs to **one** workflow definition and can be used by several steps within it — the values belong to the case, not to the step. If a definition inherits via the parameter `WF_DEF`, an inherited step also finds its set under the parent definition.
+
+### The data element does the thinking
+
+`C14-ROLLNAME` supplies type, length, decimal places, conversion exit, fixed values, check table and the translated label. The control follows from it:
+
+| In the data element | In the form |
+| --- | --- |
+| Fixed values, `X` only | Checkbox |
+| Fixed values of the domain | Drop-down; from 20 entries a value help with search |
+| Check table | Drop-down for small Customizing tables, otherwise free entry with a check |
+| Date, time | Date picker, time field |
+| Amount (`CURR`) | Amount field with currency |
+| Quantity, number | Number field with the decimal places of the field |
+| Character string (`STRING`) | Multi-line text field |
+| DDIC structure | Table with one column per field |
+
+For each field, `C14` decides whether it is **input** or **display** and whether it is **mandatory**. The same container element can be input on one step and display on the next — what one person requests becomes what the next person decides on, without copying the value.
+
+### Where the values go
+
+Into the container `/C09/CFL_S04` (section 13) — the same place the placeholders for work item texts and emails come from. Every change is written on to `/C09/CFL_S05` with user, time and **channel**: SAP GUI, web or background. The audit trail comes for free; change the same value first in the SAP GUI and later in Fiori, and both routes are told apart.
+
+Because the values live in the container they are **placeholders at the same time**: in the work item text and in every email each field is available as `&CFL-<ELEMENT>&`, with no Customizing needed for it.
+
+### When mandatory applies
+
+**At start and when deciding — not when saving.** Anyone who clears a mandatory field may save that. Otherwise the screen would show it empty while `S04` still held the old value, and the decision would be taken on the old one although the agent saw something else.
+
+The check sits in the core, not in the user interface: it applies in the SAP GUI, in Fiori My Inbox and on every decision taken through the workflow API.
+
+### Values at start
+
+The parameter `VIEW_ID` in `C08` names a field set that is filled **before** the start — the request form. The values travel with the start, not after it, so a first background step can work with them right away and apply its rule to them.
+
+{% hint style="info" %}
+**In the SAP GUI the area appears with no setup.** For Fiori My Inbox the parameter `VISU` names the app a step opens; the delivered app needs a registered OData service and a target mapping — **once per system**, after that it is Customizing only.
+{% endhint %}
+
+### Moving a set to another system or workflow
+
+Field sets can be written out and read back as JSON — between systems or into another definition: report `/C09/CFL_FIELDS_JSON`, **simulate first**. That saves retyping and is the way to multiply a set that has proven itself.
+
+### The boundary
+
+A field set describes fields, not dependencies. Dependent value lists, mandatory-by-context or derived proposals need the field exit: a class behind the parameter `FIELD_EXIT` in `C08` that gets the finished field list once more before the interface draws it.
+
+## 15 The BAdI interface
 
 The interface `/C09/CFL_IF_BADI_0101` defines the places where special logic plugs in. If a workflow needs it, its own class `ZCL_CFL_WORKFLOW_<nnnnn>` implements this interface; the filter of the implementation is the workflow number. Hooks you do not need stay empty.
 
@@ -407,15 +467,15 @@ The standard cases need none of these hooks: agents (`C03`), title and placehold
 **All 26 methods, each with its purpose, signature, source code and a note on when it is better left empty,** are in the [BAdI reference](how-to/badi-reference/README.md).
 {% endhint %}
 
-## 15 User interfaces
+## 16 User interfaces
 
 Work items appear in the SAP Business Workplace (`SBWP`) and in SAP Fiori My Inbox. conFLOW controls label, color and mandatory comment of the buttons (`C09`/`C09T`), the title and navigation to the business object in both from the same Customizing. Which Fiori app a step opens in My Inbox is set by the parameter `VISU`. The BAdI remains for deviations.
 
 On top of that, every step can be displayed on a mobile device: a conMOBILE app reads the same container and uses the same decision keys. One data source, one decision model — no matter where the decision is made.
 
-If you need input fields of your own on the work item in Fiori My Inbox, the [how-to on the Fiori UI](how-to/fiori-ui-in-work-item/README.md) shows the way that was actually built.
+**Input fields on the work item are Customizing** and appear in both interfaces — see section 14. You only need a Fiori app of your own for more than fields: a document preview, a simulation, an interaction that does not exist yet. The [how-to on the Fiori UI](how-to/fiori-ui-in-work-item/README.md) shows the way that was actually built.
 
-## 16 Transactions and the admin console
+## 17 Transactions and the admin console
 
 | Transaction | Purpose |
 | --- | --- |
@@ -439,7 +499,7 @@ The console answers the questions that come up in daily operations: what is runn
 
 **Instead of the list** you can display an **evaluation**: per workflow definition and step, the number of items in total, open and completed, the longest and average waiting time of the open ones, the longest and average throughput time of the completed ones, and the distribution of decisions including the rejection rate, with the same traffic light per row. This is the fastest way to answer which step a process really gets stuck at.
 
-## 17 Objects in the system
+## 18 Objects in the system
 
 The enhancement interface:
 
