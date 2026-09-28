@@ -29,7 +29,7 @@ Project `ZCFL_00500_V2`, **one** entity type `Decision`, **all properties `Edm.S
 | `WorkitemText` | **empty** | the context block from `SAP_WAPI_WORKITEM_DESCRIPTION` |
 | `ReasonList` | **empty** | allowed reasons as `KEY=Text`, one line per reason |
 | `Reason` | 20 | input |
-| `Note` | 132 | input, length of a container value |
+| `Note` | 132 | input, length of one container row |
 | `Editable` | 1 | `X` / empty — the backend controls the fields with it |
 | `MessageText` | 80 | why input is not possible, or what is missing for completion |
 

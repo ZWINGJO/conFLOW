@@ -2,6 +2,17 @@
 
 *A small UI5 app in the detail area of My Inbox, attached through conFLOW, without rebuilding the workflow.*
 
+{% hint style="warning" %}
+**Plain input fields no longer need any of this.** A drop-down, a date, an amount, a note —
+**field sets in Customizing** are enough; they appear in the SAP GUI and in Fiori My Inbox
+with no code at all, and they save into the same container. See
+[Technical documentation, section 14](../../technical-documentation.md).
+
+This how-to is for what goes beyond that: a document preview, a simulation, an interaction
+that does not exist yet. The way described below is still the right one — it is just no
+longer the only one.
+{% endhint %}
+
 ## What you end up with
 
 ```

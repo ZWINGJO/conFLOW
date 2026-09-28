@@ -2,6 +2,17 @@
 
 *Eine kleine UI5-App im Detailbereich der My Inbox, angehängt über conFLOW, ohne den Workflow umzubauen.*
 
+{% hint style="warning" %}
+**Schlichte Eingabefelder brauchen das hier nicht mehr.** Ein Auswahlfeld, ein Datum, ein
+Betrag, eine Notiz — dafür genügen **Feldgruppen im Customizing**; sie erscheinen im SAP GUI
+und in der Fiori My Inbox, ohne eine Zeile Code, und speichern in denselben Container. Siehe
+[Technische Dokumentation, Abschnitt 14](../../technische-dokumentation/technische-dokumentation.md).
+
+Dieses How-To ist für das, was darüber hinausgeht: eine Belegvorschau, eine Simulation, eine
+Bedienung, die es so nicht gibt. Der Weg unten ist weiterhin der richtige — nur nicht mehr
+der einzige.
+{% endhint %}
+
 ## Was am Ende dasteht
 
 ```

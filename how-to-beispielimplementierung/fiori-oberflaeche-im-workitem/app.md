@@ -29,7 +29,7 @@ Projekt `ZCFL_00500_V2`, **ein** Entity Type `Decision`, **alle Properties `Edm.
 | `WorkitemText` | **leer** | der Kontextblock aus `SAP_WAPI_WORKITEM_DESCRIPTION` |
 | `ReasonList` | **leer** | zulässige Gründe als `KEY=Text`, eine Zeile je Grund |
 | `Reason` | 20 | Eingabe |
-| `Note` | 132 | Eingabe, Länge des Container-Werts |
+| `Note` | 132 | Eingabe, Länge einer Container-Zeile |
 | `Editable` | 1 | `X` / leer, damit steuert das Backend die Felder |
 | `MessageText` | 80 | warum nicht eingebbar, oder was zum Abschluss fehlt |
 
