@@ -27,15 +27,15 @@ Wer berechnete oder formatierte Werte ins Mail bringen will - Betrag im Benutzer
            wann was entschieden
 ```
 
-Beides liefert der Produkt-Helper fertig. Selbst bauen lohnt nicht.
+Beide liefert das Framework selbst, dafür braucht es dieses BAdI nicht. Wer sie hier liefert, ersetzt die Vorgabe - etwa mit einer eigenen Überschrift über den Notizen (Teil 2 unten) oder einem anderen Tabellenstil.
 
-**WAS DAS FRAMEWORK SCHON LIEFERT - VOR DIESEM HOOK**
+**WAS DAS FRAMEWORK ERGÄNZT - NACH DIESEM HOOK**
 
-/C09/CFL_C06T (VTEXT, OBJTEXT, mit Sprach-Rückfall) und mit c08 TEMPLATE die Belegzeile als &/C09/CFL_S_TPL_`<typ>`-`<feld>`&, Beträge nach Währung formatiert. Hier nur, was darin fehlt.
+Nur, was das BAdI nicht schon geliefert hat: /C09/CFL_C06T (VTEXT, OBJTEXT, mit Sprach-Rückfall), mit c08 TEMPLATE die Belegzeile als &/C09/CFL_S_TPL_`<typ>`-`<feld>`& (Beträge nach Währung formatiert) sowie &WF_PROT& und &NOTE&. Eine Struktur oder ein Textblock, den das BAdI schon übergeben hat, wird nicht noch einmal angehängt - das BAdI hat das letzte Wort.
 
 **GRENZE: NUR DIE ERSTEN FÜNF STRUKTUREN**
 
-Der Mailversand liest aus CT_APPLICATION_INPUT nur fünf Einträge - die des Frameworks zählen mit.
+Der Mailversand liest aus CT_APPLICATION_INPUT nur fünf Einträge. Die des BAdI stehen vorne; ist die Liste voll, fällt die Template-Zeile des Frameworks weg, nie eine eigene Quelle.
 
 ## Der Code
 
@@ -61,6 +61,9 @@ Der Mailversand liest aus CT_APPLICATION_INPUT nur fünf Einträge - die des Fra
 
 *--------------------------------------------------------------------*
 * 2. Die Notizen der bisherigen Bearbeiter.
+*
+* Ohne diesen Teil liefert das Framework &NOTE& selbst - ohne
+* Ueberschrift. Er steht hier, weil er eine eigene Ueberschrift setzt.
 *
 * Der Einstieg geht ueber das Workitem, nicht ueber die Instanz -
 * deshalb erst /C09/CFL_S03 lesen. GET_PROT_WORKITEM_MAIL sammelt
@@ -90,6 +93,9 @@ Der Mailversand liest aus CT_APPLICATION_INPUT nur fünf Einträge - die des Fra
 
 *--------------------------------------------------------------------*
 * 3. Das Workflow-Protokoll als HTML-Tabelle.
+*
+* Ebenso ohne BAdI vorhanden. Als Muster fuer alle, die das Protokoll
+* anders aufbereiten wollen.
 *
 * Anders als der Workitem-Text ist das MAIL echtes HTML - hier sind
 * <b> und <table> richtig. Die Verwechslungsgefahr mit dem ITF-Format

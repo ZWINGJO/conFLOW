@@ -318,7 +318,7 @@ conFLOW versendet HTML-Mails, gesteuert über `C07`. Der Schlüssel ist vierteil
 **Die drei Schablonen sind Web-Objekte aus `SMW0`, keine SO10-Texte.** Betreff und Inhalt sind SO10-Texte, die Schablonen nicht — wer sie im SO10 sucht, findet sie nicht.
 {% endhint %}
 
-In den Texten und Schablonen stehen Platzhalter der Form `&STRUKTUR-FELD&`, die beim Aufbau der Mail ersetzt werden. Ist in den allgemeinen Parametern ein `TEMPLATE` gepflegt, stehen dessen Felder ohne Code bereit, z. B. `&/C09/CFL_S_TPL_BUS2012-GESAMTWERT_RW&`; Beträge und Mengen werden passend zu Währung und Einheit formatiert. Weitere Werte, etwa Protokoll (`&WF_PROT&`) oder Notizen (`&NOTE&`), liefert das BAdI über `GET_DATASOURCE_MAIL`.
+In den Texten und Schablonen stehen Platzhalter der Form `&STRUKTUR-FELD&`, die beim Aufbau der Mail ersetzt werden. Ist in den allgemeinen Parametern ein `TEMPLATE` gepflegt, stehen dessen Felder ohne Code bereit, z. B. `&/C09/CFL_S_TPL_BUS2012-GESAMTWERT_RW&`; Beträge und Mengen werden passend zu Währung und Einheit formatiert. Protokoll (`&WF_PROT&`) und Notizen (`&NOTE&`) füllt conFLOW ebenfalls selbst. Weitere Werte liefert das BAdI über `GET_DATASOURCE_MAIL`; was es liefert, hat Vorrang, conFLOW ergänzt danach nur, was noch fehlt.
 
 **Sprache je Empfänger:** Mit der BAdI-Methode `GET_MAIL_LANGUAGE` lässt sich die Sprache für jeden Empfänger einzeln festlegen. Umgeschaltet wird nur, wenn die Sprache installiert ist und Betreff und Texte in ihr gepflegt sind; sonst geht die Mail in der Ausgangssprache hinaus.
 

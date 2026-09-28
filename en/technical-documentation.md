@@ -318,7 +318,7 @@ conFLOW sends HTML emails, controlled through `C07`. The key has four parts — 
 **The three templates are web objects from `SMW0`, not SO10 texts.** The subject and the content are SO10 texts, the templates are not — if you look for them in SO10 you will not find them.
 {% endhint %}
 
-The texts and templates contain placeholders of the form `&STRUCTURE-FIELD&` that are replaced while the email is built. If a `TEMPLATE` is maintained in the general parameters, its fields are available without code, e.g. `&/C09/CFL_S_TPL_BUS2012-GESAMTWERT_RW&`; amounts and quantities are formatted according to currency and unit. Anything else, such as the log (`&WF_PROT&`) or notes (`&NOTE&`), comes from the BAdI via `GET_DATASOURCE_MAIL`.
+The texts and templates contain placeholders of the form `&STRUCTURE-FIELD&` that are replaced while the email is built. If a `TEMPLATE` is maintained in the general parameters, its fields are available without code, e.g. `&/C09/CFL_S_TPL_BUS2012-GESAMTWERT_RW&`; amounts and quantities are formatted according to currency and unit. conFLOW also fills the log (`&WF_PROT&`) and the notes (`&NOTE&`) itself. Anything else comes from the BAdI via `GET_DATASOURCE_MAIL`; what it supplies takes precedence, and conFLOW then only adds what is still missing.
 
 **Language per recipient:** the BAdI method `GET_MAIL_LANGUAGE` sets the language for each recipient. It only switches if the language is installed and the subject and texts exist in it; otherwise the email goes out in the original language.
 

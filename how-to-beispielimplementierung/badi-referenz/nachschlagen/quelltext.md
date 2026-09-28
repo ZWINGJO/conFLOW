@@ -1812,17 +1812,25 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        &WF_PROT&  das Workflow-Protokoll als HTML-Tabelle: wer hat
 *                   wann was entschieden
 *
-*        Beides liefert der Produkt-Helper fertig. Selbst bauen
-*        lohnt nicht.
+*        Beide liefert das Framework selbst, dafuer braucht es dieses
+*        BAdI nicht. Wer sie hier liefert, ersetzt die Vorgabe - etwa
+*        mit einer eigenen Ueberschrift ueber den Notizen (Teil 2
+*        unten) oder einem anderen Tabellenstil.
 *
-* WAS DAS FRAMEWORK SCHON LIEFERT - VOR DIESEM HOOK
-*        /C09/CFL_C06T (VTEXT, OBJTEXT, mit Sprach-Rueckfall) und mit
-*        c08 TEMPLATE die Belegzeile als &/C09/CFL_S_TPL_<typ>-<feld>&,
-*        Betraege nach Waehrung formatiert. Hier nur, was darin fehlt.
+* WAS DAS FRAMEWORK ERGAENZT - NACH DIESEM HOOK
+*        Nur, was das BAdI nicht schon geliefert hat: /C09/CFL_C06T
+*        (VTEXT, OBJTEXT, mit Sprach-Rueckfall), mit c08 TEMPLATE die
+*        Belegzeile als &/C09/CFL_S_TPL_<typ>-<feld>& (Betraege nach
+*        Waehrung formatiert) sowie &WF_PROT& und &NOTE&. Eine
+*        Struktur oder ein Textblock, den das BAdI schon uebergeben
+*        hat, wird nicht noch einmal angehaengt - das BAdI hat das
+*        letzte Wort.
 *
 * GRENZE: NUR DIE ERSTEN FUENF STRUKTUREN
 *        Der Mailversand liest aus CT_APPLICATION_INPUT nur fuenf
-*        Eintraege - die des Frameworks zaehlen mit.
+*        Eintraege. Die des BAdI stehen vorne; ist die Liste voll,
+*        faellt die Template-Zeile des Frameworks weg, nie eine
+*        eigene Quelle.
 *--------------------------------------------------------------------*
 
 *--------------------------------------------------------------------*
@@ -1846,6 +1854,9 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
 *--------------------------------------------------------------------*
 * 2. Die Notizen der bisherigen Bearbeiter.
+*
+* Ohne diesen Teil liefert das Framework &NOTE& selbst - ohne
+* Ueberschrift. Er steht hier, weil er eine eigene Ueberschrift setzt.
 *
 * Der Einstieg geht ueber das Workitem, nicht ueber die Instanz -
 * deshalb erst /C09/CFL_S03 lesen. GET_PROT_WORKITEM_MAIL sammelt
@@ -1875,6 +1886,9 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
 *--------------------------------------------------------------------*
 * 3. Das Workflow-Protokoll als HTML-Tabelle.
+*
+* Ebenso ohne BAdI vorhanden. Als Muster fuer alle, die das Protokoll
+* anders aufbereiten wollen.
 *
 * Anders als der Workitem-Text ist das MAIL echtes HTML - hier sind
 * <b> und <table> richtig. Die Verwechslungsgefahr mit dem ITF-Format
