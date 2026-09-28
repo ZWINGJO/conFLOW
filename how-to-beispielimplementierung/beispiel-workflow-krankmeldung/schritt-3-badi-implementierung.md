@@ -105,6 +105,6 @@ Ist in `/C09/CFL_C08` ein `TEMPLATE` und in der Workflow-Definition eine Objektb
 
 ## 3.9 Weitere Möglichkeiten
 
-Das BAdI-Interface bietet zahlreiche weitere Hooks -- für die meisten Workflows reichen die oben gezeigten. Weitere Hooks wie `GET_AFTER_EXECUTION_WORKITEM`, `GET_BEFORE_DECISION_WORKITEM` oder `GET_OBJECT_INFO` ermöglichen Nachlauflogik, Button-Steuerung und die Anpassung der Fiori-Darstellung. Vieles davon ist inzwischen Einstellung: Button-Farbe und Kommentarpflicht (`/C09/CFL_C09`, `NATURE`/`COMMENT_REQ`), Objektbeschriftung (`OBJTEXT` der Workflow-Definition), Priorität (`PRIO` im Genehmigungsschritt).
+Das BAdI-Interface bietet zahlreiche weitere Hooks -- für die meisten Workflows reichen die oben gezeigten. Weitere Hooks wie `GET_AFTER_EXECUTION_WORKITEM`, `GET_BEFORE_DECISION_WORKITEM` oder `GET_OBJECT_INFO` ermöglichen Nachlauflogik, Button-Steuerung und die Anpassung der Fiori-Darstellung. Vieles davon ist inzwischen Einstellung: Button-Farbe und Kommentarpflicht (`/C09/CFL_C09`, `NATURE`/`COMMENT_REQ`), Objektbeschriftung (`OBJTEXT` der Workflow-Definition), Priorität (`PRIO` im Genehmigungsschritt) — und **Eingabefelder am Workitem**, für die es früher eine eigene Oberfläche brauchte: siehe [Eingabefelder am Workitem einrichten](../eingabefelder-einrichten.md).
 
 <figure><img src="../../.gitbook/assets/Folie31.png" alt="Weitere Möglichkeiten"><figcaption><p>Weitere BAdI-Hooks für spezielle Anforderungen</p></figcaption></figure>

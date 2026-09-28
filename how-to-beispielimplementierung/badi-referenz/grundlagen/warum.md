@@ -2,11 +2,18 @@
 
 ## Das Problem, das es löst
 
-Ein conFLOW-Workflow beginnt mit einer Klasse, die
-`/C09/CFL_IF_BADI_0101` implementiert. Beim Anlegen erzeugt die
-Entwicklungsumgebung 26 leere Methodenrümpfe.
+**Ein conFLOW-Workflow beginnt mit Customizing, nicht mit Code.**
+Schritte, Bearbeiter, Fristen, Knöpfe, Mails, Regeln und die
+Eingabefelder am Workitem werden gepflegt, nicht programmiert. Viele
+Workflows kommen ohne eine einzige Zeile aus.
 
-Danach steht man vor drei Fragen, und keine davon beantwortet die
+Eine Klasse kommt dazu, **wenn das Customizing nicht reicht**: eine
+Bearbeiterfindung, die rechnet. Ein Absprung in eine eigene
+Transaktion. Eine Nachlauflogik, die einen Beleg bucht. Dann
+implementiert sie `/C09/CFL_IF_BADI_0101`, und die
+Entwicklungsumgebung erzeugt 26 leere Methodenrümpfe.
+
+Ab da steht man vor drei Fragen, und keine davon beantwortet die
 Signatur:
 
 1. **Welche Hooks braucht mein Workflow?** Die Namen helfen nur

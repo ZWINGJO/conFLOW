@@ -2,11 +2,19 @@
 
 ## The problem it solves
 
-A conFLOW workflow starts with a class that implements
-`/C09/CFL_IF_BADI_0101`. When you create it, the development
-environment generates 26 empty method bodies.
+**A conFLOW workflow starts with Customizing, not with code.**
+Steps, agents, deadlines, buttons, emails, rules and the input fields
+on the work item are maintained, not programmed. Many workflows get by
+without a single line.
 
-Then you face three questions, and the signature answers none of them:
+A class comes into it **when Customizing is not enough**: an agent
+determination that calculates. Navigation into a transaction of your
+own. Follow-on logic that posts a document. It then implements
+`/C09/CFL_IF_BADI_0101`, and the development environment generates 26
+empty method bodies.
+
+From there you face three questions, and the signature answers none of
+them:
 
 1. **Which hooks does my workflow need?** The names only help so
    much - `GET_AFTER_EXECUTION` and `GET_AFTER_EXECUTION_WORKITEM`
