@@ -38,6 +38,10 @@ Dieses How-To zeigt Schritt für Schritt, wie ein conFLOW-Workflow aufgebaut wir
 | [Schritt 3: BAdI-Implementierung](schritt-3-badi-implementierung.md) | Dynamische Bearbeiterfindung, parallele Schritte, Absprung | Fachliche Logik |
 | [Schritt 4: Workflow starten und testen](schritt-4-workflow-starten.md) | Trigger, Container, Test | Produktionsreifer Workflow |
 
+{% hint style="info" %}
+**Schritt 3 überspringen die meisten Workflows.** Was früher Code brauchte, ist heute Einstellung — Bearbeiterfindung über PFCG-Rollen, Knopffarben, Kommentarpflicht, Priorität, Regeln an Hintergrundschritten, die Entscheidungsregel bei mehreren Bearbeitern und die [Eingabefelder am Workitem](../eingabefelder-einrichten.md). Lesen Sie Schritt 3, wenn Sie wissen wollen, *was das BAdI noch kann* — nicht, weil Sie es brauchen.
+{% endhint %}
+
 {% hint style="warning" %}
 **Reihenfolge beachten:** Zuerst das Customizing (Schritt 1 und 2), dann die BAdI-Implementierung (Schritt 3), zuletzt den Trigger (Schritt 4). Eine BAdI-Klasse braucht die Customizing-Einträge als Grundlage, und der Trigger setzt einen funktionierenden Workflow voraus.
 {% endhint %}

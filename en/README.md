@@ -24,12 +24,13 @@ Instead of a classic SAP workflow with tasks, rules and step groups, you define 
 
 | Feature | Description |
 | --- | --- |
-| **Customizing instead of development** | Steps, transitions, agents, rules, document data, buttons, deadlines and email notifications are maintained in tables — no Workflow Builder, no task definitions |
+| **Customizing instead of development** | Steps, transitions, agents, rules, document data, buttons, input fields, deadlines and email notifications are maintained in tables — no Workflow Builder, no task definitions |
 | **BAdI for exceptions** | Whatever Customizing does not cover goes into one class per workflow with defined hooks — agent determination, description, navigation, follow-up processing |
 | **Any number of workflows** | Each workflow definition has its own number and, if needed, its own BAdI implementation. New processes don't require a new transport of the framework |
 | **Background steps** | Automatic processing between decisions — enrichment, evaluation, status changes, document postings |
 | **Deadlines and escalation** | Time-based forwarding via Customizing, no deadline agents |
 | **Parallel approval** | Several agents on the same step — all decide, veto, first decision or majority, configurable per step |
+| **Input fields on the work item** | A form on the approval step — choice, date, amount, note, small tables. Maintained in Customizing, visible in both interfaces, with no code at all. Mandatory fields hold the decision until they are filled |
 | **SAP GUI and Fiori** | Work items appear in the Business Workplace (SBWP) and in Fiori My Inbox |
 | **conMOBILE integration** | Mobile display of every workflow step via the conMOBILE platform |
 

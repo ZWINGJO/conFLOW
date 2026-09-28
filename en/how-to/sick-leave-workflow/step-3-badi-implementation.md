@@ -105,6 +105,6 @@ If a `TEMPLATE` is maintained in `/C09/CFL_C08` and an object label (`OBJTEXT`) 
 
 ## 3.9 Further options
 
-The BAdI interface offers many more hooks — for most workflows the ones shown above are enough. Further hooks such as `GET_AFTER_EXECUTION_WORKITEM`, `GET_BEFORE_DECISION_WORKITEM` or `GET_OBJECT_INFO` enable follow-up logic, button control and adjustments to the Fiori display. Much of this is now a setting: button color and mandatory comment (`/C09/CFL_C09`, `NATURE`/`COMMENT_REQ`), object label (`OBJTEXT` of the workflow definition), priority (`PRIO` on the approval step).
+The BAdI interface offers many more hooks — for most workflows the ones shown above are enough. Further hooks such as `GET_AFTER_EXECUTION_WORKITEM`, `GET_BEFORE_DECISION_WORKITEM` or `GET_OBJECT_INFO` enable follow-up logic, button control and adjustments to the Fiori display. Much of this is now a setting: button color and mandatory comment (`/C09/CFL_C09`, `NATURE`/`COMMENT_REQ`), object label (`OBJTEXT` of the workflow definition), priority (`PRIO` on the approval step) — and **input fields on the work item**, which used to need a user interface of your own: see [Setting up input fields on the work item](../set-up-input-fields.md).
 
 <figure><img src="../../.gitbook/assets/folie31.png" alt="Further options"><figcaption><p>Further BAdI hooks for special requirements</p></figcaption></figure>

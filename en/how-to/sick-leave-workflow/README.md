@@ -38,6 +38,10 @@ This how-to shows step by step how to build a conFLOW workflow, using a sick lea
 | [Step 3: BAdI implementation](step-3-badi-implementation.md) | Dynamic agent determination, parallel steps, navigation | Business logic |
 | [Step 4: Start and test the workflow](step-4-start-and-test.md) | Trigger, container, test | Production-ready workflow |
 
+{% hint style="info" %}
+**Most workflows skip step 3.** What used to need code is a setting today — agent determination via PFCG roles, button colours, mandatory comments, priority, rules on background steps, the decision rule for several agents and the [input fields on the work item](../set-up-input-fields.md). Read step 3 to find out *what the BAdI can still do* — not because you need it.
+{% endhint %}
+
 {% hint style="warning" %}
 **Keep the order:** Customizing first (steps 1 and 2), then the BAdI implementation (step 3), and the trigger last (step 4). A BAdI class builds on the Customizing entries, and the trigger requires a working workflow.
 {% endhint %}

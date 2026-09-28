@@ -24,12 +24,13 @@ Statt eines klassischen SAP-Workflows mit Aufgaben, Regeln und Schrittgruppen de
 
 | Merkmal | Beschreibung |
 | --- | --- |
-| **Customizing statt Entwicklung** | Schritte, Übergänge, Bearbeiter, Regeln, Belegdaten, Knöpfe, Fristen und Mailversand werden in Tabellen gepflegt -- kein Workflow Builder, keine Aufgabendefinitionen |
+| **Customizing statt Entwicklung** | Schritte, Übergänge, Bearbeiter, Regeln, Belegdaten, Knöpfe, Eingabefelder, Fristen und Mailversand werden in Tabellen gepflegt -- kein Workflow Builder, keine Aufgabendefinitionen |
 | **BAdI für Ausnahmen** | Was das Customizing nicht abdeckt, gehört in eine Klasse je Workflow mit definierten Hooks -- Bearbeiterfindung, Beschreibung, Absprung, Nachlauf |
 | **Beliebig viele Workflows** | Jede Workflow-Definition hat eine eigene Nummer und bei Bedarf eine eigene BAdI-Implementierung. Neue Prozesse benötigen keinen neuen Transport des Frameworks |
 | **Hintergrundschritte** | Automatische Verarbeitung zwischen den Entscheidungen -- Anreicherung, Bewertung, Statusänderung, Belegbuchung |
 | **Fristen und Eskalation** | Zeitgesteuerte Weiterleitung über Customizing, keine Deadline-Agents |
 | **Parallele Genehmigung** | Mehrere Bearbeiter auf demselben Schritt -- alle entscheiden, Veto, erste Entscheidung oder Mehrheit, einstellbar je Schritt |
+| **Eingabefelder am Workitem** | Ein Formular am Genehmigungsschritt -- Auswahl, Datum, Betrag, Notiz, kleine Tabellen. Gepflegt im Customizing, sichtbar in beiden Oberflächen, ohne eine Zeile Code. Pflichtfelder halten die Entscheidung auf, bis sie gefüllt sind |
 | **SAP-GUI und Fiori** | Workitems erscheinen im Business Workplace (SBWP) und in der Fiori My Inbox |
 | **conMOBILE-Integration** | Mobile Darstellung jedes Workflow-Schritts über die conMOBILE-Plattform |
 
