@@ -40,7 +40,7 @@
 | App shows an **old** version | app index and site data, see [Customizing](customizing.md) |
 | A field stays **empty**, no error | ABAP field name in SEGW ≠ component of the structure (`MOVE-CORRESPONDING`) · metadata cache not cleared |
 | Long text **truncated** | `Edm.String` **with** max length generates `CHAR(n)`; leave the field empty for text without a fixed length |
-| Note **cut off** after 132 characters | limit of `/C09/CFL_S04-VALUE` |
+| Note **cut off** after 132 characters | limit of one `/C09/CFL_S04` row; the app does not spread over `TAB_INDEX` |
 | Saving reports an error **without text** | `/IWFND/ERROR_LOG` — text, program and line are there |
 | Function module fails at runtime, syntax check was green | parameter passed as `TYPE i` instead of the module's DDIC type |
 | A file changed in SE80 **has no effect** | the app runs from `Component-preload.js`; change only via build and upload |

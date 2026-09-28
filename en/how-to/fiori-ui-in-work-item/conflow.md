@@ -115,7 +115,9 @@ The app reads and writes **only through conFLOW**. It needs no tables of its own
 **Writes go through the helpers of the workflow class**, for example by making the app's data class a `GLOBAL FRIEND`. Then there is only one way to compute texts and values.
 
 {% hint style="danger" %}
-**A container value is at most 132 characters long** (`/C09/CFL_S04-VALUE`). Anything longer is truncated without a message. Limit the note to 132 in the model, the input field and the server check.
+**A container ROW is at most 132 characters long** (`/C09/CFL_S04-VALUE`). Write directly and anything longer is truncated without a message — so limit the note to 132 in the model, the input field and the server check.
+
+The key of `S04` does contain `TAB_INDEX`, though: an element **can** become arbitrarily long if the value is spread over several rows and reassembled on reading. That is exactly what field sets do (technical documentation, section 14) — an app of your own has to do it itself.
 {% endhint %}
 
 ## Optional: enforcing checks at decision time

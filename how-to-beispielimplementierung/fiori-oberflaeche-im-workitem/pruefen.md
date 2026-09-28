@@ -40,7 +40,7 @@
 | App zeigt eine **alte** Fassung | App-Index und Site data, siehe [Customizing](customizing.md) |
 | ein Feld bleibt **leer**, ohne Fehler | ABAP-Feldname im SEGW ≠ Komponente der Struktur (`MOVE-CORRESPONDING`) · Metadaten-Cache nicht gelöscht |
 | langer Text **abgeschnitten** | `Edm.String` **mit** Max Length erzeugt `CHAR(n)`; für Text ohne feste Länge das Feld leer lassen |
-| Notiz nach 132 Zeichen **weg** | Grenze von `/C09/CFL_S04-VALUE` |
+| Notiz nach 132 Zeichen **weg** | Grenze einer `/C09/CFL_S04`-Zeile; die App verteilt nicht auf `TAB_INDEX` |
 | Speichern meldet Fehler **ohne Text** | `/IWFND/ERROR_LOG` — dort stehen Text, Programm und Zeile |
 | Funktionsbaustein wirft zur Laufzeit, Syntaxcheck war grün | Parameter mit `TYPE i` statt dem DDIC-Typ des Bausteins übergeben |
 | in SE80 geänderte Datei **wirkt nicht** | die App läuft aus `Component-preload.js`; nur über Build und Upload ändern |

@@ -115,7 +115,9 @@ Die App liest und schreibt **nur über conFLOW**. Eigene Tabellen braucht sie ni
 **Geschrieben wird über die Helfer der Workflow-Klasse**, zum Beispiel mit `GLOBAL FRIENDS` für die Datenklasse der App. Dann gibt es für Texte und Werte nur einen Rechenweg.
 
 {% hint style="danger" %}
-**Ein Container-Wert ist höchstens 132 Zeichen lang** (`/C09/CFL_S04-VALUE`). Längeres wird ohne Meldung abgeschnitten. Deshalb die Notiz in Modell, Eingabefeld und Serverprüfung auf 132 begrenzen.
+**Eine Container-ZEILE ist höchstens 132 Zeichen lang** (`/C09/CFL_S04-VALUE`). Wer direkt schreibt, bekommt längeres ohne Meldung abgeschnitten — deshalb die Notiz in Modell, Eingabefeld und Serverprüfung auf 132 begrenzen.
+
+Der Schlüssel von `S04` enthält aber `TAB_INDEX`: ein Element **kann** beliebig lang werden, wenn man den Wert auf mehrere Zeilen verteilt und beim Lesen wieder zusammensetzt. Genau das tun die Feldgruppen (Technische Dokumentation, Abschnitt 14) — eine eigene App muss es selbst tun.
 {% endhint %}
 
 ## Optional: beim Entscheiden verbindlich prüfen
