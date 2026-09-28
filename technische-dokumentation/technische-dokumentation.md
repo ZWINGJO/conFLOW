@@ -443,7 +443,7 @@ Der Parameter `VIEW_ID` in `C08` benennt eine Feldgruppe, die **vor** dem Start 
 
 **Für die Fiori My Inbox liefert conFLOW die App mit** — sie zeigt jede Feldgruppe, ohne dass jemand etwas programmiert (Paket `/C09/CONFLOW_FIORI`, OData-Service `/C09/CFL_INBOX_SRV`). Einzurichten ist sie **einmal je System**: Service registrieren und aktivieren, ein Semantic Object anlegen (`/UI2/SEMOBJ`) und ein Target-Mapping darauf — die Action ist fest `openInInbox`. Danach trägt man je Workflow dieses Semantic Object in `C08-VISU` ein, und das ist alles.
 
-**Das BAdI wird dafür nicht gebraucht.** `set_inbox_ui( )` bleibt für den Sonderfall, dass ein Schritt eine *andere* App öffnen soll.
+**Das BAdI wird dafür nicht gebraucht.** Es bleibt für den Sonderfall, dass jeder Schritt eine *andere* App öffnen soll.
 {% endhint %}
 
 ### Eine Gruppe in ein anderes System oder einen anderen Workflow

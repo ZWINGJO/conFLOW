@@ -28,11 +28,7 @@
   * [Step 4: Start and test the workflow](how-to/sick-leave-workflow/step-4-start-and-test.md)
 * [Setting up input fields on the work item](how-to/set-up-input-fields.md)
 <!-- BEGIN howto-fiori-workitem (erzeugt, nicht von Hand aendern) -->
-* [Custom Fiori UI in the work item](how-to/fiori-ui-in-work-item/README.md)
-  * [conFLOW: attaching the app to the work item](how-to/fiori-ui-in-work-item/conflow.md)
-  * [Customizing and launchpad](how-to/fiori-ui-in-work-item/customizing.md)
-  * [The app: OData V2 and UI5 freestyle](how-to/fiori-ui-in-work-item/app.md)
-  * [Deploy, check, kill switch](how-to/fiori-ui-in-work-item/check.md)
+* [Your own Fiori UI instead of the delivered app](how-to/fiori-ui-in-work-item/README.md)
 <!-- END howto-fiori-workitem -->
 
 <!-- conflow-badi-referenz:anfang -->

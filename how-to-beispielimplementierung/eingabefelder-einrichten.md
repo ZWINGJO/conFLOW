@@ -147,11 +147,23 @@ My Inbox, Workitem angeklickt
 
 **Das letzte ist wichtiger, als es aussieht.** conFLOW prüft nicht über ein Berechtigungsobjekt, sondern über das Workitem: schreiben darf, wer **aktueller Bearbeiter des offenen Workitems** ist — oder dessen **aktive Vertretung**. Alle anderen sehen dasselbe Formular als reine Anzeige, mit dem Hinweis *Nur Anzeige — dieses Workitem ist nicht für Sie offen*. Wer also nach einer Rolle sucht, die „Eingabefelder darf schreiben" erlaubt, sucht vergeblich; es gibt sie nicht und sie wäre auch falsch.
 
+#### Notaus und Rückbau
+
+| Ziel | Handgriff | wirkt auf |
+| --- | --- | --- |
+| sofort weg, auch bei offenen Workitems | Target Mapping im Katalog löschen | **alle** Workitems, ohne Transport |
+| neue Workitems ohne Formular | `VISU` in `C08` leeren | nur **neue** Workitems |
+| das Formular an einem Schritt abschalten | `VIEW_ID` in `C01` leeren | dieser Schritt, in **beiden** Oberflächen |
+
+{% hint style="success" %}
+**Der Rückfall ist keine Notlösung, sondern der Normalfall** — jedes Workitem ohne die drei Container-Elemente zeigt den Standard-Textblock. Deshalb ist er verlässlich: er ist ständig in Gebrauch und nicht nur im Fehlerfall.
+{% endhint %}
+
 #### Und dann je Workflow
 
 Das Semantic Object in `C08-VISU` eintragen. Das ist alles.
 
-**Das BAdI wird dafür nicht gebraucht.** `set_inbox_ui( )` bleibt für den Sonderfall, dass ein Schritt eine *andere* App öffnen soll.
+**Das BAdI wird dafür nicht gebraucht.** Es bleibt für den Sonderfall, dass jeder Schritt eine *andere* App öffnen soll — dann setzt man die Container-Elemente im Hook `get_after_creation_workitem` selbst.
 
 ## Ein Antrag ohne Beleg
 
