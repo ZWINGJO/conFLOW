@@ -27,15 +27,15 @@ If you want calculated or formatted values in the mail - an amount in user forma
            what and when
 ```
 
-The product helper delivers both ready-made. Building them yourself is not worth it.
+The framework supplies both itself; this BAdI is not needed for them. Supplying them here replaces the default - for instance with your own heading above the notes (part 2 below) or a different table style.
 
-**WHAT THE FRAMEWORK ALREADY SUPPLIES - BEFORE THIS HOOK**
+**WHAT THE FRAMEWORK ADDS - AFTER THIS HOOK**
 
-/C09/CFL_C06T (VTEXT, OBJTEXT, with language fallback) and, with c08 TEMPLATE, the document row as &/C09/CFL_S_TPL_`<type>`-`<field>`&, amounts formatted by currency. Here only what is missing from that.
+Only what the BAdI has not supplied already: /C09/CFL_C06T (VTEXT, OBJTEXT, with language fallback), with c08 TEMPLATE the document row as &/C09/CFL_S_TPL_`<type>`-`<field>`& (amounts formatted by currency), and &WF_PROT& and &NOTE&. A structure or text block the BAdI has passed already is not added a second time - the BAdI has the last word.
 
 **LIMIT: ONLY THE FIRST FIVE STRUCTURES**
 
-The mail dispatch reads only five entries from the table CT_APPLICATION_INPUT; the framework's ones count too.
+The mail dispatch reads only five entries from the table CT_APPLICATION_INPUT. The BAdI's come first; if the list is full, the framework's template row is dropped, never one of your own sources.
 
 ## The code
 
@@ -61,6 +61,9 @@ The mail dispatch reads only five entries from the table CT_APPLICATION_INPUT; t
 
 *--------------------------------------------------------------------*
 * 2. The notes of the previous agents.
+*
+* Without this part the framework supplies &NOTE& itself - without a
+* heading. It is here because it sets its own heading.
 *
 * The entry point is the work item, not the instance - hence read
 * /C09/CFL_S03 first. GET_PROT_WORKITEM_MAIL then collects all notes
@@ -89,6 +92,9 @@ The mail dispatch reads only five entries from the table CT_APPLICATION_INPUT; t
 
 *--------------------------------------------------------------------*
 * 3. The workflow log as an HTML table.
+*
+* Also available without the BAdI. A pattern for anyone who wants to
+* present the log differently.
 *
 * Unlike the work item text, the MAIL is real HTML - here <b> and
 * <table> are correct. The risk of confusing it with the ITF format
