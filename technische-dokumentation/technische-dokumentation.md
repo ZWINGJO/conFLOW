@@ -394,9 +394,11 @@ Der Container ist zugleich die natürliche Quelle für Platzhalter in Workitem-T
 
 Ein Genehmiger soll oft mehr liefern als Ja oder Nein: einen bestätigten Preis, eine Kostenstelle, ein Datum, eine Begründung. Dafür braucht es **keine eigene Oberfläche**. Eine Feldgruppe im Customizing genügt — und sie erscheint im SAP Business Workplace und in der Fiori My Inbox gleichermaßen.
 
+Wo das Formular erscheint, stellt `FORM_UI` an der Feldgruppe ein: leer für beide Oberflächen, `G` nur SAP GUI, `F` nur Fiori, `N` **nur Daten** — kein Formular, die Werte kommen beim Start, aus einem BAdI oder einer eigenen App und stehen trotzdem in Mail, Workitem-Text und Regeln; eine Pflicht gilt auch dann.
+
 | Knoten im Pflegebaum | Tabelle | Inhalt |
 | --- | --- | --- |
-| Feldgruppen | `/C09/CFL_C13` | eine Zeile je Feldgruppe (`VIEW_ID`), Überschrift in `C13T` |
+| Feldgruppen | `/C09/CFL_C13` | eine Zeile je Feldgruppe (`VIEW_ID`), Oberfläche (`FORM_UI`), Überschrift in `C13T` |
 | Felder der Feldgruppe | `/C09/CFL_C14` | die Felder der Gruppe: Reihenfolge, Datenelement, Modus, Pflicht; Bezeichnung in `C14T` |
 
 Schritt für Schritt steht das im How-To [Eingabefelder am Workitem einrichten](../how-to-beispielimplementierung/eingabefelder-einrichten.md).

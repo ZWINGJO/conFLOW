@@ -394,9 +394,11 @@ The container is also the natural source for placeholders in work item texts and
 
 An approver often has to supply more than yes or no: a confirmed price, a cost centre, a date, a reason. That needs **no user interface of your own**. A field set in Customizing is enough — and it appears in the SAP Business Workplace and in Fiori My Inbox alike.
 
+Where the form appears is set by `FORM_UI` on the field set: empty for both interfaces, `G` SAP GUI only, `F` Fiori only, `N` **data only** — no form, the values come at the start, from a BAdI or from your own app and are still available in email, work item text and rules; required fields still apply.
+
 | Node (EN logon) | Table | Content |
 | --- | --- | --- |
-| Field sets | `/C09/CFL_C13` | one row per field set (`VIEW_ID`), heading in `C13T` |
+| Field sets | `/C09/CFL_C13` | one row per field set (`VIEW_ID`), interface (`FORM_UI`), heading in `C13T` |
 | Fields of the field set | `/C09/CFL_C14` | the fields of the set: sequence, data element, mode, mandatory; label in `C14T` |
 
 Step by step, this is in the how-to [Setting up input fields on the work item](how-to/set-up-input-fields.md).
