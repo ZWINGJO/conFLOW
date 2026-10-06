@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **When** | On every status change, after conFLOW has determined the next status from /C09/CFL_C02 - and before it uses it. |
+| **When** | Only if the next status that conFLOW has determined from /C09/CFL_C02 starts with Y or carries the attribute BADI in /C09/CFL_C01 - then after that determination and before conFLOW uses it. If a class is maintained for that status in C01, it runs first; the hook has the last word. On any other status change it is NOT called. |
 | **In and out** | CS_DATA - the instance WITH the intended next status. Overwriting CS_DATA-GEN_STAT here overrides the customizing. CS_DATA_OLD holds the state before. |
 
 **PURPOSE** Branches whose target is only known at runtime: approval levels by amount, skipping a level when it does not apply for business reasons, returning to the point from which the item was forwarded.
@@ -29,7 +29,7 @@ The sample process gets by with 4 - see BACKGROUND_CLASSIFY( ) at the very botto
 
 **WHAT TO KEEP IN MIND**
 
-The hook runs on EVERY status change, including those that are none of your business. Without a switch at the start you rewrite cases you never meant to touch.
+For the hook to run at all, the next status needs the attribute BADI in C01 (or a name starting with Y). If several statuses carry the attribute, it runs at all of them - without a switch at the start you rewrite cases you never meant to touch.
 
 **STAYS EMPTY HERE - on purpose, see above. The pattern is**
 
@@ -39,6 +39,7 @@ commented out below, so you have it when you need it.
 
 ```abap
 *   " Example: an amount limit decides whether to escalate
+*   " (prerequisite: status 01 carries the attribute BADI in C01)
 *   IF cs_data-gen_stat <> zcl_cfl_const_00900=>mc_stat-approve.
 *     RETURN.
 *   ENDIF.

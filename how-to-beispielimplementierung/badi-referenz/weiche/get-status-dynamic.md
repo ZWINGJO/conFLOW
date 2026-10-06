@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Wann** | Bei jedem Statuswechsel, nachdem conFLOW den Folgestatus aus /C09/CFL_C02 ermittelt hat - und bevor er ihn benutzt. |
+| **Wann** | Nur, wenn der Folgestatus, den conFLOW aus /C09/CFL_C02 ermittelt hat, mit Y beginnt oder in /C09/CFL_C01 das Attribut BADI trägt - dann nach dieser Ermittlung und bevor conFLOW ihn benutzt. Ist an diesem Status in C01 eine Klasse hinterlegt, läuft sie vorher; der Hook hat das letzte Wort. Bei jedem anderen Statuswechsel wird er NICHT gerufen. |
 | **Rein und raus** | CS_DATA - die Instanz MIT dem vorgesehenen Folgestatus. Wer CS_DATA-GEN_STAT hier überschreibt, überschreibt das Customizing. CS_DATA_OLD hält den Stand davor. |
 
 ```
@@ -34,7 +34,7 @@ Der Beispielprozess kommt mit 4 aus - siehe BACKGROUND_CLASSIFY( ) ganz unten, d
 
 **WORAN MAN DENKEN MUSS**
 
-Der Hook läuft bei JEDEM Statuswechsel, auch bei denen, die einen nichts angehen. Ohne eine Weiche am Anfang schreibt man Fälle um, die man nie gemeint hat.
+Damit der Hook überhaupt läuft, braucht der Folgestatus in C01 das Attribut BADI (oder einen Namen, der mit Y beginnt). Tragen mehrere Status das Attribut, läuft er an allen - ohne eine Weiche am Anfang schreibt man Fälle um, die man nie gemeint hat.
 
 **BLEIBT HIER LEER - mit Absicht, siehe oben. Das Muster steht**
 
@@ -44,6 +44,7 @@ auskommentiert darunter, damit man es hat, wenn man es braucht.
 
 ```abap
 *   " Beispiel: Betragsgrenze entscheidet, ob eskaliert wird
+*   " (Voraussetzung: Status 01 traegt in C01 das Attribut BADI)
 *   IF cs_data-gen_stat <> zcl_cfl_const_00900=>mc_stat-approve.
 *     RETURN.
 *   ENDIF.

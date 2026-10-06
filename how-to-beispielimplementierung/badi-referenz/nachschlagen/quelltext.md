@@ -1585,8 +1585,12 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 
   METHOD /c09/cfl_if_badi_0101~get_status_dynamic.
 *--------------------------------------------------------------------*
-* WANN   Bei jedem Statuswechsel, nachdem conFLOW den Folgestatus aus
-*        /C09/CFL_C02 ermittelt hat - und bevor er ihn benutzt.
+* WANN   Nur, wenn der Folgestatus, den conFLOW aus /C09/CFL_C02
+*        ermittelt hat, mit Y beginnt oder in /C09/CFL_C01 das
+*        Attribut BADI traegt - dann nach dieser Ermittlung und bevor
+*        conFLOW ihn benutzt. Ist an diesem Status in C01 eine Klasse
+*        hinterlegt, laeuft sie vorher; der Hook hat das letzte Wort.
+*        Bei jedem anderen Statuswechsel wird er NICHT gerufen.
 *
 * REIN/RAUS  CS_DATA - die Instanz MIT dem vorgesehenen Folgestatus.
 *            Wer CS_DATA-GEN_STAT hier ueberschreibt, ueberschreibt
@@ -1619,9 +1623,11 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *        BACKGROUND_CLASSIFY( ) ganz unten, die genau das tut.
 *
 * WORAN MAN DENKEN MUSS
-*        Der Hook laeuft bei JEDEM Statuswechsel, auch bei denen, die
-*        einen nichts angehen. Ohne eine Weiche am Anfang schreibt
-*        man Faelle um, die man nie gemeint hat.
+*        Damit der Hook ueberhaupt laeuft, braucht der Folgestatus in
+*        C01 das Attribut BADI (oder einen Namen, der mit Y beginnt).
+*        Tragen mehrere Status das Attribut, laeuft er an allen - ohne
+*        eine Weiche am Anfang schreibt man Faelle um, die man nie
+*        gemeint hat.
 *
 *        BLEIBT HIER LEER - mit Absicht, siehe oben. Das Muster steht
 *        auskommentiert darunter, damit man es hat, wenn man es
@@ -1629,6 +1635,7 @@ CLASS zcl_cfl_workflow_00900 IMPLEMENTATION.
 *--------------------------------------------------------------------*
 
 *   " Beispiel: Betragsgrenze entscheidet, ob eskaliert wird
+*   " (Voraussetzung: Status 01 traegt in C01 das Attribut BADI)
 *   IF cs_data-gen_stat <> zcl_cfl_const_00900=>mc_stat-approve.
 *     RETURN.
 *   ENDIF.
